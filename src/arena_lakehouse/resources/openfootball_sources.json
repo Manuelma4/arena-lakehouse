@@ -1,0 +1,88 @@
+{
+  "catalogue_version": "1.0",
+  "verified_on": "2026-10-06",
+  "license": "CC0-1.0",
+  "sources": [
+    {
+      "source_id": "england-premier-2026-27",
+      "competition_id": "england-premier",
+      "season": "2026-27",
+      "path": "2026-27/en.1.json",
+      "name": "English Premier League 2026/27",
+      "region": "Europe",
+      "team_namespace": "openfootball-england"
+    },
+    {
+      "source_id": "spain-primera-2026-27",
+      "competition_id": "spain-primera",
+      "season": "2026-27",
+      "path": "2026-27/es.1.json",
+      "name": "Spain Primera Divisi\u00f3n 2026/27",
+      "region": "Europe",
+      "team_namespace": "openfootball-spain"
+    },
+    {
+      "source_id": "germany-bundesliga-2026-27",
+      "competition_id": "germany-bundesliga",
+      "season": "2026-27",
+      "path": "2026-27/de.1.json",
+      "name": "Deutsche Bundesliga 2026/27",
+      "region": "Europe",
+      "team_namespace": "openfootball-germany"
+    },
+    {
+      "source_id": "italy-serie-a-2026-27",
+      "competition_id": "italy-serie-a",
+      "season": "2026-27",
+      "path": "2026-27/it.1.json",
+      "name": "Italian Serie A 2026/27",
+      "region": "Europe",
+      "team_namespace": "openfootball-italy"
+    },
+    {
+      "source_id": "france-ligue-1-2026-27",
+      "competition_id": "france-ligue-1",
+      "season": "2026-27",
+      "path": "2026-27/fr.1.json",
+      "name": "French Ligue 1 2026/27",
+      "region": "Europe",
+      "team_namespace": "openfootball-france"
+    },
+    {
+      "source_id": "brazil-serie-a-2026",
+      "competition_id": "brazil-serie-a",
+      "season": "2026",
+      "path": "2026/br.1.json",
+      "name": "Brasileiro S\u00e9rie A 2026",
+      "region": "South America",
+      "team_namespace": "openfootball-brazil"
+    },
+    {
+      "source_id": "colombia-primera-a-2025",
+      "competition_id": "colombia-primera-a",
+      "season": "2025",
+      "path": "2025/co.1.json",
+      "name": "Colombia Primera A 2025",
+      "region": "South America",
+      "team_namespace": "openfootball-colombia"
+    },
+    {
+      "source_id": "argentina-primera-2025",
+      "competition_id": "argentina-primera",
+      "season": "2025",
+      "path": "2025/ar.1.json",
+      "name": "Argentina Primera Division 2025",
+      "region": "South America",
+      "team_namespace": "openfootball-argentina"
+    },
+    {
+      "source_id": "libertadores-2025",
+      "competition_id": "libertadores",
+      "season": "2025",
+      "path": "2025/copa.l.json",
+      "name": "Copa Libertadores 2025",
+      "region": "South America",
+      "team_namespace": "openfootball-libertadores"
+    }
+  ]
+}

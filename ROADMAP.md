@@ -12,6 +12,7 @@ private lesson content has not been copied.
 | 03. Spark/Delta streaming foundation | Implemented | AvailableNow, MERGE, CDF, checkpoint replay, correction, oracle parity |
 | 04. Prediction research baseline | Implemented on synthetic fixtures | Chronological split, availability cutoff, leakage tests, baseline metrics |
 | 05. Real API onboarding | Requires user's free tokens | First successful provider calls, field coverage report, reproducible private archive |
+| 05a. No-token open-data acquisition | Verified OpenFootball staging and research publication | Nine CC0 editions; raw archives, replay, source corrections, null UTC clocks, independent consumer contract |
 | 06. Incremental execution path | Verified locally | Affected-match/history and team maintenance; cancellation tombstones; full oracle; bounded backfill |
 | 07. Operational reliability | Local stage runner verified; SLOs pending | Persistent attempts, bounded transient retries, restart after Silver commit, publication gate |
 | 08. Team/roster history and schema evolution | Planned | SCD2 identity history, contract migrations, late roster changes, archive reconciliation |
@@ -63,6 +64,13 @@ The [open-data acquisition design](docs/open-data-acquisition.md) adds a no-toke
 football route and a concrete provider/competition/season coverage catalogue.
 Date-only kickoff precision, reviewed cross-provider identities and collection-time
 availability are acceptance requirements before activating those datasets.
+
+Milestone 0.4 activates the precision-aware research export for OpenFootball.
+Its recorded nine-source import contains 2,727 rows and preserves 1,639 unknown
+results. Actual collection establishes availability; no historical forecast or
+official table is derived from incomplete clocks and unverified score targets.
+Source revision audit, fixed catalogue packaging and installed-wheel verification
+complement the existing canonical Spark/Delta path.
 
 Optional deeper extension after this foundation: PostgreSQL + genuine source CDC.
 Match API polling and downstream Delta CDF are not transaction-log CDC.

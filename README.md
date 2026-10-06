@@ -25,6 +25,9 @@ flowchart LR
     D --> F[Versioned snapshot]
     E --> F
     F --> G[Arena Copilot]
+    H[OpenFootball CC0 files] --> I[Raw archives and precision-aware staging]
+    I --> J[Research Gold and source poll history]
+    J --> G
 ```
 
 The execution layer uses Spark 4.1 and Delta Lake. File streaming, persistent
@@ -42,6 +45,7 @@ score corrections, cancelled results and renamed teams.
 |---|---|
 | Identity | Provider-scoped match IDs and stable team IDs |
 | Time | Separate kickoff, completion and observation timestamps in UTC |
+| Open-data precision | Preserve source calendar dates and local wall times until a UTC instant can be established |
 | Replay | Duplicate observations leave canonical results unchanged |
 | Recovery | Persisted stage attempts; incomplete runs block publication |
 | Quality | Schema and result validation with preserved quarantine records |
@@ -70,8 +74,19 @@ managed workspace execution is still pending verification.
 ## Project scope
 
 The public showcase contains 600 original synthetic matches, 16 teams and six
-fictional competitions. Optional adapters support football-data.org and PandaScore
-observations. Provider data stays separate from the public fixture.
+fictional competitions. An independent no-token OpenFootball collector and
+research publisher add real community records from nine competition editions:
+2,727 matches, 1,088 observed results and 1,639 unknown results in the recorded
+import. Source files cover different seasons and may have incomplete results.
+
+The [OpenFootball path](docs/openfootball-research.md) preserves raw checksums,
+collection-time availability, corrections and unresolved source clocks. It
+publishes a dedicated research contract rather than inventing UTC kickoff or
+regulation-time prediction targets. These CC0 records can enter the public
+research application; forecasting remains unavailable for this package.
+
+Optional adapters support football-data.org and PandaScore observations.
+Authenticated provider data stays separate from the public fixture.
 
 Synthetic results validate the engineering workflow, not predictive accuracy on
 real teams. The model remains uncalibrated. Course correspondence and remaining
@@ -79,4 +94,5 @@ engineering work are recorded in the [roadmap](ROADMAP.md); the snapshot interfa
 is defined in [CONTRACT.md](CONTRACT.md).
 
 Original code and fictional data are licensed under MIT. Third-party data retains
-its provider's terms.
+its provider's terms. OpenFootball data and schema are
+[CC0-1.0](https://github.com/openfootball/football.json/blob/master/LICENSE.md).

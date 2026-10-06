@@ -1,6 +1,6 @@
 # Verified checkpoint and next session
 
-Recorded: 2026-10-06. Milestone: sports showcase 0.3.0, before the public v1 release.
+Recorded: 2026-10-06. Milestone: free OpenFootball research 0.4.0, before the public v1 release.
 
 ## What works
 
@@ -12,7 +12,14 @@ Recorded: 2026-10-06. Milestone: sports showcase 0.3.0, before the public v1 rel
   restart, one late correction and team-aggregate parity with the reference.
 - Chronological prediction baselines with point-in-time feature and label cutoffs;
   frozen snapshot export and the connected independent copilot fixture.
-- 37 passing offline tests, Ruff checks and executed learning notebook cells.
+- 113 passing offline tests, Ruff checks and executed learning notebook cells.
+- No-token CC0 OpenFootball acquisition, fixed packaged source catalogue, raw
+  archives, conditional polling, bounded retries, SQLite staging and immutable
+  research Gold export. Nine editions contain 2,727 current/history rows;
+  exact raw-archive replay preserves JSON/Parquet state and history checksums.
+- Unresolved UTC kickoff/completion remain null, missing scores stay unknown,
+  and all real research rows remain prediction-ineligible. Consumer validation
+  and the source research view are separate from canonical synthetic forecasts.
 - Six original competitions across both sports; unchanged source identities,
   results and forecasts. The previous immutable fixture remains available.
 - Persistent Spark stages, affected-match/history and team maintenance, soft
@@ -53,6 +60,11 @@ schedule. Workspace runtime/permissions/features still require separate evidence
 Real API onboarding needs personal free tokens in a local `.env`, never in chat,
 fixtures, notebooks or Git. Provider calls have only been checked with protocol
 fixtures so far. API polling is not transaction-log CDC or free round-level push.
+
+The OpenFootball route needs no account or token and has an actual recorded
+download. See `docs/evidence/openfootball-acquisition-v0.4.json` for source
+checksums, collection counts, replay and the research contract. Authenticated
+football-data.org and PandaScore calls remain separately unverified.
 
 ## Subsequent working sessions
 
