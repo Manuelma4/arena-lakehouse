@@ -25,7 +25,15 @@ METRIC_COLUMNS = ["sport", "team_id", "team_name", "matches", "wins", "draws", "
 
 
 class IncrementalPipeline:
-    def __init__(self, spark, root: Path):
+    def __init__(self, spark, root: Path, *, verification=None, bronze_timeout_seconds=180):
+        # Larger isolated benchmarks can supply a disk-backed independent
+        # oracle. Normal demonstrations retain the full Python reconstruction.
+        if verification is not None and not callable(verification):
+            raise TypeError("verification must be an independent verification callable")
+        if type(bronze_timeout_seconds) is not int or not 1 <= bronze_timeout_seconds <= 3600:
+            raise ValueError("bronze_timeout_seconds must be an integer between 1 and 3600")
+        self.verification = verification
+        self.bronze_timeout_seconds = bronze_timeout_seconds
         self.spark, self.root = spark, Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         self.ledger = StageLedger(self.root / "control")
@@ -139,9 +147,9 @@ class IncrementalPipeline:
                  .writeStream.foreachBatch(insert)
                  .option("checkpointLocation", str(self.root / "checkpoint"))
                  .trigger(availableNow=True).start())
-        if not query.awaitTermination(180):
+        if not query.awaitTermination(self.bronze_timeout_seconds):
             query.stop()
-            raise TimeoutError("Bronze AvailableNow exceeded 180 seconds")
+            raise TimeoutError(f"Bronze AvailableNow exceeded {self.bronze_timeout_seconds} seconds")
 
     def _silver(self, payload):
         from pyspark.sql import Window, functions as F
@@ -181,6 +189,9 @@ class IncrementalPipeline:
         self._write("gold_team_stats", source, ["sport", "team_id"])
 
     def _verify(self, _payload):
+        if self.verification is not None:
+            self.verification(self.spark, self.paths)
+            return
         if not self._exists("bronze_observations"):
             return
         events = [r.asDict() for r in self._read("bronze_observations").select(*EVENT_COLUMNS)

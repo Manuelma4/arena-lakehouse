@@ -81,7 +81,7 @@ def normalize_valorant(raw: dict, observed_at: datetime) -> dict | None:
                 best_of=raw.get("number_of_games") or 3)
 
 
-def collect(provider: str, state_path: Path, competition="PL", pages=1, client=None) -> tuple[list[dict], dict]:
+def collect(provider: str, state_path: Path, competition="PL", pages=1, client=None, *, clock=None) -> tuple[list[dict], dict]:
     if provider not in ("football-data", "pandascore") or not 1 <= pages <= 10:
         raise ValueError("Unsupported provider or pages outside 1..10")
     token = os.environ.get("FOOTBALL_DATA_TOKEN" if provider == "football-data" else "PANDASCORE_TOKEN")
@@ -89,7 +89,8 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
         raise ProviderError(f"Set {'FOOTBALL_DATA_TOKEN' if provider == 'football-data' else 'PANDASCORE_TOKEN'} in .env")
     owns_client = client is None
     client = client or httpx.Client(follow_redirects=False)
-    observed = datetime.now(timezone.utc)
+    now = clock or (lambda: datetime.now(timezone.utc))
+    requested_at = now()
     state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
     pending = dict(state)
     rows, unsupported, raw_archives = [], 0, []
@@ -98,11 +99,13 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
         # Preserve the unnormalized provider body before schema interpretation.
         # Request headers/credentials are never serialized. Licensed response
         # bodies are private runtime artifacts, excluded from public snapshots.
-        directory = state_path.parent / "provider_raw" / provider / observed.date().isoformat()
+        received_at = now()
+        directory = state_path.parent / "provider_raw" / provider / received_at.date().isoformat()
         directory.mkdir(parents=True, exist_ok=True)
         destination = directory / f"{uuid.uuid4().hex}.json"
         destination.write_text(json.dumps(dict(provider=provider, endpoint=endpoint,
-            observed_at=observed.isoformat(), payload=payload), ensure_ascii=False), encoding="utf-8")
+            requested_at=requested_at.isoformat(), observed_at=received_at.isoformat(), payload=payload),
+            ensure_ascii=False), encoding="utf-8")
         raw_archives.append(str(destination))
 
     try:
@@ -122,6 +125,9 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
                     archive(data, f"valorant/matches/{phase}?page={page}&per_page=100")
                     raw_rows.extend(data)
                     time.sleep(0.4)
+        # A result can finish while a request is in flight. Availability is
+        # recorded after the responses were received, never at request start.
+        observed = now()
         normalizer = normalize_football if provider == "football-data" else normalize_valorant
         for raw in raw_rows:
             match = normalizer(raw, observed)

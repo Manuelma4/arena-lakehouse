@@ -3,6 +3,31 @@
 Environment: Windows host, Docker Desktop Linux backend, Python 3.11,
 Java 17, Spark 4.1.3 and Delta 4.4.0 (Spark 4.1 JVM artifact).
 
+## Authenticated source polling - v0.6.0
+
+[source-operations-software-v0.6.json](source-operations-software-v0.6.json)
+records 331 passing offline tests, Ruff and unchanged original source inputs.
+The scale generator and independent bounded oracle are tested; their larger
+Spark execution remains a separate, unmeasured gate.
+[installed-wheel-v0.6.json](installed-wheel-v0.6.json) records the isolated wheel,
+checksums, packaged resources and runtime probes without provider or model calls.
+
+[authenticated-provider-verification-v0.6.json](authenticated-provider-verification-v0.6.json)
+records three actual cycles for six football competitions and the three VALORANT
+fixture phases. All 27 HTTP requests succeeded, quota windows were respected and
+unchanged responses preserved the selected canonical snapshots. Football retained
+2,132 matches; VALORANT retained 106 canonical matches with 18 unresolved
+announcements outside that strict table. These runs use the SQLite/Arrow
+reference backend and do not constitute new Spark or model-training measurements.
+
+[provider-calendar-verification-v0.6.json](provider-calendar-verification-v0.6.json)
+records successful publication of the exact saved 124-record source collection:
+106 canonical links, 18 pending announcements and byte-identical repeated
+publication. The first actual attempt rejected thirteen empty optional series
+names; a tested compatibility fix represents those names as null while preserving
+IDs, full names and raw archive evidence. Calendar selection by the polling
+worker and an event-directory consumer remain separate steps.
+
 ## World Cup and ten-edition research - v0.5.0
 
 [openfootball-acquisition-v0.5.json](openfootball-acquisition-v0.5.json) records

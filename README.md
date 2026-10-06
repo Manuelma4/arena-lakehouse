@@ -11,8 +11,8 @@ providers deliver the same event more than once. Arena Lakehouse preserves those
 observations, maintains consistent match history and team aggregates, and publishes
 immutable datasets for the companion research application.
 
-Version **0.5.0** adds the men's World Cup 2026 through a pinned, no-token CC0
-source and an explicit precision-aware research contract. The existing Spark/Delta
+Version **0.6.0** adds authenticated fixtures and results, durable source polling
+and explicit freshness checks. The World Cup research package, Spark/Delta
 pipeline and original football/VALORANT showcase remain independently reproducible.
 
 ## Published datasets
@@ -22,11 +22,20 @@ pipeline and original football/VALORANT showcase remain independently reproducib
 | Original sports showcase | 600 synthetic matches, 16 teams, six fictional competitions | Engineering and model demonstrations on original data |
 | OpenFootball research v2 | 2,831 matches, 261 derived teams, ten competition editions | Community source observations; incomplete results remain explicit |
 | World Cup 2026 within research v2 | 104 matches, 48 national teams, 104 numeric-offset kickoff clocks | Pinned source facts with separate FT, extra-time and shootout score stages |
+| Private authenticated football collection | 2,132 matches across the five major European leagues and Brazilian Serie A | Free-account fixtures and delayed scores; selected current seasons |
+| Private authenticated VALORANT collection | 106 canonical matches; 124 announcements retained separately | Match-level fixtures/results; unresolved teams and times remain explicit |
 
 The real-data package contains 1,192 observed results and 1,639 unknown results.
 Its identity is `20d06e8e5af0886e`, with observation cutoff
 `2026-10-06T12:19:31.263499Z`. Coverage spans different source seasons; it does
 not represent a complete live feed or official standings.
+
+Authenticated source data stays outside the repository. Three measured polling
+cycles checked all six football competitions and all three VALORANT match phases:
+27 successful HTTP requests, no new business revisions and unchanged canonical
+snapshots. A successful source check and a dataset's observation cutoff are
+recorded separately. Polling does not provide in-game VALORANT rounds or eliminate
+the football provider's free-tier score delay.
 
 ## Architecture
 
@@ -57,6 +66,12 @@ SQLite revision state and typed Parquet/JSON publication. It publishes a separat
 research contract, preserving source precision rather than forcing incomplete
 records into the canonical timestamp contract.
 
+Authenticated periodic collections currently use the SQLite/Arrow correctness
+reference. A durable request ledger counts retries against the free-plan quota;
+failed checks preserve the last successful publication. The companion API reloads
+validated immutable datasets as new versions arrive. These measured source polls
+are separate from the earlier Spark/Delta streaming measurements.
+
 ## Engineering decisions
 
 | Concern | Implemented behavior |
@@ -81,6 +96,14 @@ JSON/TXT clock disagreement is preserved as a source limitation.
 
 ## Measured verification
 
+The [authenticated polling report](docs/evidence/authenticated-provider-verification-v0.6.json)
+records actual source access, exact polling scope, request budgets and stable
+publication on repeated responses. A separate nullable calendar preserves the
+18 VALORANT announcements excluded by the strict match contract. Its
+[contract](docs/provider-calendar.md) retains source occurrences and unresolved
+fields; automatic worker selection and event-directory integration remain
+separate implementation steps.
+
 The [v0.5 acquisition report](docs/evidence/openfootball-acquisition-v0.5.json)
 records nine verified club archives replayed into a new workspace and one actual
 pinned World Cup HTTP collection. Replaying all ten inputs produced zero new
@@ -99,6 +122,11 @@ records file counts, executed plans and query timings with identical results.
 These retain their original measured configurations; v0.5 introduces no new
 Spark throughput or production-scale claim.
 
+The [v0.6 software report](docs/evidence/source-operations-software-v0.6.json)
+records 331 passing offline tests and unchanged published source inputs. The
+larger-workload generator and independent bounded oracle are implemented;
+10,000-event and million-event Spark measurements remain pending.
+
 GitHub Actions checks the software and provides a separately triggered Linux
 Spark workflow. The [Databricks profile](docs/databricks-profile.md) includes Auto
 Loader, Spark Declarative Pipelines, AUTO CDC and a Lakeflow Job configuration;
@@ -114,7 +142,8 @@ managed workspace execution remains pending verification.
 
 Optional football-data.org and PandaScore adapters keep authenticated provider
 data separate from the public showcase. The no-token OpenFootball path is usable
-independently; authenticated provider calls still require separate verification.
+independently. Both free-account adapters have passed actual source checks;
+coverage outside the recorded scopes remains unverified.
 
 Original code and fictional data use the MIT license. OpenFootball records retain
 [CC0-1.0](https://github.com/openfootball/worldcup.json/blob/516d3825c3bd23fdc298c4014e84bde78f2d4965/LICENSE.md).

@@ -115,3 +115,26 @@ def test_valorant_polls_running_as_well_as_past_and_upcoming(tmp_path, monkeypat
     assert requested == ["past", "upcoming", "running"]
     assert {r["status"] for r in rows} == {"finished", "scheduled", "running"}
     assert len(meta["raw_archives"]) == 3
+
+
+def test_result_finishing_during_request_is_observed_after_response(tmp_path, monkeypatch):
+    import json
+    from datetime import timedelta
+
+    monkeypatch.setenv("PANDASCORE_TOKEN", "test-only-not-a-real-token")
+    monkeypatch.setattr("arena_lakehouse.connectors.time.sleep", lambda _: None)
+    clock = [NOW]
+    payload = dict(VALORANT, begin_at=(NOW - timedelta(hours=3)).isoformat(),
+                   end_at=(NOW + timedelta(seconds=1)).isoformat())
+
+    def response(request):
+        clock[0] = NOW + timedelta(seconds=2)
+        return httpx.Response(200, json=[payload] if request.url.path.endswith("/past") else [])
+
+    with httpx.Client(transport=httpx.MockTransport(response)) as client:
+        rows, meta = collect("pandascore", tmp_path / "cursor.json", client=client, clock=lambda: clock[0])
+    assert len(rows) == 1
+    assert MatchEvent.model_validate(rows[0]).observed_at == NOW + timedelta(seconds=2)
+    archive = json.loads(open(meta["raw_archives"][0], encoding="utf-8").read())
+    assert datetime.fromisoformat(archive["requested_at"]) == NOW
+    assert datetime.fromisoformat(archive["observed_at"]) == NOW + timedelta(seconds=2)

@@ -1,0 +1,90 @@
+{
+  "wheel": "arena_lakehouse-0.6.0-py3-none-any.whl",
+  "sha256": "62e2a1a938cb63c09a83ccbfca4486d70be70e02272f1010ebf5df1eec733f87",
+  "bytes": 92400,
+  "wheel_entry_count": 26,
+  "record_verified_entries": 25,
+  "source_files_verified": 20,
+  "installed_source_drift": [],
+  "entry_points": [
+    "[console_scripts]",
+    "arena-lakehouse = arena_lakehouse.cli:main",
+    "arena-live = arena_lakehouse.live:main",
+    "arena-scale = arena_lakehouse.scale:main",
+    "arena-spark = arena_lakehouse.incremental:main"
+  ],
+  "build_dependency": "setuptools 84.0.0 (isolated pip build environment)",
+  "runtime_probe_status": "passed",
+  "scope": "Isolated wheel extraction and runtime probes using existing dependencies; no shared install, provider requests, Spark, or model execution",
+  "recorded_at": "2026-10-06T15:15:56.528091+00:00",
+  "probe": {
+    "scope": "isolated wheel extraction; existing dependency environment, no shared installation",
+    "python": "3.11.9",
+    "target": "C:\\Works\\.arena-worktrees\\scale-verification\\data\\packaging-v0.6-7ad2e3972f\\isolated-target",
+    "provider_requests": 0,
+    "spark_runs": 0,
+    "model_requests": 0,
+    "module_files": {
+      "live": "C:\\Works\\.arena-worktrees\\scale-verification\\data\\packaging-v0.6-7ad2e3972f\\isolated-target\\arena_lakehouse\\live.py",
+      "calendar": "C:\\Works\\.arena-worktrees\\scale-verification\\data\\packaging-v0.6-7ad2e3972f\\isolated-target\\arena_lakehouse\\calendar.py",
+      "scale": "C:\\Works\\.arena-worktrees\\scale-verification\\data\\packaging-v0.6-7ad2e3972f\\isolated-target\\arena_lakehouse\\scale.py",
+      "scale_oracle": "C:\\Works\\.arena-worktrees\\scale-verification\\data\\packaging-v0.6-7ad2e3972f\\isolated-target\\arena_lakehouse\\scale_oracle.py",
+      "openfootball": "C:\\Works\\.arena-worktrees\\scale-verification\\data\\packaging-v0.6-7ad2e3972f\\isolated-target\\arena_lakehouse\\openfootball.py",
+      "openfootball_research": "C:\\Works\\.arena-worktrees\\scale-verification\\data\\packaging-v0.6-7ad2e3972f\\isolated-target\\arena_lakehouse\\openfootball_research.py",
+      "incremental": "C:\\Works\\.arena-worktrees\\scale-verification\\data\\packaging-v0.6-7ad2e3972f\\isolated-target\\arena_lakehouse\\incremental.py"
+    },
+    "version": "0.6.0",
+    "distribution_version": "0.6.0",
+    "packaged_sources": 10,
+    "trusted_worldcup_bytes": 42736,
+    "trusted_worldcup_sha256": "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca",
+    "offline_live": {
+      "football-data": {
+        "status": "awaiting_credentials",
+        "requests": 0,
+        "source_scope": {
+          "kind": "competition_list",
+          "competition_codes": [
+            "PL"
+          ],
+          "phases": [],
+          "pages": 1
+        }
+      },
+      "pandascore": {
+        "status": "awaiting_credentials",
+        "requests": 0,
+        "source_scope": {
+          "kind": "match_phases",
+          "competition_codes": [],
+          "phases": [
+            "past",
+            "upcoming",
+            "running"
+          ],
+          "pages": 1
+        }
+      }
+    },
+    "empty_calendar_counts": {
+      "source_records": 0,
+      "announcements": 0,
+      "duplicate_occurrences": 0,
+      "conflicted_announcements": 0,
+      "pending_announcements": 0,
+      "canonical_linked": 0,
+      "sources": 3
+    },
+    "small_offline_oracle": {
+      "received": 40,
+      "accepted": 40,
+      "replayed": 40
+    },
+    "documentation_drift": {
+      "README.md": "e4376d974745d96a852ed295a524033a3abb022f06867440534ace76346fdfd1"
+    },
+    "source_drift": {},
+    "status": "passed",
+    "elapsed_seconds": 3.022
+  }
+}

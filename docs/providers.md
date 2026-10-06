@@ -1,15 +1,17 @@
 # Data-provider decision
 
-Verified against official documentation on 6 October 2026. API connectors are
-implemented and tested against explicitly synthetic protocol-shaped fixtures.
-No user account or token was supplied; authenticated live responses remain unverified.
+Verified against official documentation and authenticated free-account responses
+on 6 October 2026. Protocol-shaped fixtures remain synthetic test inputs;
+authenticated collections are separate private runtime artifacts. Credentials
+are read from the local environment and excluded from Git and exported datasets.
 
 ## Football
 
 [football-data.org](https://www.football-data.org/client/register) offers a free
 tier for basic fixtures, results and league tables across 12 competitions with
 10 requests per minute. The adapter uses API v4 and an `X-Auth-Token` environment
-secret. Default `PL`; `FL1` can be selected where account coverage permits it.
+secret. The verified account exposes twelve free competition codes: `BSA`, `ELC`,
+`PL`, `CL`, `EC`, `FL1`, `BL1`, `SA`, `DED`, `PPL`, `PD` and `WC`.
 [Policies](https://docs.football-data.org/general/v4/policies.html) and
 [competition matches](https://docs.football-data.org/general/v4/competition.html).
 
@@ -33,15 +35,20 @@ The collector requests past, upcoming and running match lists on each bounded
 poll; a running series is a match-level observation, not round telemetry.
 
 When a score is unavailable or incompatible with the common schema, collection
-must report that limitation, never invent scores. API timestamps and fields need
-verification with the user's actual account before claiming coverage.
+reports that limitation and preserves the original response without inventing
+scores. The first authenticated VALORANT collection retrieved 124 records across
+past, upcoming and running endpoints: 106 canonical matches and 18 announcements
+pending normalization. Fifteen announcements lacked resolved opponents and
+three lacked a usable start time. These announcements remain in the private raw
+archive; the strict match table does not replace missing teams with placeholders.
 
 Football's endpoint does not supply a trustworthy completion instant in the
 current mapping: `completed_at` is the collection-time upper bound. PandaScore's
 `end_at` is used when supplied; otherwise it also uses that conservative bound.
 Repeated polling ignores availability/completion timestamps when deciding whether
 business content changed. A correction consisting only of completion time is
-therefore not currently versioned; actual field coverage needs provider verification.
+therefore not currently versioned. This limitation remains explicit even after
+the authenticated field checks.
 
 ## Expanded football coverage
 
@@ -51,6 +58,11 @@ European Championship, Champions League and Brazilian Serie A. Its
 [free pricing](https://www.football-data.org/pricing) allows ten calls per minute
 with delayed scores/schedules. Current and historical availability must be
 verified per account before a data collection or backtest is declared complete.
+The first authenticated six-competition collection produced 2,132 matches across
+`PL`, `PD`, `BL1`, `SA`, `FL1` and `BSA`, with zero quarantine records. It contained
+529 finished matches, one postponed match and 1,602 scheduled matches. These are
+observations from the provider's selected current seasons, not a claim that every
+season or international competition has been collected.
 
 [API-Football](https://www.api-football.com/coverage) is a possible complementary
 provider for Colombia, Argentina, Mexico, Chile and international tournaments

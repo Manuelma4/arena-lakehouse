@@ -1,0 +1,201 @@
+{
+  "schema_version": "arena-authenticated-poll-verification-1.0",
+  "verified_at": "2026-10-06T14:03:25.458334+00:00",
+  "scope": "actual free-account source polling, SQLite/Arrow reference backend; no Spark ingestion or prediction training",
+  "worker_source_sha256": "4f9b61441f272dc04898b520a9e20bbc3bd34b06e323cda4291517cec2a8fd66",
+  "providers": [
+    {
+      "provider": "football-data",
+      "status": {
+        "schema_version": "arena-live-status-1.0",
+        "provider": "football-data",
+        "data_kind": "api",
+        "status": "ready",
+        "source_scope": {
+          "kind": "competition_list",
+          "competition_codes": [
+            "PL",
+            "PD",
+            "BL1",
+            "SA",
+            "FL1",
+            "BSA"
+          ],
+          "phases": [],
+          "pages": 1
+        },
+        "last_attempt_at": "2026-10-06T14:00:56.746350Z",
+        "last_success_at": "2026-10-06T14:00:59.746926Z",
+        "last_change_at": "2026-10-06T13:58:51.725695Z",
+        "poll_interval_seconds": 60,
+        "last_error_code": null,
+        "latest_snapshot": "snapshot-b46482d37d613a4a-614d2482",
+        "poll_counts": {
+          "attempted": 3,
+          "succeeded": 3,
+          "failed": 0,
+          "awaiting_credentials": 0,
+          "quota_limited": 0,
+          "interrupted": 0
+        },
+        "last_poll": {
+          "source_rows": 2132,
+          "changed_rows": 0,
+          "unsupported_rows": 0,
+          "requests": 6
+        },
+        "capabilities": {
+          "tier": "free",
+          "update_mode": "polled_rest",
+          "fixtures_and_results": true,
+          "scores_delayed": true,
+          "in_game_round_feed": false
+        },
+        "request_budget": {
+          "limit": 10,
+          "window_seconds": 60,
+          "used": 6,
+          "remaining": 4
+        }
+      },
+      "polls": [
+        {
+          "id": 1,
+          "started_at": "2026-10-06T13:58:46.040931Z",
+          "finished_at": "2026-10-06T13:58:51.725695Z",
+          "status": "succeeded",
+          "error_code": null,
+          "source_rows": 2132,
+          "changed_rows": 0,
+          "unsupported_rows": 0,
+          "snapshot": "snapshot-b46482d37d613a4a-614d2482",
+          "snapshot_changed": 1
+        },
+        {
+          "id": 2,
+          "started_at": "2026-10-06T13:59:51.738548Z",
+          "finished_at": "2026-10-06T13:59:56.721060Z",
+          "status": "succeeded",
+          "error_code": null,
+          "source_rows": 2132,
+          "changed_rows": 0,
+          "unsupported_rows": 0,
+          "snapshot": "snapshot-b46482d37d613a4a-614d2482",
+          "snapshot_changed": 0
+        },
+        {
+          "id": 3,
+          "started_at": "2026-10-06T14:00:56.746350Z",
+          "finished_at": "2026-10-06T14:00:59.746926Z",
+          "status": "succeeded",
+          "error_code": null,
+          "source_rows": 2132,
+          "changed_rows": 0,
+          "unsupported_rows": 0,
+          "snapshot": "snapshot-b46482d37d613a4a-614d2482",
+          "snapshot_changed": 0
+        }
+      ],
+      "request_count": 18,
+      "all_requests_http_200": true,
+      "stable_snapshot_for_unchanged_responses": true,
+      "rolling_request_budget_respected": true
+    },
+    {
+      "provider": "pandascore",
+      "status": {
+        "schema_version": "arena-live-status-1.0",
+        "provider": "pandascore",
+        "data_kind": "api",
+        "status": "ready",
+        "source_scope": {
+          "kind": "match_phases",
+          "competition_codes": [],
+          "phases": [
+            "past",
+            "upcoming",
+            "running"
+          ],
+          "pages": 1
+        },
+        "last_attempt_at": "2026-10-06T14:00:53.874623Z",
+        "last_success_at": "2026-10-06T14:00:56.029212Z",
+        "last_change_at": "2026-10-06T13:58:50.208892Z",
+        "poll_interval_seconds": 60,
+        "last_error_code": null,
+        "latest_snapshot": "snapshot-f79fb4d5cc2c2e13-bc779e0e",
+        "poll_counts": {
+          "attempted": 3,
+          "succeeded": 3,
+          "failed": 0,
+          "awaiting_credentials": 0,
+          "quota_limited": 0,
+          "interrupted": 0
+        },
+        "last_poll": {
+          "source_rows": 124,
+          "changed_rows": 0,
+          "unsupported_rows": 18,
+          "requests": 3
+        },
+        "capabilities": {
+          "tier": "free",
+          "update_mode": "polled_rest",
+          "fixtures_and_results": true,
+          "scores_delayed": null,
+          "in_game_round_feed": false
+        },
+        "request_budget": {
+          "limit": 1000,
+          "window_seconds": 3600,
+          "used": 9,
+          "remaining": 991
+        }
+      },
+      "polls": [
+        {
+          "id": 1,
+          "started_at": "2026-10-06T13:58:46.038911Z",
+          "finished_at": "2026-10-06T13:58:50.208892Z",
+          "status": "succeeded",
+          "error_code": null,
+          "source_rows": 124,
+          "changed_rows": 0,
+          "unsupported_rows": 18,
+          "snapshot": "snapshot-f79fb4d5cc2c2e13-bc779e0e",
+          "snapshot_changed": 1
+        },
+        {
+          "id": 2,
+          "started_at": "2026-10-06T13:59:50.234792Z",
+          "finished_at": "2026-10-06T13:59:53.859668Z",
+          "status": "succeeded",
+          "error_code": null,
+          "source_rows": 124,
+          "changed_rows": 0,
+          "unsupported_rows": 18,
+          "snapshot": "snapshot-f79fb4d5cc2c2e13-bc779e0e",
+          "snapshot_changed": 0
+        },
+        {
+          "id": 3,
+          "started_at": "2026-10-06T14:00:53.874623Z",
+          "finished_at": "2026-10-06T14:00:56.029212Z",
+          "status": "succeeded",
+          "error_code": null,
+          "source_rows": 124,
+          "changed_rows": 0,
+          "unsupported_rows": 18,
+          "snapshot": "snapshot-f79fb4d5cc2c2e13-bc779e0e",
+          "snapshot_changed": 0
+        }
+      ],
+      "request_count": 9,
+      "all_requests_http_200": true,
+      "stable_snapshot_for_unchanged_responses": true,
+      "rolling_request_budget_respected": true
+    }
+  ],
+  "model_calls": 0,
+  "spark_runs": 0
+}

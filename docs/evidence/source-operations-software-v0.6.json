@@ -1,0 +1,50 @@
+{
+  "recorded_at": "2026-10-06T15:05:30.486924+00:00",
+  "status": "passed",
+  "version": "0.6.0",
+  "scope": "Complete offline producer suite including durable provider polling, nullable calendar, scale generator and independent SQLite oracle; actual provider access reported separately, no new Spark or managed runtime claim",
+  "environment": {
+    "os": "Windows",
+    "python": "3.11.9",
+    "pytest": "9.1.1",
+    "pyarrow": "23.0.1",
+    "ruff": "0.16.10"
+  },
+  "full_suite": {
+    "passed": 331,
+    "duration_seconds": 63.48,
+    "exit_code": 0,
+    "pythonpath": "worktree/src"
+  },
+  "ruff": {
+    "scope": "src tests scripts",
+    "exit_code": 0
+  },
+  "published_inputs_unchanged": true,
+  "input_sha256": {
+    "src/arena_lakehouse/resources/openfootball_sources.json": "cee9dc5bfafece90e92a27c19b496b48851b999d274e9e9ce423dd3d666dd8dd",
+    "src/arena_lakehouse/resources/worldcup_2026.json": "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca",
+    "tests/fixtures/worldcup-2026-pinned.json": "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca"
+  },
+  "source_sha256": {
+    "src/arena_lakehouse/__init__.py": "3563251c4cb77d5806901fd3d8307796b31a001ccc871628300727167301431a",
+    "src/arena_lakehouse/calendar.py": "2a0e9aa5a3c730c99900f5864cb20993c388bf25b056a3c2667a22028888f453",
+    "src/arena_lakehouse/cli.py": "1210b619912f216262022388c91086283f03b49d2577f8529ea3f6cd7b968370",
+    "src/arena_lakehouse/connectors.py": "089c284e1793a0311a8d997a4e245dfe7ea02d86a3f095a19dbc2639b9bb143d",
+    "src/arena_lakehouse/engine.py": "ee12f80c80cddd7c58aa8226beb354296cfa913a0f49530a19751b7784c4aa0b",
+    "src/arena_lakehouse/incremental.py": "4a7e3d98e4d2dbb3210aad9d81abc884bd4cd19d5179323ec0d2311469d1400d",
+    "src/arena_lakehouse/live.py": "4f9b61441f272dc04898b520a9e20bbc3bd34b06e323cda4291517cec2a8fd66",
+    "src/arena_lakehouse/managed_contract.py": "ff337d5da2499bc8cb14328b68b372812248b13bbba53f3318a4f8cacae304f7",
+    "src/arena_lakehouse/openfootball.py": "18b625a5f9b5af9399171f932b3c88b36172cb735a2d2a5dd2268c7a82b814ef",
+    "src/arena_lakehouse/openfootball_research.py": "2b7dd6bb4e37e1f91c5099d943f43b01276fb361cd5321bdf16c87ad276befb3",
+    "src/arena_lakehouse/operations.py": "968d5f507777fcf96b123501f400ef65c245a9f7c1db8bf1f410115e7b7c7ca3",
+    "src/arena_lakehouse/prediction.py": "cb4f5919bd57a9ceafb0d1b369d73ef4f2b1ff2f5f12e498b1bfb1b5e3f8207c",
+    "src/arena_lakehouse/scale.py": "d2043868203a0bfdcff705871b4115ec2fddd08700548137d56a58c8d6ccda92",
+    "src/arena_lakehouse/scale_oracle.py": "34720709fc52004a203fb89b4b6d91b5096262ab7c36b9ff4002c98abfac6819",
+    "src/arena_lakehouse/schema.py": "0c0ace5a6d6f73fba45c0297fa4bc8364b2bc153fa18191528958d9498af9810",
+    "src/arena_lakehouse/snapshot.py": "a6a45a304442c9047e1055d95db83747356e71446a5b5e6fe0a39b52538fc740",
+    "src/arena_lakehouse/spark_backend.py": "ef6d7c97b1a936a651e3f10ac9d090cb146677d9d97c0445987570956fe806ac",
+    "src/arena_lakehouse/synthetic.py": "c8bda7cf118c044710a9e314b15a5429ddb3f0270ead184b761dbd41a00c47a7"
+  },
+  "scale_boundary": "10000 deterministic events generated; neither 10000-event Spark trial nor million-event Spark benchmark executed"
+}

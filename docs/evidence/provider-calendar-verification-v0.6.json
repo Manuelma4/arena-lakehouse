@@ -1,0 +1,53 @@
+{
+  "verified_at": "2026-10-06T14:28:50.357728+00:00",
+  "scope": "Republication of the exact 124-record input from the first failed calendar attempt; no new HTTP requests. Worker calendar selection is not integrated.",
+  "publisher_source_sha256": "2a0e9aa5a3c730c99900f5864cb20993c388bf25b056a3c2667a22028888f453",
+  "passed": true,
+  "source_records": 124,
+  "announcements": 124,
+  "canonical_links": 106,
+  "pending_announcements": 18,
+  "empty_series_name_normalized_to_null": 13,
+  "same_input_republication_preserves_all_bytes": true,
+  "elapsed_seconds": 0.4424767000018619,
+  "manifest": {
+    "schema_version": "arena-provider-calendar-1.0",
+    "provider": "pandascore",
+    "data_kind": "api",
+    "dataset_version": "e525f33234429cba",
+    "generated_at": "2026-10-06T14:28:49.963218Z",
+    "as_of": "2026-10-06T14:22:26.516720Z",
+    "source_scope": {
+      "kind": "match_phases",
+      "competition_codes": [],
+      "phases": [
+        "past",
+        "upcoming",
+        "running"
+      ],
+      "pages": 1
+    },
+    "counts": {
+      "source_records": 124,
+      "announcements": 124,
+      "duplicate_occurrences": 0,
+      "conflicted_announcements": 0,
+      "pending_announcements": 18,
+      "canonical_linked": 106,
+      "sources": 3
+    },
+    "files": {
+      "announcements.json": "85d3de0305f42c755d0dbe53abdd9b10d46f95336bb7af0472921e0439cfffbe",
+      "occurrences.json": "f3e8feca10a8be54a469d8f23a8460a328250c0fe4f7a4f52a922995368f4e5e",
+      "sources.json": "b9d293781cf11a9447ab63184fe29eb063c4933ea94188e04aeaf23aeda282ff",
+      "quality.json": "68782c2f38e59cdbb676fab07d1c269a4381788c62c3c88fc8df41300fc5e9fa"
+    },
+    "publication_note": "Private API calendar; independent of canonical snapshot version. No forecast eligibility or in-game telemetry."
+  },
+  "published_source_inputs_unchanged": true,
+  "input_sha256": {
+    "src/arena_lakehouse/resources/openfootball_sources.json": "cee9dc5bfafece90e92a27c19b496b48851b999d274e9e9ce423dd3d666dd8dd",
+    "src/arena_lakehouse/resources/worldcup_2026.json": "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca",
+    "tests/fixtures/worldcup-2026-pinned.json": "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca"
+  }
+}

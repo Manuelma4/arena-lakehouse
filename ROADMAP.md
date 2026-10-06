@@ -11,7 +11,7 @@ private lesson content has not been copied.
 | 02. Correctness reference and snapshot | Implemented | Idempotency, shuffled revisions, conflicts, quarantine, rollback, checksum contract |
 | 03. Spark/Delta streaming foundation | Implemented | AvailableNow, MERGE, CDF, checkpoint replay, correction, oracle parity |
 | 04. Prediction research baseline | Implemented on synthetic fixtures | Chronological split, availability cutoff, leakage tests, baseline metrics |
-| 05. Real API onboarding | Requires user's free tokens | First successful provider calls, field coverage report, reproducible private archive |
+| 05. Real API onboarding | Verified locally with free accounts | Six football competitions, three VALORANT phases, private archives, three repeated source polls and exact freshness scope |
 | 05a. No-token open-data acquisition | Verified OpenFootball staging and research publication | Ten CC0 editions; immutable archives, replay, explicit offset precision, source authenticity and independent consumer contract |
 | 06. Incremental execution path | Verified locally | Affected-match/history and team maintenance; cancellation tombstones; full oracle; bounded backfill |
 | 07. Operational reliability | Local stage runner verified; SLOs pending | Persistent attempts, bounded transient retries, restart after Silver commit, publication gate |
@@ -56,7 +56,7 @@ after Silver/recovery, SCD2 parity and gated snapshot publication. This is a loc
 single-writer demonstration with full independent verification, not a production
 scale or distributed reliability certification.
 
-Next work: authenticated provider onboarding, freshness SLO/alerts, roster availability,
+Next work: published-source freshness SLO/alerts, nullable event-directory integration, roster availability,
 controlled larger benchmarks, explicit retention/deletion policy, managed
 workspace acceptance and the full portfolio release checklist.
 
@@ -108,3 +108,27 @@ resolved; a source timestamp alone is insufficient to enable retrospective forec
 
 Optional deeper extension after this foundation: PostgreSQL + genuine source CDC.
 Match API polling and downstream Delta CDF are not transaction-log CDC.
+
+## Authenticated source operations - 0.6.0
+
+Both free provider accounts passed actual authenticated collection. The measured
+football scope contains six competition codes and 2,132 canonical matches;
+VALORANT past/upcoming/running pages contain 124 source announcements, of which
+106 satisfy the canonical match contract. Three repeated cycles made 27 successful
+HTTP requests and preserved canonical versions when business fields did not change.
+
+The durable polling worker records request reservations, source attempts and
+sanitized errors before publishing an immutable successful version. Restart,
+quota, transient failure and retained-publication behavior have offline tests.
+The independent nullable calendar preserves all 124 announcements and their
+source occurrences, including unresolved opponents and kickoff times. It does
+not fabricate match records, historical availability or forecast eligibility.
+
+The scale harness adds deterministic larger workloads and an independent bounded
+SQLite oracle for Spark comparisons. A 10,000-event workload was generated; its
+Spark execution and the million-event benchmark remain unmeasured. The existing
+actual Spark/Delta evidence retains its original configuration and scope.
+
+Next acceptance work includes the nullable calendar's worker/version selection,
+event-directory presentation, actual authenticated-source Spark replay, controlled
+scale trials, retention/deletion behavior and managed Databricks verification.
