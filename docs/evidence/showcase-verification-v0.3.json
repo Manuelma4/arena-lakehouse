@@ -1,0 +1,48 @@
+{
+  "recorded_at": "2026-10-06T10:29:37.292056+00:00",
+  "status": "passed",
+  "version": "0.3.0",
+  "pytest": {
+    "passed": 37,
+    "duration_seconds": 6.86
+  },
+  "ruff": "passed",
+  "dataset_version": "ed9242317b501386",
+  "source": "Deterministic reference export, seed 42, showcase mode",
+  "matches": 600,
+  "competitions": [
+    {
+      "sport": "football",
+      "name": "Coastal Cup",
+      "matches": 100
+    },
+    {
+      "sport": "football",
+      "name": "Continental Series",
+      "matches": 100
+    },
+    {
+      "sport": "football",
+      "name": "Harbor League",
+      "matches": 100
+    },
+    {
+      "sport": "valorant",
+      "name": "Atlantic Circuit",
+      "matches": 100
+    },
+    {
+      "sport": "valorant",
+      "name": "Nightfall Open",
+      "matches": 100
+    },
+    {
+      "sport": "valorant",
+      "name": "Summit Invitational",
+      "matches": 100
+    }
+  ],
+  "stored_forecasts": 8,
+  "original_forecast_payloads_unchanged": true,
+  "boundary": "Competition metadata extension; previous Linux Spark measurements remain separately recorded"
+}

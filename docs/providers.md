@@ -15,6 +15,14 @@ secret. Default `PL`; `FL1` can be selected where account coverage permits it.
 
 ## Professional VALORANT
 
+Riot's [documented public VALORANT APIs](https://developer.riotgames.com/docs/valorant)
+expose game content, match IDs/player match lists, ranked leaderboards and platform
+status. They do not document a complete professional tournament calendar. The
+[official VCT data partnership](https://grid.gg/riot-games-and-grid-announce-exclusive-global-esports-data-partnership/)
+uses GRID. Its [current plans](https://grid.gg/plans/) describe commercial access
+scoped by agreement; historical Open Access announcements do not prove that a
+new account can obtain all VCT data free today.
+
 [PandaScore plan reference](https://developers.pandascore.co/docs/plan-reference)
 lists past/upcoming/running VALORANT match endpoints for all plans. Free fixtures
 are distinct from paid historical team/player stats and detailed rounds.
@@ -34,6 +42,33 @@ current mapping: `completed_at` is the collection-time upper bound. PandaScore's
 Repeated polling ignores availability/completion timestamps when deciding whether
 business content changed. A correction consisting only of completion time is
 therefore not currently versioned; actual field coverage needs provider verification.
+
+## Expanded football coverage
+
+The [free football-data coverage](https://www.football-data.org/coverage) includes
+Premier League, La Liga, Bundesliga, Serie A and Ligue 1, plus the World Cup,
+European Championship, Champions League and Brazilian Serie A. Its
+[free pricing](https://www.football-data.org/pricing) allows ten calls per minute
+with delayed scores/schedules. Current and historical availability must be
+verified per account before a data collection or backtest is declared complete.
+
+[API-Football](https://www.api-football.com/coverage) is a possible complementary
+provider for Colombia, Argentina, Mexico, Chile and international tournaments
+such as Copa America. Its [free plan](https://www.api-football.com/pricing/)
+includes 100 requests per day and all competitions/endpoints, but limits the
+available seasons. The adapter is not implemented or account-verified yet.
+
+The proposed collection policy is one explicit competition/season catalogue,
+with provider, stable source IDs, account-access status, request budget, score
+delay and field coverage. A scheduled poll only requests supported seasons and
+changed windows. Provider-scoped identities remain separate until a reviewed
+cross-provider mapping exists. Unsupported competitions remain visible as
+coverage gaps instead of empty datasets labelled as complete.
+
+PandaScore's tournament and league directories can enrich the existing match
+adapter, subject to actual account coverage. Fixtures/results are enough for
+event research, but do not establish round/player telemetry or exhaustive
+coverage of every community tournament listed by VLR.
 
 ## Streaming and redistribution
 

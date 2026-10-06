@@ -19,6 +19,7 @@ def main():
     demo = sub.add_parser("demo")
     demo.add_argument("--matches", type=int, default=600)
     demo.add_argument("--seed", type=int, default=42)
+    demo.add_argument("--showcase", action="store_true", help="Three original competitions per sport")
     replay = sub.add_parser("replay")
     replay.add_argument("file", type=Path)
     backfill = sub.add_parser("backfill")
@@ -46,16 +47,18 @@ def main():
     if args.command == "demo":
         config_path = args.workspace / "demo-config.json"
         config = dict(matches=args.matches, seed=args.seed)
+        if args.showcase:
+            config["showcase"] = True
         if config_path.exists() and json.loads(config_path.read_text(encoding="utf-8")) != config:
             parser.error("This demo workspace has another seed/match configuration; use a fresh --workspace")
         if not config_path.exists() and pipeline.events():
-            candidate = generate(args.matches, args.seed)
+            candidate = generate(args.matches, args.seed, showcase=args.showcase)
             from .operations import validated_new_events
             try:
                 validated_new_events(pipeline.events(), [r for r in candidate if r.get("event_id", "").startswith("synthetic:")])
             except ValueError:
                 parser.error("Existing observations conflict with this demo configuration; use a fresh --workspace")
-        result = pipeline.ingest(generate(args.matches, args.seed))
+        result = pipeline.ingest(generate(args.matches, args.seed, showcase=args.showcase))
         config_path.write_text(json.dumps(config), encoding="utf-8")
         snapshot = export_snapshot(pipeline, args.workspace / "snapshots")
         print(json.dumps(dict(**result, snapshot_dir=str(snapshot.resolve())), indent=2))

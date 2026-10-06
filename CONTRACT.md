@@ -1,6 +1,6 @@
 # Arena snapshot contract 2.0
 
-This unreleased sports contract replaces the initial commerce-domain sketch.
+This versioned sports contract defines the producer/consumer interface.
 Snapshots are immutable directories activated only after validation. No consumer
 needs the producer package installed.
 

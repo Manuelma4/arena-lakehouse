@@ -17,7 +17,13 @@ measurements, not real-world forecasts.
 learning notebook. Source notebooks deliberately contain no prefilled outputs.
 
 `software-verification.json` records the original 19-test local run and code checks.
-The GitHub workflows are configuration only until they run on a remote repository.
+Public GitHub Actions now provides remote software and separately dispatched
+Linux Spark verification. Original reports retain their measured configuration.
+
+`showcase-verification-v0.3.json` records the 37-test local suite, the new
+six-competition export and unchanged forecast payloads. This milestone adds
+competition coverage; the Spark reports below remain their original measured
+runs rather than being relabelled as new performance experiments.
 
 ## Incremental operations milestone
 

@@ -1,6 +1,6 @@
 # Verified checkpoint and next session
 
-Recorded: 2026-10-06. Milestone: incremental operations 0.2.0, before the public v1 release.
+Recorded: 2026-10-06. Milestone: sports showcase 0.3.0, before the public v1 release.
 
 ## What works
 
@@ -12,7 +12,9 @@ Recorded: 2026-10-06. Milestone: incremental operations 0.2.0, before the public
   restart, one late correction and team-aggregate parity with the reference.
 - Chronological prediction baselines with point-in-time feature and label cutoffs;
   frozen snapshot export and the connected independent copilot fixture.
-- 34 passing offline tests, Ruff checks and executed learning notebook cells.
+- 37 passing offline tests, Ruff checks and executed learning notebook cells.
+- Six original competitions across both sports; unchanged source identities,
+  results and forecasts. The previous immutable fixture remains available.
 - Persistent Spark stages, affected-match/history and team maintenance, soft
   deletion, bounded availability backfills and recovery after Silver commit.
 - Actual 163.19-second incremental scenario with full oracle parity; measured
@@ -32,7 +34,7 @@ C:\Works\.arena-venv\Scripts\python.exe -m pytest -q
 ```
 
 The shared development virtual environment is outside both repositories. Follow
-README.md to create an independent environment on another computer. Docker image
+`docs/development.md` to create an independent environment on another computer. Docker image
 `arena-lakehouse:0.1.0` exists locally; rebuild it after source changes.
 
 ## Completed incremental Spark state

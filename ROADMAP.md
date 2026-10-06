@@ -27,11 +27,24 @@ private lesson content has not been copied.
 | 2963 — Ingestion | REST landing, schema drift, incremental files, Auto Loader | REST/reference implemented; managed ingestion later |
 | 1365 — Workflows/Jobs | Dependencies, retry/recovery and scheduling | Persistent local stage recovery tested; configurable manual Job pending workspace |
 | 2971 — Declarative pipelines | Bronze/Silver/Gold + expectations | Spark layers verified; managed SDP adapter pending workspace |
-| 3640 — DevOps essentials | pytest, code checks, GitHub Actions | Local tests and CI config implemented; remote CI unverified |
+| 3640 — DevOps essentials | pytest, code checks, GitHub Actions | Local and public GitHub Actions software checks verified |
 | 2972 — Advanced streaming | Checkpoints, event corrections, CDC and temporal state | File replay/CDF, impacted-state corrections and bounded backfill verified locally |
 | 2967 — Optimization | Plans, file layout, compaction, measured throughput | Small 16 vs 2 file experiment measured; scale/controlled trials remain pending |
 | 3767 — Privacy | Token boundaries, retention and access policies | Secrets excluded; full retention/access-policy evidence later |
 | 3489 — Bundles | Repeatable Databricks resources and deployment targets | Configurable bundle passed official offline schema; workspace validation pending |
+
+## Sports showcase milestone — 0.3.0
+
+The original seeded records can be exported across six fictional competitions,
+three per sport. Match identities, results, timestamps, features and forecast
+probabilities remain unchanged. A fresh workspace prevents a legacy observation
+identity from silently acquiring different competition metadata. The consumer
+uses this export for observed competition tables and historical match research;
+neither project presents those tables as official standings.
+
+The expanded reference suite has 37 passing tests. Remote v0.2 software and
+Linux Spark workflows are recorded in the public Actions history. Showcase
+metadata does not replace the separately measured incremental Spark evidence.
 
 ## Verified incremental correctness
 
@@ -45,6 +58,11 @@ scale or distributed reliability certification.
 Next work: real provider onboarding, freshness SLO/alerts, roster availability,
 controlled larger benchmarks, explicit retention/deletion policy, managed
 workspace acceptance and the full portfolio release checklist.
+
+The [open-data acquisition design](docs/open-data-acquisition.md) adds a no-token
+football route and a concrete provider/competition/season coverage catalogue.
+Date-only kickoff precision, reviewed cross-provider identities and collection-time
+availability are acceptance requirements before activating those datasets.
 
 Optional deeper extension after this foundation: PostgreSQL + genuine source CDC.
 Match API polling and downstream Delta CDF are not transaction-log CDC.

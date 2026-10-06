@@ -1,136 +1,82 @@
 # Arena Lakehouse
 
-[![Software tests](https://github.com/Manuelma4/arena-lakehouse/actions/workflows/test.yml/badge.svg)](https://github.com/Manuelma4/arena-lakehouse/actions/workflows/test.yml)
+**A data platform for football and competitive VALORANT match records.**
 
-[Explore the live companion demo](https://manuelma4.github.io/lakehouse-copilot/) ? [Course roadmap](ROADMAP.md) ? [Measured evidence](docs/evidence/README.md)
+[Research application](https://manuelma4.github.io/lakehouse-copilot/) ·
+[Arena Copilot](https://github.com/Manuelma4/lakehouse-copilot) ·
+[Architecture and evidence](docs/evidence/README.md)
 
-**Football + professional VALORANT, from API observations to reproducible team intelligence.**
+Match data changes after it arrives. Results are corrected, fixtures move, and
+the same observation can be delivered more than once. Arena Lakehouse preserves
+those observations and turns them into consistent match history, team statistics
+and reproducible model inputs.
 
-A Data Engineering portfolio lab with two deliberately separate execution paths:
-a fast Python/SQLite/Arrow reference pipeline and a real Spark/Delta replay backend.
-Its companion [Arena Copilot](https://github.com/Manuelma4/lakehouse-copilot) reads immutable
-snapshots, explains the evidence, and displays independently computed model probabilities.
+The repository contains the data layer of Arena. Its companion application reads
+published snapshots rather than tables that may be in the middle of an update.
 
-**Current milestone: 0.2.0 — incremental operations.** This is a multi-session learning
-project. See [ROADMAP.md](ROADMAP.md) for completed capabilities, acceptance gates
-and the remaining Databricks course coverage. A green software test is not a
-claim of real-world predictive accuracy or production readiness.
-
-## Try the offline demo
-
-Python 3.11, no account, API token or Java needed for the reference demo:
-
-```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-.\.venv\Scripts\arena-lakehouse.exe demo --matches 600 --seed 42
-.\.venv\Scripts\python.exe -m pytest -q
-```
-
-On Linux/macOS, use `python3.11`, `.venv/bin/python` and `.venv/bin/arena-lakehouse`.
-The demo generates original fictional teams for both sports, shuffled source
-revisions, duplicate deliveries and malformed results. No real team performance
-is represented. Keep synthetic and API workspaces separate.
-
-## Architecture
+## Data flow
 
 ```mermaid
 flowchart LR
-    A[Football API / PandaScore / synthetic replay] --> B[Append-only landing observations]
-    B --> C[Validation + quarantine + canonical revisions]
-    C --> D[Current matches + observation history]
-    D --> E[Team aggregates]
-    C --> F[Point-in-time features]
-    F --> G[Chronological baseline evaluation]
-    G --> H[Upcoming match probabilities]
-    E --> I[Immutable checksum snapshot]
-    H --> I
-    I --> J[Arena Copilot]
+    A[Provider observations] --> B[Bronze: append-only history]
+    B --> C[Silver: match state and revisions]
+    C --> D[Gold: match and team results]
+    B --> E[Point-in-time model features]
+    D --> F[Versioned snapshot]
+    E --> F
+    F --> G[Arena Copilot]
 ```
 
-The reference backend is an independent correctness oracle, not a substitute
-marketed as Spark. The Spark backend actually runs file Structured Streaming,
-`AvailableNow`, Delta MERGE, Change Data Feed, checkpoint restart, a late result
-correction, revision history and Gold aggregation. Its output is compared against
-the reference calculation. The persistent incremental runner now maintains only
-affected match/history and team keys, supports bounded availability-time backfills,
-soft-deletes empty aggregates, and resumes after a failure between layer commits.
-Full reconstruction remains an independent correctness check. See
-[incremental operations](docs/incremental-operations.md) for runnable commands.
+The execution layer uses Spark 4.1 and Delta Lake. File streaming, persistent
+checkpoints, MERGE and Change Data Feed handle incremental observations. Late
+changes update the affected matches and team aggregates. A failed stage is
+recorded and resumed before a new snapshot can be published.
 
-## Run Spark/Delta
+An independent Python reference calculation checks the Spark output. That
+comparison covers current state, revision intervals and team totals, including
+score corrections, cancelled results and renamed teams.
 
-Requires Docker Desktop with Linux containers. The image contains Python 3.11,
-Java 17, Spark 4.1.3 and the **Spark 4.1-specific Delta 4.4.0 JVM artifact**.
+## Design decisions
 
-```powershell
-docker build -t arena-lakehouse:0.2.0 .
-$snapshot = Get-Content .\data\demo\snapshots\LATEST
-$data = (Resolve-Path .\data).Path
-docker run --rm --memory 6g --cpus 2 --mount "type=bind,source=$data,target=/data" arena-lakehouse:0.2.0 --snapshot "/data/demo/snapshots/$snapshot" --output /data/spark-smoke-new
-```
+| Concern | Approach |
+|---|---|
+| Identity | Provider-scoped match IDs and stable team IDs |
+| Time | Separate kickoff, completion and observation timestamps in UTC |
+| Replay | Duplicate observations leave canonical results unchanged |
+| Recovery | Persisted stage attempts; incomplete runs block publication |
+| Quality | Schema and result validation with preserved quarantine records |
+| Forecasts | Pre-match Elo and form; chronological train/validation/test windows |
+| Delivery | Immutable Parquet/JSON snapshot with contract version and checksums |
 
-Use a fresh output directory for each smoke so prior evidence is preserved.
-Normal checkpoint restart is tested inside the run. [Measured evidence](docs/evidence/README.md)
-records the environment and actual results.
+Football scores represent goals. VALORANT scores represent maps won in a series.
+The prediction baseline produces football win/draw/loss probabilities and
+VALORANT series-win probabilities. Its features use results completed and
+observed before the relevant cutoff.
 
-The new `arena-spark` runner also provides `scenario`, `replay`, `backfill`,
-`resume`, `export` and `benchmark`. Run it in the same container with
-`--entrypoint arena-spark`. The measured scenario includes a late score correction,
-cancelled sole result, postponed kickoff, team rename and a failed Silver/Gold
-handoff. A separate file-layout experiment records identical results, actual
-plans, bytes and query timings. Its small fixture is not a scale claim.
+## Validation
 
-## Optional Databricks target
+The [incremental scenario](docs/evidence/incremental-report.json) verifies replay,
+backfill, late corrections and recovery against the independent reference. It
+also checks that unaffected team rows retain their values and audit timestamps.
+The [layout experiment](docs/evidence/layout-benchmark-report.json) records file
+counts, bytes, executed plans and query timings with identical results. Its small
+fixture and caching effects are documented with the measurements.
 
-The [managed profile](docs/databricks-profile.md) includes a configurable
-serverless SDP/Auto Loader/AUTO CDC graph and a two-task Lakeflow Job bundle.
-It reuses the verified local Spark team aggregation and has no schedule.
-Official CLI 1.19.0 JSON Schema validation passed locally. Workspace deployment,
-permissions and managed runtime behavior remain **pending verification**.
+GitHub Actions runs the software suite and an independently triggered Linux
+Spark workflow. The [Databricks profile](docs/databricks-profile.md) provides
+Auto Loader, Spark Declarative Pipelines, AUTO CDC and a Lakeflow Job configuration;
+managed workspace execution is still pending verification.
 
-## Optional free API ingestion
+## Project scope
 
-Copy `.env.example` to `.env`, supply your own free tokens, and never commit it.
+The public showcase contains 600 original synthetic matches, 16 teams and six
+fictional competitions. Optional adapters support football-data.org and PandaScore
+observations. Provider data stays separate from the public fixture.
 
-```powershell
-.\.venv\Scripts\arena-lakehouse.exe --workspace data/real collect --provider football-data --competition PL
-.\.venv\Scripts\arena-lakehouse.exe --workspace data/real collect --provider pandascore --pages 1
-.\.venv\Scripts\arena-lakehouse.exe --workspace data/real poll --provider football-data --cycles 3 --interval 300
-```
+Synthetic results validate the engineering workflow, not predictive accuracy on
+real teams. The model remains uncalibrated. Course correspondence and remaining
+engineering work are recorded in the [roadmap](ROADMAP.md); the snapshot interface
+is defined in [CONTRACT.md](CONTRACT.md).
 
-Football defaults to Premier League (`PL`); `FL1` selects Ligue 1 where your free
-account permits it. PandaScore requests VALORANT past/upcoming/running match endpoints,
-not paid rounds or player statistics. Collection changes become replayable match
-events. The cursor advances only after the canonical transaction succeeds.
-Unnormalized JSON bodies are preserved in private `provider_raw` archives before
-validation, and network failures retry within a fixed request budget.
-
-Free access is polling, not a guaranteed real-time push feed. Credentials and
-account coverage have not been verified against a user's live account. See
-[provider notes](docs/providers.md) for official references and access boundaries.
-Downloaded historical results become available at collection time; we do not
-invent historical observation timestamps to manufacture a backtest.
-
-## Model baseline
-
-Two separate logistic models: football **A/draw/B** and VALORANT **A/B series winner**.
-Inputs: pre-match Elo difference, last-five form difference and capped history
-counts. Results must have completed and been observed before the cutoff. Training,
-validation and test windows are chronological; equal kickoff times stay together.
-The report includes frequency-baseline comparisons, accuracy, log loss and Brier
-score. Probabilities are uncalibrated. Synthetic performance validates the workflow,
-not predictive skill on real teams. Missing eligible history produces an explicit
-unavailable status rather than a fabricated forecast.
-
-## Development
-
-`demo`, `replay`, bounded `backfill`, `export`, `collect` and `poll` are implemented
-in the reference CLI; `benchmark` invokes actual Linux Spark. Persistent stages
-and recovery use `arena-spark`. Managed workspace acceptance, roster SCD2,
-calibration and larger controlled benchmarks remain roadmap work.
-The snapshot format is documented in [CONTRACT.md](CONTRACT.md).
-See [NEXT_SESSION.md](NEXT_SESSION.md) for the verified checkpoint and next tasks.
-
-MIT licenses original code and fixtures. Third-party data and model weights retain
-their own terms. No API data or licensed logos are committed.
+Original code and fictional data are licensed under MIT. Third-party data retains
+its provider's terms.

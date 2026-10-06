@@ -12,8 +12,13 @@ TEAMS = {
                  "Echo Division", "Nova Agents", "Prism Collective", "Zero Latitude"],
 }
 
+SHOWCASE_COMPETITIONS = {
+    "football": ("Harbor League", "Coastal Cup", "Continental Series"),
+    "valorant": ("Atlantic Circuit", "Summit Invitational", "Nightfall Open"),
+}
 
-def generate(matches: int = 600, seed: int = 42, faults: bool = True) -> list[dict]:
+
+def generate(matches: int = 600, seed: int = 42, faults: bool = True, showcase: bool = False) -> list[dict]:
     if not 20 <= matches <= 500_000:
         raise ValueError("matches must be between 20 and 500000")
     rng = random.Random(seed)
@@ -24,8 +29,15 @@ def generate(matches: int = 600, seed: int = 42, faults: bool = True) -> list[di
         a, b = rng.sample(range(8), 2)
         start = origin + timedelta(hours=index * 4)
         ident = f"synthetic:{sport}:{index:06d}"
+        competition = "Demo Premier Division" if sport == "football" else "Demo VCT Circuit"
+        if showcase:
+            # Three chronological original competitions per sport; assigning
+            # metadata consumes no random values and preserves the result oracle.
+            sport_count = (matches + (1 if sport == "football" else 0)) // 2
+            phase_size = (sport_count + 2) // 3
+            competition = SHOWCASE_COMPETITIONS[sport][min(2, (index // 2) // phase_size)]
         base = dict(match_id=ident, provider="synthetic", sport=sport,
-                    competition="Demo Premier Division" if sport == "football" else "Demo VCT Circuit",
+                    competition=competition,
                     team_a_id=f"{sport}:{a}", team_a=TEAMS[sport][a],
                     team_b_id=f"{sport}:{b}", team_b=TEAMS[sport][b],
                     start_time=start, best_of=1 if sport == "football" else 3)
