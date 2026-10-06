@@ -6,8 +6,9 @@ Java 17, Spark 4.1.3 and Delta 4.4.0 (Spark 4.1 JVM artifact).
 `openfootball-acquisition-v0.4.json` records an actual nine-source no-token CC0
 download: 2,727 current/history records, zero quarantine, 1,088 source results
 and 1,639 unknowns. Exact archive replay produced zero new revisions and retained
-current/history JSON and Parquet checksums. The 113-test full offline suite and
-Ruff passed. The research publication retains null UTC kickoff/completion, actual
+current/history JSON and Parquet checksums. The initial 113-test offline suite
+and Ruff passed. Subsequent poll/provenance hardening passes 144 tests;
+`openfootball-software-verification-v0.4.json` records that final check. The research publication retains null UTC kickoff/completion, actual
 collection availability and disabled forecasting; it is a distinct SQLite/Gold
 path, not relabelled Spark throughput or official standings evidence.
 

@@ -1,0 +1,25 @@
+{
+  "recorded_at": "2026-10-06T11:50:13.920936+00:00",
+  "status": "passed",
+  "version": "0.4.0",
+  "full_suite": {
+    "passed": 144,
+    "duration_seconds": 17.13
+  },
+  "ruff": "passed",
+  "scope": "Final offline suite after poll provenance and malformed-type regressions; no new Spark throughput claim",
+  "research_dataset_version": "5f99ba32f796fb23",
+  "matches": 2727,
+  "source_editions": 9,
+  "regressions": [
+    "strict source/status types",
+    "known prior collected archive for 304",
+    "per-source clock order by poll ID",
+    "bounded and unique quarantine evidence",
+    "actual nine-source replay preserves payload and fixed-clock manifest"
+  ],
+  "source_sha256": {
+    "src/arena_lakehouse/openfootball_research.py": "197cfe0f91f02ebf74b2c0c72243398a0e80ddd86377a43aeb8ff6b95c4bad75",
+    "tests/test_openfootball_research.py": "5bede746deb30f2a55a6b459976b6040733320f40891ce8617ff6fa0b15d27e1"
+  }
+}

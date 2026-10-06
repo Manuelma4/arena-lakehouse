@@ -2,7 +2,7 @@
 
 import hashlib
 import json
-from dataclasses import replace
+from dataclasses import asdict, replace
 from datetime import datetime, timedelta, timezone
 from importlib.resources import files
 from pathlib import Path
@@ -292,3 +292,132 @@ def test_quarantine_rows_cannot_exceed_measured_poll_counts(staging):
     _rehash(staging)
     with pytest.raises(ResearchValidationError, match="measured source poll count"):
         validate_staging(staging)
+
+
+@pytest.mark.parametrize("field,value,expected", [
+    ("source_id", [], "source"), ("source_id", None, "source"),
+    ("row_index", True, "index"), ("row_index", 1.0, "index"),
+    ("row_index", -2, "index"), ("row_index", 10_000, "index"),
+    ("reason", [], "reason"), ("reason", "", "reason"),
+    ("sha256", [], "checksum"), ("sha256", "f" * 63, "checksum"),
+    ("observed_at", "2026-10-06T12:02:00", "aware UTC"),
+    ("raw_json", {}, "raw JSON"), ("raw_json", '{"duplicate":1,"duplicate":2}', "JSON"),
+    ("raw_json", '{"value":NaN}', "JSON"),
+])
+def test_quarantine_identity_and_types_are_strict_after_resealing(staging, field, value, expected):
+    problems = _read(staging / "quarantine.json")
+    problems[0][field] = value
+    _write(staging / "quarantine.json", problems)
+    _rehash(staging)
+    with pytest.raises(ResearchValidationError, match=expected):
+        validate_staging(staging)
+
+
+def test_quarantine_duplicate_identity_is_rejected_even_with_sufficient_poll_count(staging):
+    problems = _read(staging / "quarantine.json")
+    problems.append(dict(problems[0]))
+    _write(staging / "quarantine.json", problems)
+    polls = _read(staging / "polls.json")
+    polls[-1]["quarantined"] = 2
+    _write(staging / "polls.json", polls)
+    manifest = _read(staging / "manifest.json")
+    manifest["quarantine_rows"] = 2
+    _write(staging / "manifest.json", manifest)
+    _rehash(staging)
+    with pytest.raises(ResearchValidationError, match="Duplicate quarantine evidence"):
+        validate_staging(staging)
+
+
+@pytest.mark.parametrize("field,value,expected", [
+    ("source_id", [], "source"), ("source_id", None, "source"),
+    ("status", [], "status"), ("status", None, "status"),
+    ("changed", True, "changed"), ("quarantined", 1.0, "quarantined"),
+    ("poll_id", True, "poll IDs"),
+])
+def test_poll_types_reject_malformed_resealed_values(staging, field, value, expected):
+    polls = _read(staging / "polls.json")
+    polls[-1][field] = value
+    _write(staging / "polls.json", polls)
+    _rehash(staging)
+    with pytest.raises(ResearchValidationError, match=expected):
+        validate_staging(staging)
+
+
+def _append_poll(staging, **changes):
+    polls = _read(staging / "polls.json")
+    extra = dict(polls[-1], poll_id=max(p["poll_id"] for p in polls) + 1,
+                 observed_at="2026-10-06T12:03:00.000000Z", changed=0, quarantined=0)
+    extra.update(changes)
+    polls.append(extra)
+    _write(staging / "polls.json", polls)
+    _rehash(staging)
+
+
+def test_304_requires_previously_collected_checksum(staging):
+    _append_poll(staging, status="not_modified", sha256="f" * 64)
+    with pytest.raises(ResearchValidationError, match="previously collected body checksum"):
+        validate_staging(staging)
+
+
+def test_304_requires_same_source_archive_not_another_sources_checksum(staging):
+    sources = _read(staging / "sources.json")
+    catalogue = load_sources(Path(__file__).parents[1] / "config/openfootball_sources.json")
+    other = next(source for source in catalogue.values() if source.source_id != SOURCE.source_id)
+    sources.append(asdict(other))
+    _write(staging / "sources.json", sources)
+    manifest = _read(staging / "manifest.json")
+    manifest["sources"] = 2
+    _write(staging / "manifest.json", manifest)
+    _append_poll(staging, source_id=other.source_id, status="not_modified")
+    with pytest.raises(ResearchValidationError, match="previously collected body checksum"):
+        validate_staging(staging)
+
+
+def test_304_archive_must_precede_response_in_poll_id_order(staging):
+    polls = _read(staging / "polls.json")
+    response = dict(polls[-1], poll_id=1, status="not_modified", changed=0, quarantined=0,
+                    observed_at="2026-10-06T11:59:00.000000Z")
+    for poll in polls:
+        poll["poll_id"] += 1
+    # JSON array order is not the collection order: poll IDs determine availability.
+    polls.append(response)
+    _write(staging / "polls.json", polls)
+    _rehash(staging)
+    with pytest.raises(ResearchValidationError, match="previously collected body checksum"):
+        validate_staging(staging)
+
+
+@pytest.mark.parametrize("status", ["collected", "not_modified"])
+def test_poll_clock_cannot_move_backwards_per_source(staging, status):
+    _append_poll(staging, status=status, observed_at="2026-10-06T12:01:00.000000Z")
+    with pytest.raises(ResearchValidationError, match="availability moves backwards"):
+        validate_staging(staging)
+
+
+def test_valid_304_advances_as_of_without_revising_matches(staging):
+    previous = validate_staging(staging)
+    _append_poll(staging, status="not_modified")
+    current = validate_staging(staging)
+    assert current.as_of == "2026-10-06T12:03:00.000000Z"
+    assert current.matches == previous.matches and current.history == previous.history
+    assert current.quarantine == previous.quarantine
+
+
+@pytest.mark.parametrize("field", ["changed", "quarantined"])
+def test_304_cannot_claim_new_changes_or_rejections(staging, field):
+    _append_poll(staging, status="not_modified", **{field: 1})
+    with pytest.raises(ResearchValidationError, match="304 audit must not fabricate"):
+        validate_staging(staging)
+
+
+def test_repolling_rejected_body_preserves_single_quarantine_evidence(tmp_path):
+    collector = OpenFootballCollector(tmp_path / "runtime")
+    body = _body(MATCH, dict(MATCH, round=None))
+    first = collector.ingest_bytes(SOURCE, body, observed_at=NOW)
+    replay = collector.ingest_bytes(SOURCE, body, observed_at=NOW + timedelta(minutes=1))
+    stage = tmp_path / "staging"
+    collector.export(stage)
+    data = validate_staging(stage)
+    assert first.quarantined == replay.quarantined == 1
+    assert len(data.quarantine) == len(data.matches) == len(data.history) == 1
+    assert sum(p["quarantined"] for p in data.polls) == 2

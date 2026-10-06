@@ -244,9 +244,12 @@ def validate_staging(staging: Path) -> ValidatedStaging:
                  {"poll_id", "source_id", "observed_at", "status", "sha256", "changed", "quarantined"},
                  "Invalid poll row fields")
         _integer(poll["poll_id"], "poll_id", 1)
-        _require(poll["poll_id"] not in poll_ids and poll["source_id"] in sources, "Duplicate poll or unknown source")
+        _require(isinstance(poll["source_id"], str) and poll["source_id"] in sources,
+                 "Invalid poll source")
+        _require(poll["poll_id"] not in poll_ids, "Duplicate poll ID")
         poll_ids.add(poll["poll_id"])
-        _require(poll["status"] in {"collected", "not_modified"}, "Invalid successful poll status")
+        _require(isinstance(poll["status"], str) and poll["status"] in {"collected", "not_modified"},
+                 "Invalid successful poll status")
         _require(isinstance(poll["sha256"], str) and re.fullmatch(r"[0-9a-f]{64}", poll["sha256"]) is not None,
                  "Invalid poll source checksum")
         instant = _timestamp(poll["observed_at"], "poll observation")
@@ -260,7 +263,8 @@ def validate_staging(staging: Path) -> ValidatedStaging:
         archive_key = (poll["source_id"], poll["sha256"])
         _require(poll["status"] != "not_modified" or archive_key in known_archives,
                  "304 poll lacks a previously collected body checksum")
-        known_archives.add(archive_key)
+        if poll["status"] == "collected":
+            known_archives.add(archive_key)
         if poll["quarantined"]:
             quarantine_polls.add((poll["source_id"], poll["observed_at"], poll["sha256"]))
             quarantine_counts[(poll["source_id"], poll["observed_at"], poll["sha256"])] += poll["quarantined"]
@@ -298,7 +302,8 @@ def validate_staging(staging: Path) -> ValidatedStaging:
         _require(isinstance(problem, dict) and set(problem) ==
                  {"source_id", "sha256", "row_index", "reason", "observed_at", "raw_json"},
                  "Invalid quarantine row fields")
-        _require(problem["source_id"] in sources, "Quarantine references unknown source")
+        _require(isinstance(problem["source_id"], str) and problem["source_id"] in sources,
+                 "Quarantine references invalid/unknown source")
         _integer(problem["row_index"], "quarantine index", -1, 9999)
         _require(isinstance(problem["reason"], str) and 0 < len(problem["reason"]) <= 2000,
                  "Invalid quarantine reason")

@@ -12,7 +12,7 @@ Recorded: 2026-10-06. Milestone: free OpenFootball research 0.4.0, before the pu
   restart, one late correction and team-aggregate parity with the reference.
 - Chronological prediction baselines with point-in-time feature and label cutoffs;
   frozen snapshot export and the connected independent copilot fixture.
-- 113 passing offline tests, Ruff checks and executed learning notebook cells.
+- 144 passing offline tests, Ruff checks and executed learning notebook cells.
 - No-token CC0 OpenFootball acquisition, fixed packaged source catalogue, raw
   archives, conditional polling, bounded retries, SQLite staging and immutable
   research Gold export. Nine editions contain 2,727 current/history rows;
