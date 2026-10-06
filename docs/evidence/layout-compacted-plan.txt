@@ -1,0 +1,7 @@
+AdaptiveSparkPlan isFinalPlan=false
++- HashAggregate(keys=[sport#2209], functions=[count(1), sum(score_a#2207L), sum(score_b#2208L)], output=[sport#2209, matches#2217L, score_a#2218L, score_b#2219L])
+   +- Exchange hashpartitioning(sport#2209, 2), ENSURE_REQUIREMENTS, [plan_id=946]
+      +- HashAggregate(keys=[sport#2209], functions=[partial_count(1), partial_sum(score_a#2207L), partial_sum(score_b#2208L)], output=[sport#2209, count#2499L, sum#2500L, sum#2501L])
+         +- Project [score_a#2207L, score_b#2208L, sport#2209]
+            +- Filter (isnotnull(status#2211) AND (status#2211 = finished))
+               +- FileScan parquet [score_a#2207L,score_b#2208L,sport#2209,status#2211] Batched: true, DataFilters: [isnotnull(status#2211), (status#2211 = finished)], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[file:/data/layout-benchmark-1/compacted], PartitionFilters: [], PushedFilters: [IsNotNull(status), EqualTo(status,finished)], ReadSchema: struct<score_a:bigint,score_b:bigint,sport:string,status:string>

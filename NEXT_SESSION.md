@@ -1,6 +1,6 @@
 # Verified checkpoint and next session
 
-Recorded: 2026-10-06. Milestone: local foundation 0.1.0, before the public v1 release.
+Recorded: 2026-10-06. Milestone: incremental operations 0.2.0, before the public v1 release.
 
 ## What works
 
@@ -12,7 +12,11 @@ Recorded: 2026-10-06. Milestone: local foundation 0.1.0, before the public v1 re
   restart, one late correction and team-aggregate parity with the reference.
 - Chronological prediction baselines with point-in-time feature and label cutoffs;
   frozen snapshot export and the connected independent copilot fixture.
-- 19 passing offline tests, Ruff checks and executed learning notebook cells.
+- 34 passing offline tests, Ruff checks and executed learning notebook cells.
+- Persistent Spark stages, affected-match/history and team maintenance, soft
+  deletion, bounded availability backfills and recovery after Silver commit.
+- Actual 163.19-second incremental scenario with full oracle parity; measured
+  16-vs-2-file layout experiment and official offline bundle schema validation.
 
 The 600-match demo has 1,192 accepted observations, two duplicate deliveries,
 two invalid observations and eight upcoming forecasts. The recorded Spark smoke
@@ -31,13 +35,18 @@ The shared development virtual environment is outside both repositories. Follow
 README.md to create an independent environment on another computer. Docker image
 `arena-lakehouse:0.1.0` exists locally; rebuild it after source changes.
 
-## Next engineering session: incremental Spark state
+## Completed incremental Spark state
 
-1. Record affected match and team keys from a batch before merging Silver.
-2. Exercise a score correction, cancellation and postponed kickoff.
-3. Update impacted Gold rows and compare with a separate full reconstruction.
-4. Add bounded backfills, then fault injection between Silver and Gold commits.
-5. Publish only a consistent snapshot from the successful Spark stage graph.
+The scenario has been run on the Docker Linux backend. It adds a score correction,
+cancellation, postponed kickoff and team rename, preserves unaffected row audit
+timestamps, resumes after a failure between layer commits, then publishes a
+verified snapshot. Active Gold has 16 rows plus two audit tombstones. Immutable
+source observations/CDF converge to 1,197 rows. Original foundation evidence is
+retained separately. See `docs/incremental-operations.md` for commands.
+
+The optional Databricks SDP/Auto Loader/AUTO CDC + Lakeflow Job profile is now
+implemented and passed official CLI 1.19.0 offline schema validation. It has no
+schedule. Workspace runtime/permissions/features still require separate evidence.
 
 Real API onboarding needs personal free tokens in a local `.env`, never in chat,
 fixtures, notebooks or Git. Provider calls have only been checked with protocol
@@ -55,5 +64,6 @@ fixtures so far. API polling is not transaction-log CDC or free round-level push
   and deletion limitations, original-code and provider-data license boundaries.
 - Release: full acceptance matrix, dependency lock, recorded demo and GitHub CI.
 
-The current Gold rebuild, synthetic model metrics and local smoke are foundation
-evidence. They do not establish production scale or real-team predictive accuracy.
+Local Gold maintenance is incremental; the complete rebuild is a correctness
+oracle. These demonstrations and synthetic model metrics do not establish
+production scale, distributed guarantees or real-team predictive accuracy.

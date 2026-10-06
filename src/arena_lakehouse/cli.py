@@ -21,6 +21,13 @@ def main():
     demo.add_argument("--seed", type=int, default=42)
     replay = sub.add_parser("replay")
     replay.add_argument("file", type=Path)
+    backfill = sub.add_parser("backfill")
+    backfill.add_argument("file", type=Path)
+    backfill.add_argument("--from", dest="begin", required=True)
+    backfill.add_argument("--to", dest="end", required=True)
+    backfill.add_argument("--max-events", type=int, default=100_000)
+    benchmark = sub.add_parser("benchmark", help="Actual Spark file-layout experiment; requires Linux Spark")
+    benchmark.add_argument("--snapshot", type=Path, required=True)
     sub.add_parser("export")
     for command in ("collect", "poll"):
         api = sub.add_parser(command)
@@ -31,13 +38,32 @@ def main():
             api.add_argument("--cycles", type=int, default=3)
             api.add_argument("--interval", type=int, default=300)
     args = parser.parse_args()
+    if args.command == "benchmark":
+        from .incremental import benchmark as run_benchmark
+        run_benchmark(args.snapshot, args.workspace)
+        return
     pipeline = Pipeline(args.workspace)
     if args.command == "demo":
+        config_path = args.workspace / "demo-config.json"
+        config = dict(matches=args.matches, seed=args.seed)
+        if config_path.exists() and json.loads(config_path.read_text(encoding="utf-8")) != config:
+            parser.error("This demo workspace has another seed/match configuration; use a fresh --workspace")
+        if not config_path.exists() and pipeline.events():
+            candidate = generate(args.matches, args.seed)
+            from .operations import validated_new_events
+            try:
+                validated_new_events(pipeline.events(), [r for r in candidate if r.get("event_id", "").startswith("synthetic:")])
+            except ValueError:
+                parser.error("Existing observations conflict with this demo configuration; use a fresh --workspace")
         result = pipeline.ingest(generate(args.matches, args.seed))
+        config_path.write_text(json.dumps(config), encoding="utf-8")
         snapshot = export_snapshot(pipeline, args.workspace / "snapshots")
         print(json.dumps(dict(**result, snapshot_dir=str(snapshot.resolve())), indent=2))
-    elif args.command == "replay":
+    elif args.command in ("replay", "backfill"):
         records = [json.loads(line) for line in args.file.read_text(encoding="utf-8").splitlines() if line.strip()]
+        if args.command == "backfill":
+            from .operations import bounded_window
+            records = bounded_window(records, args.begin, args.end, args.max_events)
         print(json.dumps(pipeline.ingest(records), indent=2))
     elif args.command == "export":
         print(export_snapshot(pipeline, args.workspace / "snapshots").resolve())

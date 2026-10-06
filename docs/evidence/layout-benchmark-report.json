@@ -1,0 +1,62 @@
+{
+  "status": "verified_locally",
+  "spark": "4.1.3",
+  "delta": "4.4.0",
+  "dataset_version": "a21b3d2589a0558f",
+  "rows": 600,
+  "tables": {
+    "many_files": {
+      "files": 16,
+      "bytes": 127652,
+      "write_seconds": 9.421719443000256,
+      "query_seconds": [
+        24.178090138999323,
+        1.1252455159992678,
+        1.0672981910001909
+      ],
+      "result": [
+        {
+          "sport": "football",
+          "matches": 296,
+          "score_a": 589,
+          "score_b": 460
+        },
+        {
+          "sport": "valorant",
+          "matches": 296,
+          "score_a": 360,
+          "score_b": 372
+        }
+      ]
+    },
+    "compacted": {
+      "files": 2,
+      "bytes": 33794,
+      "write_seconds": 2.467132126999786,
+      "query_seconds": [
+        2.329851710999719,
+        0.6438375320003615,
+        0.5836942209998597
+      ],
+      "result": [
+        {
+          "sport": "football",
+          "matches": 296,
+          "score_a": 589,
+          "score_b": 460
+        },
+        {
+          "sport": "valorant",
+          "matches": 296,
+          "score_a": 360,
+          "score_b": 372
+        }
+      ]
+    }
+  },
+  "result_equal": true,
+  "median_query_speedup": 1.7477165590256953,
+  "improvement_observed": true,
+  "protocol": "16 vs 2 partitions; 3 sequential cold/warm mixed queries per layout; local 2-core container",
+  "limitations": "Small fixture and OS/JVM caches; exploratory measurement, not a controlled scale claim. No timings fabricated."
+}

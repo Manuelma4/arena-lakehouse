@@ -1,0 +1,37 @@
+bundle:
+  name: arena-lakehouse
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Existing Unity Catalog catalog with permission to create tables.
+    default: main
+  schema:
+    description: Existing dedicated demo schema. Do not reuse a production schema.
+    default: arena_demo
+  source_volume_path:
+    description: Existing UC Volume directory containing upstream-validated canonical JSONL observations.
+
+sync:
+  include:
+    - src/arena_lakehouse/**
+    - databricks/**
+  exclude:
+    - data/**
+    - .env*
+    - .venv/**
+    - src/**/__pycache__/**
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+
+  review:
+    mode: development
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

@@ -1,0 +1,369 @@
+{
+  "status": "verified_locally",
+  "spark": "4.1.3",
+  "delta": "4.4.0",
+  "original_events": 1193,
+  "accepted_corrections": 4,
+  "final_events": 1197,
+  "cdf_rows": 1197,
+  "active_gold_rows": 16,
+  "soft_deleted_gold_rows": 2,
+  "checkpoint_replay_idempotent": true,
+  "silver_history_full_oracle_equal": true,
+  "gold_full_oracle_equal": true,
+  "bounded_backfill_idempotent": true,
+  "failure_after_silver_recovered": true,
+  "failed_run_id": "2a620ad6af4140478431c8cf4bb9dbc0",
+  "unaffected_team_rows_preserved": true,
+  "row_quality_score": 1.0,
+  "elapsed_seconds": 163.19265647799966,
+  "exported_snapshot": "snapshot-da011895d4bb171c-23598e7a",
+  "environment": {
+    "container_memory_gb": 6,
+    "cpus": 2
+  },
+  "runs": [
+    {
+      "run_id": "c040d73b5b464d3ab8616c210d4dda8b",
+      "reason": "initial_replay",
+      "changed_matches": 601,
+      "affected_teams": 18,
+      "attempts": [
+        {
+          "run_id": "c040d73b5b464d3ab8616c210d4dda8b",
+          "stage": "bronze",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:07:05.644010Z",
+          "finished_at": "2026-10-06T09:07:39.632455Z",
+          "status": "succeeded",
+          "duration_seconds": 33.99545633900016,
+          "error": null
+        },
+        {
+          "run_id": "c040d73b5b464d3ab8616c210d4dda8b",
+          "stage": "silver",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:07:39.663205Z",
+          "finished_at": "2026-10-06T09:07:48.060655Z",
+          "status": "succeeded",
+          "duration_seconds": 8.400586882000425,
+          "error": null
+        },
+        {
+          "run_id": "c040d73b5b464d3ab8616c210d4dda8b",
+          "stage": "gold",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:07:48.106856Z",
+          "finished_at": "2026-10-06T09:07:59.866394Z",
+          "status": "succeeded",
+          "duration_seconds": 11.765668991999519,
+          "error": null
+        },
+        {
+          "run_id": "c040d73b5b464d3ab8616c210d4dda8b",
+          "stage": "verify",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:07:59.935139Z",
+          "finished_at": "2026-10-06T09:08:05.998548Z",
+          "status": "succeeded",
+          "duration_seconds": 6.067159107000407,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "fd561f1b3f024a8f8a887dd055bd7147",
+      "reason": "identical_replay",
+      "changed_matches": 0,
+      "affected_teams": 0,
+      "attempts": [
+        {
+          "run_id": "fd561f1b3f024a8f8a887dd055bd7147",
+          "stage": "bronze",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:08.207620Z",
+          "finished_at": "2026-10-06T09:08:08.239938Z",
+          "status": "succeeded",
+          "duration_seconds": 0.03469156800019846,
+          "error": null
+        },
+        {
+          "run_id": "fd561f1b3f024a8f8a887dd055bd7147",
+          "stage": "silver",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:08.304659Z",
+          "finished_at": "2026-10-06T09:08:08.328817Z",
+          "status": "succeeded",
+          "duration_seconds": 0.02571634699961578,
+          "error": null
+        },
+        {
+          "run_id": "fd561f1b3f024a8f8a887dd055bd7147",
+          "stage": "gold",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:08.354440Z",
+          "finished_at": "2026-10-06T09:08:08.393172Z",
+          "status": "succeeded",
+          "duration_seconds": 0.041287573999397864,
+          "error": null
+        },
+        {
+          "run_id": "fd561f1b3f024a8f8a887dd055bd7147",
+          "stage": "verify",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:08.425291Z",
+          "finished_at": "2026-10-06T09:08:10.984577Z",
+          "status": "succeeded",
+          "duration_seconds": 2.5612590749997253,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "904e5817db8f435bafa930ee9b49fae3",
+      "reason": "late_score_correction",
+      "changed_matches": 1,
+      "affected_teams": 2,
+      "attempts": [
+        {
+          "run_id": "904e5817db8f435bafa930ee9b49fae3",
+          "stage": "bronze",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:13.256955Z",
+          "finished_at": "2026-10-06T09:08:16.349194Z",
+          "status": "succeeded",
+          "duration_seconds": 3.0949055700002646,
+          "error": null
+        },
+        {
+          "run_id": "904e5817db8f435bafa930ee9b49fae3",
+          "stage": "silver",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:16.385399Z",
+          "finished_at": "2026-10-06T09:08:23.176586Z",
+          "status": "succeeded",
+          "duration_seconds": 6.796734208000089,
+          "error": null
+        },
+        {
+          "run_id": "904e5817db8f435bafa930ee9b49fae3",
+          "stage": "gold",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:23.208113Z",
+          "finished_at": "2026-10-06T09:08:29.211523Z",
+          "status": "succeeded",
+          "duration_seconds": 6.005012070000703,
+          "error": null
+        },
+        {
+          "run_id": "904e5817db8f435bafa930ee9b49fae3",
+          "stage": "verify",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:29.240672Z",
+          "finished_at": "2026-10-06T09:08:33.358885Z",
+          "status": "succeeded",
+          "duration_seconds": 4.121686942999986,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "4a2cdd9b49d34626ba0d60a8651b6d97",
+      "reason": "cancel_sole_result",
+      "changed_matches": 1,
+      "affected_teams": 2,
+      "attempts": [
+        {
+          "run_id": "4a2cdd9b49d34626ba0d60a8651b6d97",
+          "stage": "bronze",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:34.590820Z",
+          "finished_at": "2026-10-06T09:08:36.584329Z",
+          "status": "succeeded",
+          "duration_seconds": 1.99490585500007,
+          "error": null
+        },
+        {
+          "run_id": "4a2cdd9b49d34626ba0d60a8651b6d97",
+          "stage": "silver",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:36.603949Z",
+          "finished_at": "2026-10-06T09:08:41.595340Z",
+          "status": "succeeded",
+          "duration_seconds": 4.992681429000186,
+          "error": null
+        },
+        {
+          "run_id": "4a2cdd9b49d34626ba0d60a8651b6d97",
+          "stage": "gold",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:41.613636Z",
+          "finished_at": "2026-10-06T09:08:46.733269Z",
+          "status": "succeeded",
+          "duration_seconds": 5.1207938059997105,
+          "error": null
+        },
+        {
+          "run_id": "4a2cdd9b49d34626ba0d60a8651b6d97",
+          "stage": "verify",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:46.756857Z",
+          "finished_at": "2026-10-06T09:08:50.178001Z",
+          "status": "succeeded",
+          "duration_seconds": 3.4233860519998416,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "2a620ad6af4140478431c8cf4bb9dbc0",
+      "reason": "postponed_kickoff",
+      "changed_matches": 1,
+      "affected_teams": 2,
+      "attempts": [
+        {
+          "run_id": "2a620ad6af4140478431c8cf4bb9dbc0",
+          "stage": "bronze",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:51.389981Z",
+          "finished_at": "2026-10-06T09:08:53.812778Z",
+          "status": "succeeded",
+          "duration_seconds": 2.4250295390002066,
+          "error": null
+        },
+        {
+          "run_id": "2a620ad6af4140478431c8cf4bb9dbc0",
+          "stage": "silver",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:53.838042Z",
+          "finished_at": "2026-10-06T09:08:57.969091Z",
+          "status": "succeeded",
+          "duration_seconds": 4.132282911000402,
+          "error": null
+        },
+        {
+          "run_id": "2a620ad6af4140478431c8cf4bb9dbc0",
+          "stage": "gold",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:08:58.060737Z",
+          "finished_at": "2026-10-06T09:09:06.287041Z",
+          "status": "succeeded",
+          "duration_seconds": 8.227647220000108,
+          "error": null
+        },
+        {
+          "run_id": "2a620ad6af4140478431c8cf4bb9dbc0",
+          "stage": "verify",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:09:06.316816Z",
+          "finished_at": "2026-10-06T09:09:09.879604Z",
+          "status": "succeeded",
+          "duration_seconds": 3.5642749899998307,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "447412369ec04cdd9f017dabf8d4d4c4",
+      "reason": "stable_id_team_rename",
+      "changed_matches": 1,
+      "affected_teams": 2,
+      "attempts": [
+        {
+          "run_id": "447412369ec04cdd9f017dabf8d4d4c4",
+          "stage": "bronze",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:09:10.829223Z",
+          "finished_at": "2026-10-06T09:09:13.316671Z",
+          "status": "succeeded",
+          "duration_seconds": 2.4889367139994647,
+          "error": null
+        },
+        {
+          "run_id": "447412369ec04cdd9f017dabf8d4d4c4",
+          "stage": "silver",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:09:13.333860Z",
+          "finished_at": "2026-10-06T09:09:18.738820Z",
+          "status": "succeeded",
+          "duration_seconds": 5.406193801999507,
+          "error": null
+        },
+        {
+          "run_id": "447412369ec04cdd9f017dabf8d4d4c4",
+          "stage": "gold",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:09:18.758934Z",
+          "finished_at": "2026-10-06T09:09:25.750063Z",
+          "status": "succeeded",
+          "duration_seconds": 6.996531775000221,
+          "error": null
+        },
+        {
+          "run_id": "447412369ec04cdd9f017dabf8d4d4c4",
+          "stage": "verify",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:09:25.788394Z",
+          "finished_at": "2026-10-06T09:09:31.048469Z",
+          "status": "succeeded",
+          "duration_seconds": 5.26331522000055,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run_id": "68db20e53060416a86b2e79b72c9643e",
+      "reason": "bounded_backfill",
+      "changed_matches": 0,
+      "affected_teams": 0,
+      "attempts": [
+        {
+          "run_id": "68db20e53060416a86b2e79b72c9643e",
+          "stage": "bronze",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:09:32.150979Z",
+          "finished_at": "2026-10-06T09:09:32.180958Z",
+          "status": "succeeded",
+          "duration_seconds": 0.031584416999976384,
+          "error": null
+        },
+        {
+          "run_id": "68db20e53060416a86b2e79b72c9643e",
+          "stage": "silver",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:09:32.205233Z",
+          "finished_at": "2026-10-06T09:09:32.220710Z",
+          "status": "succeeded",
+          "duration_seconds": 0.017763680999451026,
+          "error": null
+        },
+        {
+          "run_id": "68db20e53060416a86b2e79b72c9643e",
+          "stage": "gold",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:09:32.242411Z",
+          "finished_at": "2026-10-06T09:09:32.262938Z",
+          "status": "succeeded",
+          "duration_seconds": 0.022213717000340694,
+          "error": null
+        },
+        {
+          "run_id": "68db20e53060416a86b2e79b72c9643e",
+          "stage": "verify",
+          "attempt": 1,
+          "started_at": "2026-10-06T09:09:32.290131Z",
+          "finished_at": "2026-10-06T09:09:34.504934Z",
+          "status": "succeeded",
+          "duration_seconds": 2.2171904890001315,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "File replay is polling-derived observations, not provider push or transaction CDC",
+    "Full independent oracle runs at every stage-graph completion; production-scale performance is unclaimed",
+    "Delta tables commit individually; consumers are gated until the verified run succeeds",
+    "API candidate conflicts reject the entire batch; the reference engine additionally supports per-record quarantine"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "status": "schema_verified_locally",
+  "validated_at": "2026-10-06T09:15:33.643861+00:00",
+  "cli_version": "1.19.0",
+  "schema_sha256": "2b5f54eb6805166c4f4e9b54bd108808aa08d8d0b4a9026e9a2c199afa94b429",
+  "yaml_files": [
+    "databricks.yml",
+    "resources/arena.yml"
+  ],
+  "managed_runtime_status": "pending_workspace_verification",
+  "authentication_attempted": false,
+  "deployed": false,
+  "schedule_or_trigger_defined": false,
+  "limitations": "Offline official JSON Schema validation only; workspace substitutions, access, availability and behavior remain unverified"
+}

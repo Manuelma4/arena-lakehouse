@@ -1,0 +1,12 @@
+{
+  "verified_at": "2026-10-06T09:23:37.571342+00:00",
+  "tests_passed": 34,
+  "test_command": "python -m pytest -q",
+  "code_check_command": "ruff check src tests scripts databricks",
+  "spark_incremental_report": "incremental-report.json",
+  "layout_benchmark_report": "layout-benchmark-report.json",
+  "databricks_status": "offline_schema_verified_runtime_pending",
+  "scope": "Offline correctness and operational fixture tests; actual separate Docker Spark evidence; no live API authentication",
+  "test_duration_seconds": 23.86,
+  "code_check_status": "passed"
+}

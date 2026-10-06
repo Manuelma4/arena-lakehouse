@@ -29,6 +29,13 @@ def latest(events: list[dict], as_of: str | None = None) -> list[dict]:
 
 
 def team_stats(matches: list[dict]) -> list[dict]:
+    # A provider can rename a team. Identity is the stable scoped ID, not its
+    # display name. Select the most recently observed name even if that match
+    # is upcoming or cancelled, then aggregate completed results by ID.
+    names = {}
+    for match in sorted(matches, key=lambda x: (x["observed_at"], x["match_id"])):
+        for side in ("a", "b"):
+            names[(match["sport"], match[f"team_{side}_id"])] = match[f"team_{side}"]
     stats = {}
     for match in sorted(matches, key=lambda x: (x["start_time"], x["match_id"])):
         if match["status"] != "finished":
@@ -37,7 +44,7 @@ def team_stats(matches: list[dict]) -> list[dict]:
         for side, other in (("a", "b"), ("b", "a")):
             key = (match["sport"], match[f"team_{side}_id"])
             row = stats.setdefault(key, dict(sport=key[0], team_id=key[1],
-                team_name=match[f"team_{side}"], matches=0, wins=0, draws=0, losses=0,
+                team_name=names[key], matches=0, wins=0, draws=0, losses=0,
                 score_for=0, score_against=0, last_match_at=match["completed_at"]))
             row["matches"] += 1
             row["wins"] += int(result == side)
@@ -78,6 +85,7 @@ class Pipeline:
               CREATE TABLE IF NOT EXISTS blocked(event_id TEXT PRIMARY KEY);
               CREATE TABLE IF NOT EXISTS blocked_versions(match_id TEXT, revision INTEGER,
                 PRIMARY KEY(match_id,revision));
+              CREATE TABLE IF NOT EXISTS blocked_matches(match_id TEXT PRIMARY KEY);
             """)
 
     def connect(self):
@@ -109,6 +117,10 @@ class Pipeline:
                     if db.execute("SELECT 1 FROM blocked WHERE event_id=?", (event["event_id"],)).fetchone():
                         quarantined += 1
                         continue
+                    if db.execute("SELECT 1 FROM blocked_matches WHERE match_id=?", (event["match_id"],)).fetchone():
+                        self._quarantine(db, event, "revision_time_or_identity")
+                        quarantined += 1
+                        continue
                     if db.execute("SELECT 1 FROM blocked_versions WHERE match_id=? AND revision=?",
                                   (event["match_id"], event["revision"])).fetchone():
                         self._quarantine(db, event, "conflicting_revision")
@@ -119,6 +131,20 @@ class Pipeline:
                                      (event["event_id"], event["match_id"], event["revision"])).fetchone()
                     if old:
                         previous = json.loads(old[2])
+                        if previous["match_id"] != event["match_id"]:
+                            # A globally reused event ID corrupts both match
+                            # chains. Blocking both is independent of arrival
+                            # order and prevents later alternate IDs restoring
+                            # a payload that was previously rejected.
+                            for ident in (previous["match_id"], event["match_id"]):
+                                known = db.execute("SELECT payload FROM events WHERE match_id=?", (ident,)).fetchall()
+                                for item in known:
+                                    self._quarantine(db, json.loads(item[0]), "revision_time_or_identity")
+                                db.execute("DELETE FROM events WHERE match_id=?", (ident,))
+                                db.execute("INSERT OR IGNORE INTO blocked_matches VALUES (?)", (ident,))
+                            self._quarantine(db, event, "revision_time_or_identity")
+                            quarantined += 1
+                            continue
                         # A source event retried after a cursor crash can be observed later.
                         # Keep the first known availability; do not misclassify it as a conflicting score.
                         ignored = {"observed_at", "completed_at"} if event["provider"] != "synthetic" else set()
@@ -148,7 +174,14 @@ class Pipeline:
                             or (other["revision"] > event["revision"] and other["observed_at"] <= event["observed_at"])):
                             incompatible = True
                     if incompatible:
+                        # The source has supplied an inconsistent chain. Reject
+                        # the whole match symmetrically, regardless of delivery
+                        # order, rather than preserving whichever arrived first.
+                        for item in neighbours:
+                            self._quarantine(db, json.loads(item[0]), "revision_time_or_identity")
                         self._quarantine(db, event, "revision_time_or_identity")
+                        db.execute("DELETE FROM events WHERE match_id=?", (event["match_id"],))
+                        db.execute("INSERT OR IGNORE INTO blocked_matches VALUES (?)", (event["match_id"],))
                         quarantined += 1
                         continue
                     db.execute("INSERT INTO events VALUES (?,?,?,?,?)", (event["event_id"],

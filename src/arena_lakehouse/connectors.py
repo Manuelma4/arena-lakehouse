@@ -3,6 +3,7 @@
 import json
 import os
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -16,8 +17,16 @@ class ProviderError(RuntimeError):
 
 
 def request_json(client, url, headers, params, attempts=3):
+    if not 1 <= attempts <= 5:
+        raise ValueError("Provider attempts must be 1..5")
     for attempt in range(attempts):
-        response = client.get(url, headers=headers, params=params, timeout=30)
+        try:
+            response = client.get(url, headers=headers, params=params, timeout=30)
+        except (httpx.TimeoutException, httpx.NetworkError):
+            if attempt + 1 == attempts:
+                raise ProviderError("Provider network outage; retry on the next poll") from None
+            time.sleep(min(2 ** attempt, 30))
+            continue
         if response.status_code in (401, 403):
             raise ProviderError("Provider authentication or plan access denied; check your free account")
         if response.status_code == 429 or response.status_code >= 500:
@@ -83,20 +92,34 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
     observed = datetime.now(timezone.utc)
     state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
     pending = dict(state)
-    rows, unsupported = [], 0
+    rows, unsupported, raw_archives = [], 0, []
+
+    def archive(payload, endpoint):
+        # Preserve the unnormalized provider body before schema interpretation.
+        # Request headers/credentials are never serialized. Licensed response
+        # bodies are private runtime artifacts, excluded from public snapshots.
+        directory = state_path.parent / "provider_raw" / provider / observed.date().isoformat()
+        directory.mkdir(parents=True, exist_ok=True)
+        destination = directory / f"{uuid.uuid4().hex}.json"
+        destination.write_text(json.dumps(dict(provider=provider, endpoint=endpoint,
+            observed_at=observed.isoformat(), payload=payload), ensure_ascii=False), encoding="utf-8")
+        raw_archives.append(str(destination))
+
     try:
         if provider == "football-data":
             if not competition.isalnum() or len(competition) > 12:
                 raise ValueError("Invalid competition code")
             payload = request_json(client, f"https://api.football-data.org/v4/competitions/{competition}/matches",
                                    {"X-Auth-Token": token}, {})
+            archive(payload, f"competitions/{competition}/matches")
             raw_rows = payload.get("matches", [])
         else:
             raw_rows = []
             for page in range(1, pages + 1):
-                for phase in ("past", "upcoming"):
+                for phase in ("past", "upcoming", "running"):
                     data = request_json(client, f"https://api.pandascore.co/valorant/matches/{phase}",
                                         {"Authorization": f"Bearer {token}"}, {"page": page, "per_page": 100})
+                    archive(data, f"valorant/matches/{phase}?page={page}&per_page=100")
                     raw_rows.extend(data)
                     time.sleep(0.4)
         normalizer = normalize_football if provider == "football-data" else normalize_valorant
@@ -115,7 +138,7 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
             # Validation failure aborts collection; the cursor is not advanced.
             rows.append(MatchEvent.model_validate(match).row())
             pending[match["match_id"]] = {"hash": content_hash, "revision": revision}
-        return rows, dict(state=pending, unsupported=unsupported, returned=len(raw_rows))
+        return rows, dict(state=pending, unsupported=unsupported, returned=len(raw_rows), raw_archives=raw_archives)
     finally:
         if owns_client:
             client.close()

@@ -12,11 +12,11 @@ private lesson content has not been copied.
 | 03. Spark/Delta streaming foundation | Implemented | AvailableNow, MERGE, CDF, checkpoint replay, correction, oracle parity |
 | 04. Prediction research baseline | Implemented on synthetic fixtures | Chronological split, availability cutoff, leakage tests, baseline metrics |
 | 05. Real API onboarding | Requires user's free tokens | First successful provider calls, field coverage report, reproducible private archive |
-| 06. Incremental production path | Planned | Recompute affected teams only; independent full-rebuild oracle; bounded backfill |
-| 07. Operational reliability | Planned | Stage DAG, bounded transient retries, restart between commits, freshness SLO, incident drill |
+| 06. Incremental execution path | Verified locally | Affected-match/history and team maintenance; cancellation tombstones; full oracle; bounded backfill |
+| 07. Operational reliability | Local stage runner verified; SLOs pending | Persistent attempts, bounded transient retries, restart after Silver commit, publication gate |
 | 08. Team/roster history and schema evolution | Planned | SCD2 identity history, contract migrations, late roster changes, archive reconciliation |
-| 09. Databricks target | Planned, not workspace-tested | UC Volumes, Auto Loader, SDP expectations/AUTO CDC, Jobs and validated bundle |
-| 10. Performance and privacy | Planned | Larger seeded workloads, compaction measurements, deletion/retention demonstration |
+| 09. Databricks target | Implemented adapter; offline schema verified; runtime pending | UC Volume input, Auto Loader, SDP expectations/AUTO CDC, manual Job and bundle |
+| 10. Performance and privacy | Small measured layout experiment; deeper work pending | 16 vs 2 files, plans/bytes/timings, soft-deletion audit; larger controlled runs and retention pending |
 | 11. Real-data model validation | Planned | Rolling-origin backtests, calibration, drift, model card, competition holdout |
 | 12. Public v1.0.0 release | Planned | Full acceptance suite, video/captures, dependency locks, documented limitations |
 
@@ -25,22 +25,26 @@ private lesson content has not been copied.
 | Academy course | Project learning objective | Current boundary |
 |---|---|---|
 | 2963 — Ingestion | REST landing, schema drift, incremental files, Auto Loader | REST/reference implemented; managed ingestion later |
-| 1365 — Workflows/Jobs | Dependencies, retry/recovery and scheduling | Transactional local recovery tested; managed Jobs later |
-| 2971 — Declarative pipelines | Bronze/Silver/Gold + expectations | Spark layers implemented; managed SDP later |
+| 1365 — Workflows/Jobs | Dependencies, retry/recovery and scheduling | Persistent local stage recovery tested; configurable manual Job pending workspace |
+| 2971 — Declarative pipelines | Bronze/Silver/Gold + expectations | Spark layers verified; managed SDP adapter pending workspace |
 | 3640 — DevOps essentials | pytest, code checks, GitHub Actions | Local tests and CI config implemented; remote CI unverified |
-| 2972 — Advanced streaming | Checkpoints, event corrections, CDC and temporal state | File replay/CDF tested; impacted-state backfill later |
-| 2967 — Optimization | Plans, file layout, compaction, measured throughput | Baseline runtime measured; optimization experiments later |
+| 2972 — Advanced streaming | Checkpoints, event corrections, CDC and temporal state | File replay/CDF, impacted-state corrections and bounded backfill verified locally |
+| 2967 — Optimization | Plans, file layout, compaction, measured throughput | Small 16 vs 2 file experiment measured; scale/controlled trials remain pending |
 | 3767 — Privacy | Token boundaries, retention and access policies | Secrets excluded; full retention/access-policy evidence later |
-| 3489 — Bundles | Repeatable Databricks resources and deployment targets | Bundle implementation and workspace verification later |
+| 3489 — Bundles | Repeatable Databricks resources and deployment targets | Configurable bundle passed official offline schema; workspace validation pending |
 
-## Next session: incremental correctness
+## Verified incremental correctness
 
-1. Keep canonical events as the replay source and introduce affected-match/team keys.
-2. Apply a score correction, cancellation and postponed kickoff in separate batches.
-3. Update only impacted Silver/Gold rows; compare with the independent full rebuild.
-4. Add a bounded `backfill --from --to` command and preserve unaffected results.
-5. Inject a failure between Silver and Gold commits; replay must converge.
-6. Export from the Spark result only after a consistent successful stage graph.
+The actual 163.19-second scenario in `docs/evidence/incremental-report.json`
+proves affected-key maintenance, a correction, cancellation, postponed kickoff,
+stable-ID rename, bounded duplicate backfill, unchanged unaffected rows, failure
+after Silver/recovery, SCD2 parity and gated snapshot publication. This is a local
+single-writer demonstration with full independent verification, not a production
+scale or distributed reliability certification.
+
+Next work: real provider onboarding, freshness SLO/alerts, roster availability,
+controlled larger benchmarks, explicit retention/deletion policy, managed
+workspace acceptance and the full portfolio release checklist.
 
 Optional deeper extension after this foundation: PostgreSQL + genuine source CDC.
 Match API polling and downstream Delta CDF are not transaction-log CDC.

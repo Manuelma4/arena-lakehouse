@@ -1,0 +1,43 @@
+resources:
+  pipelines:
+    arena_pipeline:
+      name: arena-match-observations
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      root_path: ${workspace.file_path}/src
+      serverless: true
+      continuous: false
+      development: true
+      channel: CURRENT
+      edition: ADVANCED
+      configuration:
+        arena.source_volume_path: ${var.source_volume_path}
+        spark.sql.session.timeZone: UTC
+      libraries:
+        - file:
+            path: ../databricks/pipeline.py
+
+  jobs:
+    arena_verified_refresh:
+      name: arena-verified-refresh
+      description: Manual SDP update followed by Gold contract checks. Workspace verification pending.
+      max_concurrent_runs: 1
+      timeout_seconds: 3600
+      # No schedule or trigger: deployment does not start recurring workloads.
+      tasks:
+        - task_key: update_layers
+          max_retries: 1
+          min_retry_interval_millis: 10000
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.arena_pipeline.id}
+            full_refresh: false
+        - task_key: verify_gold
+          depends_on:
+            - task_key: update_layers
+          max_retries: 1
+          min_retry_interval_millis: 10000
+          notebook_task:
+            notebook_path: ../databricks/verify_gold.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}

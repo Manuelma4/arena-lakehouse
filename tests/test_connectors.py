@@ -68,3 +68,50 @@ def test_crash_after_data_commit_before_cursor_does_not_quarantine_valid_result(
         result = pipeline.ingest(retry)
     assert result["duplicates"] == 1 and result["quarantined"] == 0
     assert len(pipeline.events()) == 1
+
+
+def test_unnormalized_provider_response_is_preserved_before_schema_failure(tmp_path, monkeypatch):
+    import json
+    monkeypatch.setenv("FOOTBALL_DATA_TOKEN", "test-only-not-a-real-token")
+    invalid = dict(FOOTBALL, score={"fullTime": {"home": -1, "away": 1}}, new_provider_field="retained")
+    with httpx.Client(transport=httpx.MockTransport(lambda _: httpx.Response(200, json={"matches": [invalid]}))) as client:
+        with pytest.raises(ValueError):
+            collect("football-data", tmp_path / "cursor.json", client=client)
+    archived = list((tmp_path / "provider_raw").rglob("*.json"))
+    assert len(archived) == 1
+    body = json.loads(archived[0].read_text(encoding="utf-8"))
+    assert body["payload"]["matches"][0] == invalid
+    assert "test-only-not-a-real-token" not in archived[0].read_text(encoding="utf-8")
+    assert not (tmp_path / "cursor.json").exists()
+
+
+def test_network_failure_retries_within_budget_and_never_exposes_headers(monkeypatch):
+    calls = []
+    def unavailable(request):
+        calls.append(request)
+        raise httpx.ConnectError("temporary outage", request=request)
+    monkeypatch.setattr("arena_lakehouse.connectors.time.sleep", lambda _: None)
+    with httpx.Client(transport=httpx.MockTransport(unavailable)) as client:
+        with pytest.raises(ProviderError, match="network outage") as error:
+            request_json(client, "https://example.test", {"Authorization": "test-secret"}, {})
+    assert len(calls) == 3
+    assert "test-secret" not in str(error.value)
+
+
+def test_valorant_polls_running_as_well_as_past_and_upcoming(tmp_path, monkeypatch):
+    monkeypatch.setenv("PANDASCORE_TOKEN", "test-only-not-a-real-token")
+    monkeypatch.setattr("arena_lakehouse.connectors.time.sleep", lambda _: None)
+    requested = []
+    def respond(request):
+        phase = request.url.path.rsplit("/", 1)[-1]
+        requested.append(phase)
+        payload = dict(VALORANT)
+        if phase != "past":
+            payload.update(id=201 if phase == "upcoming" else 202,
+                status="not_started" if phase == "upcoming" else "running", end_at=None, results=[])
+        return httpx.Response(200, json=[payload])
+    with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+        rows, meta = collect("pandascore", tmp_path / "cursor.json", client=client)
+    assert requested == ["past", "upcoming", "running"]
+    assert {r["status"] for r in rows} == {"finished", "scheduled", "running"}
+    assert len(meta["raw_archives"]) == 3

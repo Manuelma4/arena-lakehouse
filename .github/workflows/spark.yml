@@ -19,3 +19,19 @@ jobs:
         run: |
           snapshot=$(cat data/demo/snapshots/LATEST)
           docker run --rm --memory 6g --cpus 2 --mount "type=bind,source=$PWD/data,target=/data" arena-lakehouse:ci --snapshot "/data/demo/snapshots/$snapshot" --output /data/spark-ci
+      - name: Check affected-key maintenance and stage recovery
+        run: |
+          snapshot=$(cat data/demo/snapshots/LATEST)
+          docker run --rm --memory 6g --cpus 2 --mount "type=bind,source=$PWD/data,target=/data" --entrypoint arena-spark arena-lakehouse:ci --workspace /data/incremental-ci scenario --snapshot "/data/demo/snapshots/$snapshot"
+      - name: Measure file layout with identical results
+        run: |
+          snapshot=$(cat data/demo/snapshots/LATEST)
+          docker run --rm --memory 6g --cpus 2 --mount "type=bind,source=$PWD/data,target=/data" --entrypoint arena-spark arena-lakehouse:ci --workspace /data/layout-ci benchmark --snapshot "/data/demo/snapshots/$snapshot"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: spark-delta-evidence
+          path: |
+            data/spark-ci/smoke-report.json
+            data/incremental-ci/incremental-report.json
+            data/layout-ci/benchmark-report.json
+            data/layout-ci/*-plan.txt

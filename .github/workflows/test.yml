@@ -11,5 +11,5 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -e '.[dev]'
-      - run: ruff check src tests
+      - run: ruff check src tests scripts databricks
       - run: pytest -q

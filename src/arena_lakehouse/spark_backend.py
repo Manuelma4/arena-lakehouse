@@ -5,14 +5,12 @@ import json
 import time
 from pathlib import Path
 
-from .engine import latest, team_stats
-
-
 def session():
     from pyspark.sql import SparkSession
     return (SparkSession.builder.appName("arena-lakehouse").master("local[2]")
             .config("spark.driver.memory", "2g")
             .config("spark.sql.shuffle.partitions", "2")
+            .config("spark.databricks.delta.snapshotPartitions", "2")
             .config("spark.jars.packages", "io.delta:delta-spark_4.1_2.13:4.4.0")
             .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
             .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
@@ -37,26 +35,32 @@ def current_matches(events):
 
 def aggregate_teams(matches):
     from pyspark.sql import functions as F
-    completed = matches.where("status = 'finished'")
     parts = []
     for side, opponent in (("a", "b"), ("b", "a")):
-        parts.append(completed.select("sport", F.col(f"team_{side}_id").alias("team_id"),
+        parts.append(matches.select("sport", "match_id", "observed_at", "status",
+            F.col(f"team_{side}_id").alias("team_id"),
             F.col(f"team_{side}").alias("team_name"), F.col(f"score_{side}").alias("score_for"),
             F.col(f"score_{opponent}").alias("score_against"), "completed_at"))
     union = parts[0].unionByName(parts[1])
-    return (union.groupBy("sport", "team_id", "team_name").agg(
+    from pyspark.sql import Window
+    names = (union.withColumn("_name_rank", F.row_number().over(Window.partitionBy("sport", "team_id")
+              .orderBy(F.desc("observed_at"), F.desc("match_id"))))
+             .where("_name_rank = 1").select("sport", "team_id", "team_name"))
+    return (union.where("status = 'finished'").groupBy("sport", "team_id").agg(
         F.count("*").alias("matches"),
         F.sum((F.col("score_for") > F.col("score_against")).cast("long")).alias("wins"),
         F.sum((F.col("score_for") == F.col("score_against")).cast("long")).alias("draws"),
         F.sum((F.col("score_for") < F.col("score_against")).cast("long")).alias("losses"),
         F.sum("score_for").alias("score_for"), F.sum("score_against").alias("score_against"),
         F.max("completed_at").alias("last_match_at"))
-        .withColumn("win_rate", F.col("wins") / F.col("matches")))
+        .withColumn("win_rate", F.col("wins") / F.col("matches"))
+        .join(names, ["sport", "team_id"]))
 
 
 def run(snapshot: Path, root: Path):
     from delta.tables import DeltaTable
     from pyspark.sql import Window, functions as F
+    from .engine import latest, team_stats
 
     records = [json.loads(x) for x in (snapshot / "bronze/events.jsonl").read_text(encoding="utf-8").splitlines()]
     if not records:
