@@ -1,0 +1,96 @@
+{
+  "data_kind": "synthetic",
+  "sports": {
+    "football": {
+      "status": "evaluated",
+      "data_kind": "synthetic",
+      "model": "scaled_logistic_v1",
+      "feature_names": [
+        "elo_difference",
+        "recent_form_difference",
+        "team_a_history",
+        "team_b_history"
+      ],
+      "train_samples": 167,
+      "train_last_kickoff": "2025-03-03T00:00:00.000000Z",
+      "validation_first_kickoff": "2025-03-03T08:00:00.000000Z",
+      "test_first_kickoff": "2025-03-22T00:00:00.000000Z",
+      "split": "chronological 60/20/20; equal kickoffs grouped; no test tuning",
+      "calibration": "not calibrated; probabilities require real-data validation",
+      "validation": {
+        "model": {
+          "samples": 56,
+          "accuracy": 0.5,
+          "log_loss": 1.1696633812306618,
+          "multiclass_brier": 0.6770165500484664
+        },
+        "frequency_baseline": {
+          "samples": 56,
+          "accuracy": 0.6607142857142857,
+          "log_loss": 0.9655768674351103,
+          "multiclass_brier": 0.5738680177953536
+        }
+      },
+      "test": {
+        "model": {
+          "samples": 56,
+          "accuracy": 0.5892857142857143,
+          "log_loss": 1.0309282363449044,
+          "multiclass_brier": 0.5890270671152367
+        },
+        "frequency_baseline": {
+          "samples": 56,
+          "accuracy": 0.5357142857142857,
+          "log_loss": 0.9944306461018303,
+          "multiclass_brier": 0.599078101828967
+        }
+      }
+    },
+    "valorant": {
+      "status": "evaluated",
+      "data_kind": "synthetic",
+      "model": "scaled_logistic_v1",
+      "feature_names": [
+        "elo_difference",
+        "recent_form_difference",
+        "team_a_history",
+        "team_b_history"
+      ],
+      "train_samples": 169,
+      "train_last_kickoff": "2025-03-02T20:00:00.000000Z",
+      "validation_first_kickoff": "2025-03-03T04:00:00.000000Z",
+      "test_first_kickoff": "2025-03-21T20:00:00.000000Z",
+      "split": "chronological 60/20/20; equal kickoffs grouped; no test tuning",
+      "calibration": "not calibrated; probabilities require real-data validation",
+      "validation": {
+        "model": {
+          "samples": 56,
+          "accuracy": 0.625,
+          "log_loss": 0.6553506688253281,
+          "multiclass_brier": 0.46693854044086036
+        },
+        "frequency_baseline": {
+          "samples": 56,
+          "accuracy": 0.39285714285714285,
+          "log_loss": 0.7027625825545941,
+          "multiclass_brier": 0.5096097944666735
+        }
+      },
+      "test": {
+        "model": {
+          "samples": 57,
+          "accuracy": 0.6666666666666666,
+          "log_loss": 0.6406900424934687,
+          "multiclass_brier": 0.44810468347950294
+        },
+        "frequency_baseline": {
+          "samples": 57,
+          "accuracy": 0.5263157894736842,
+          "log_loss": 0.6918300342553085,
+          "multiclass_brier": 0.49868335556239524
+        }
+      }
+    }
+  },
+  "available_as_of": "2025-04-09T15:10:00.000000Z"
+}

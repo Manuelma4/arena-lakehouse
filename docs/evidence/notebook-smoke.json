@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "scope": "Notebook code-cell execution; optional model cell remains commented",
+  "notebook": "01_match_data_and_temporal_features.ipynb",
+  "recorded_at": "2026-10-06T08:27:02.706902+00:00",
+  "executed_cells": [
+    "imports",
+    "stats",
+    "replay",
+    "cutoff",
+    "model",
+    "export"
+  ],
+  "elapsed_seconds": 3.4998631999997087
+}

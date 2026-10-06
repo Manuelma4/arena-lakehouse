@@ -1,0 +1,21 @@
+name: Spark replay verification
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  delta-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -e .
+      - run: arena-lakehouse demo --matches 100
+      - run: docker build -t arena-lakehouse:ci .
+      - name: Check checkpoint restart, CDF and oracle parity
+        run: |
+          snapshot=$(cat data/demo/snapshots/LATEST)
+          docker run --rm --memory 6g --cpus 2 --mount "type=bind,source=$PWD/data,target=/data" arena-lakehouse:ci --snapshot "/data/demo/snapshots/$snapshot" --output /data/spark-ci

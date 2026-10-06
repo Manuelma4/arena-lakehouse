@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-10-06T08:32:50.640756+00:00",
+  "offline_tests_passed": 19,
+  "ruff": "passed",
+  "evidence_scope": "Local software tests; remote CI and Databricks not run",
+  "staged_source_files": 32,
+  "staged_sensitive_patterns_found": 0,
+  "ignored_runtime_artifacts_excluded": true,
+  "dependency_versions": {
+    "pyspark": "Verified in Docker instead of Windows venv",
+    "delta-spark": "Verified in Docker instead of Windows venv"
+  }
+}
