@@ -1,0 +1,80 @@
+{
+  "recorded_at": "2026-10-06T12:37:51.498320+00:00",
+  "status": "passed",
+  "version": "0.5.0",
+  "scope": "Final producer offline acceptance including independent pinned-source resealing cases, explicit v1/v2 compatibility, full code checks and isolated fresh 0.5.0 wheel; no new Spark or managed Databricks runtime claim",
+  "environment": {
+    "os": "Windows",
+    "python": "3.11.9",
+    "pyarrow": "23.0.1",
+    "pytest": "9.1.1",
+    "ruff": "0.16.10"
+  },
+  "full_suite": {
+    "passed": 207,
+    "duration_seconds": 31.34,
+    "exit_code": 0,
+    "pythonpath": "worktree/src"
+  },
+  "ruff": {
+    "status": "passed",
+    "exit_code": 0,
+    "scope": "src tests"
+  },
+  "git_diff_check": {
+    "status": "passed",
+    "exit_code": 0
+  },
+  "wheel_smoke": {
+    "recorded_at": "2026-10-06T12:35:02.849622+00:00",
+    "exit_code": 0,
+    "package_version": "0.5.0",
+    "python_isolated": true,
+    "invoked_outside_repo": "C:\\Works\\.arena-artifacts",
+    "module_from_extracted_wheel": true,
+    "wheel_filename": "arena_lakehouse-0.5.0-py3-none-any.whl",
+    "wheel_bytes": 61071,
+    "wheel_sha256": "2a617dbdc86711c73313fb4147c2563646b2550dc751bd1ffcd65b3ffda4046c",
+    "packaged_sources": 10,
+    "packaged_worldcup_bytes": 42736,
+    "trusted_worldcup_sha256": "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca",
+    "v2_matches": 2831,
+    "v2_revisions": 2831,
+    "v2_dataset_version": "20d06e8e5af0886e",
+    "v2_manifest_and_payload_hashes_identical": true,
+    "v1_dataset_version": "5f99ba32f796fb23",
+    "v1_manifest_and_payload_hashes_identical": true,
+    "default_packaged_catalogue_cli_dry_run": {
+      "accepted": 104,
+      "quarantined": 0,
+      "source_sha256": "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca",
+      "no_workspace_written": true
+    }
+  },
+  "research_dataset_version": "20d06e8e5af0886e",
+  "matches": 2831,
+  "source_editions": 10,
+  "regressions": [
+    "Explicit numeric-offset UTC arithmetic with calendar rollover; unzoned/date-only rows remain unresolved",
+    "FT/HT/ET/shootout fields preserved separately; all real predictions disabled",
+    "Numbered identities stable across schedule/opponent/round corrections; cross-round conflicts quarantined",
+    "Pinned World Cup source bytes and every business/provenance field bound to trusted bundled source",
+    "Resealed source score/date/group/ground/opponent mutations rejected even with coherent inventory and event identities",
+    "Strict poll and quarantine types, prior collected archive for 304, source-clock order and measured rejection-count bounds",
+    "Legacy v1 source fingerprint/event ID golden values, genuine original package checksum parity and unchanged SQLite bytes",
+    "Fresh 0.5.0 wheel resources and default catalogue work outside the source tree; dry validation writes no workspace"
+  ],
+  "source_sha256_lf_normalized": {
+    "src/arena_lakehouse/__init__.py": "eb272199166ce81dd3028636c6333059801f3252cfc38935db7c74c5120eb844",
+    "src/arena_lakehouse/openfootball.py": "18b625a5f9b5af9399171f932b3c88b36172cb735a2d2a5dd2268c7a82b814ef",
+    "src/arena_lakehouse/openfootball_research.py": "2b7dd6bb4e37e1f91c5099d943f43b01276fb361cd5321bdf16c87ad276befb3",
+    "src/arena_lakehouse/resources/openfootball_sources.json": "cee9dc5bfafece90e92a27c19b496b48851b999d274e9e9ce423dd3d666dd8dd",
+    "tests/test_openfootball.py": "d1c104d79909d7827ce88d300c7992172bbf59030551cf0ea22ea9c5e9085108",
+    "tests/test_openfootball_research.py": "3759c6680cf781bf07a6dc72e81f9b8412242c80e6a13ebe24e536c030aad30d",
+    "tests/test_worldcup_independent.py": "99159e94619cb324287d83f92ac0c7ae0de3bc3e697abb92e968391d758cda19",
+    "pyproject.toml": "1eedd8c4b5c6fea3603690426622c7cb7434a798bccbfdf0f0637bfdaacec9a6"
+  },
+  "binary_source_sha256": {
+    "src/arena_lakehouse/resources/worldcup_2026.json": "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca"
+  }
+}

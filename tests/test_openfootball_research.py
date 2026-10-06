@@ -11,7 +11,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
-from arena_lakehouse.openfootball import OpenFootballCollector, load_sources
+from arena_lakehouse.openfootball import OpenFootballCollector, STAGING_VERSION_V2, WORLD_CUP_SHA256, load_sources
 from arena_lakehouse.openfootball_research import (
     BOUNDS, RESEARCH_FILES, ResearchValidationError, _schema, publish_research, validate_staging,
 )
@@ -59,7 +59,8 @@ def _rehash(staging):
 
 def _rewrite_rows(staging, name, rows):
     _write(staging / f"{name}.json", rows)
-    pq.write_table(pa.Table.from_pylist(rows, schema=_schema()), staging / f"{name}.parquet")
+    version = _read(staging / "manifest.json")["staging_version"]
+    pq.write_table(pa.Table.from_pylist(rows, schema=_schema(staging_version=version)), staging / f"{name}.parquet")
     _rehash(staging)
 
 
@@ -421,3 +422,171 @@ def test_repolling_rejected_body_preserves_single_quarantine_evidence(tmp_path):
     assert first.quarantined == replay.quarantined == 1
     assert len(data.quarantine) == len(data.matches) == len(data.history) == 1
     assert sum(p["quarantined"] for p in data.polls) == 2
+
+
+@pytest.fixture
+def staging_v2(tmp_path):
+    collector = OpenFootballCollector(tmp_path / 'v2-runtime', staging_version=STAGING_VERSION_V2)
+    collector.ingest_bytes(SOURCE, _body(MATCH), observed_at=NOW)
+    worldcup = load_sources(Path(__file__).parents[1] / 'config/openfootball_sources.json')['worldcup-2026']
+    raw = (Path(__file__).parent / 'fixtures/worldcup-2026-pinned.json').read_bytes()
+    collector.ingest_bytes(worldcup, raw, observed_at=NOW + timedelta(minutes=1))
+    output = tmp_path / 'v2-staging'
+    collector.export(output)
+    return output
+
+
+def test_v2_publication_preserves_precise_worldcup_and_unzoned_clubs(staging_v2, tmp_path):
+    data = validate_staging(staging_v2)
+    assert len(data.matches) == len(data.history) == 105
+    output = tmp_path / 'v2-research'
+    manifest = publish_research(staging_v2, output, generated_at=NOW + timedelta(hours=1))
+    assert manifest['research_version'] == 'openfootball-research-2.0'
+    assert manifest['as_of'] == '2026-10-06T12:01:00.000000Z'
+    matches = _read(output / 'matches.json')
+    assert matches == pq.read_table(output / 'gold/matches.parquet').to_pylist()
+    assert _read(output / 'history.json') == pq.read_table(output / 'gold/match_history.parquet').to_pylist()
+    assert set(pq.read_table(output / 'gold/matches.parquet').schema.names) == set(matches[0])
+    national = [r for r in matches if r['team_type'] == 'national']
+    assert len(national) == 104 and all(r['utc_offset_minutes'] is not None for r in national)
+    club = next(r for r in matches if r['team_type'] == 'club')
+    assert club['source_match_number'] is club['utc_offset_minutes'] is club['start_time'] is None
+    assert all(r['timezone'] is r['completed_at'] is None and r['prediction_eligible'] is False for r in matches)
+    editions = {e['edition_id']: e for e in _read(output / 'competitions.json')}
+    wc = editions['worldcup-2026']
+    assert wc['team_type'] == 'national' and wc['region'] == 'International'
+    assert wc['coverage_start'] == '2026-06-11' and wc['coverage_end'] == '2026-07-19'
+    assert wc['match_count'] == wc['observed_results'] == wc['offset_minute'] == 104
+    assert wc['date_only'] == wc['local_minute'] == wc['unknown_results'] == 0
+    assert len(wc['participants']) == 48
+    quality = _read(output / 'quality.json')
+    assert quality['offset_minute'] == 104 and quality['unresolved_timezones'] == 1
+    assert quality['date_only'] == 1 and quality['prediction_ineligible'] == 105
+    assert all(s['repository'] in ('football.json', 'worldcup.json') and s['team_type'] in ('club', 'national')
+               for s in _read(output / 'sources.json'))
+
+
+@pytest.mark.parametrize('field,value,expected', [
+    ('start_time', '2026-07-19T15:00:00.000000Z', 'UTC kickoff differs'),
+    ('utc_offset_minutes', 841, 'UTC offset'),
+    ('utc_offset_minutes', -240.0, 'UTC offset'),
+    ('team_type', 'club', 'Team type'),
+    ('source_match_number', 104.0, 'source match number'),
+    ('source_group', ' Group A ', 'normalized'),
+    ('ground', '', 'source ground'),
+    ('completed_at', '2026-07-19T21:00:00.000000Z', 'completion'),
+    ('kickoff_precision', 'local_minute', 'precision'),
+])
+def test_v2_resealed_clock_identity_and_metadata_tampering_rejected(staging_v2, field, value, expected):
+    rows = _read(staging_v2 / 'matches.json')
+    final = next(r for r in rows if r['source_match_number'] == 104)
+    final[field] = value
+    _rewrite_rows(staging_v2, 'matches', rows)
+    with pytest.raises(ResearchValidationError, match=expected):
+        validate_staging(staging_v2)
+
+
+def test_v2_pinned_source_poll_cannot_claim_other_body(staging_v2):
+    polls = _read(staging_v2 / 'polls.json')
+    next(p for p in polls if p['source_id'] == 'worldcup-2026')['sha256'] = 'f' * 64
+    _write(staging_v2 / 'polls.json', polls)
+    _rehash(staging_v2)
+    with pytest.raises(ResearchValidationError, match='Pinned World Cup poll checksum'):
+        validate_staging(staging_v2)
+
+
+def test_v2_pinned_source_ref_is_not_an_arbitrary_sha(staging_v2):
+    sources = _read(staging_v2 / 'sources.json')
+    next(s for s in sources if s['source_id'] == 'worldcup-2026')['source_ref'] = 'f' * 40
+    _write(staging_v2 / 'sources.json', sources)
+    _rehash(staging_v2)
+    with pytest.raises(ResearchValidationError, match='Invalid source catalogue'):
+        validate_staging(staging_v2)
+
+
+def test_v2_sources_require_explicit_repository_and_team_type(staging_v2):
+    sources = _read(staging_v2 / 'sources.json')
+    del next(s for s in sources if s['source_id'] == SOURCE.source_id)['team_type']
+    _write(staging_v2 / 'sources.json', sources)
+    _rehash(staging_v2)
+    with pytest.raises(ResearchValidationError, match='explicit repository/team type'):
+        validate_staging(staging_v2)
+
+
+def test_v2_cannot_masquerade_as_v1_by_resealing_manifest(staging_v2):
+    manifest = _read(staging_v2 / 'manifest.json')
+    manifest['staging_version'] = 'openfootball-staging-1.0'
+    _write(staging_v2 / 'manifest.json', manifest)
+    with pytest.raises(ResearchValidationError, match='schema/count differs'):
+        validate_staging(staging_v2)
+
+
+def test_v2_logical_identity_excludes_publication_clock_and_preserves_pin(staging_v2, tmp_path):
+    first = publish_research(staging_v2, tmp_path / 'one', generated_at=NOW + timedelta(hours=1))
+    later = publish_research(staging_v2, tmp_path / 'two', generated_at=NOW + timedelta(hours=2))
+    assert first['dataset_version'] == later['dataset_version'] and first['files'] == later['files']
+    assert first['generated_at'] != later['generated_at']
+    rows = _read(tmp_path / 'one/matches.json')
+    assert {r['source_sha256'] for r in rows if r['team_type'] == 'national'} == {WORLD_CUP_SHA256}
+
+
+def test_v2_numbered_revision_preserves_identity_across_team_and_round_corrections(tmp_path):
+    collector = OpenFootballCollector(tmp_path / 'runtime', staging_version=STAGING_VERSION_V2)
+    before = dict(MATCH, num=5)
+    after = dict(before, round='Reviewed source round', team1='Reviewed Club One', date='2025-01-25')
+    collector.ingest_bytes(SOURCE, _body(before), observed_at=NOW)
+    collector.ingest_bytes(SOURCE, _body(after), observed_at=NOW + timedelta(minutes=1))
+    collector.export(tmp_path / 'staging')
+    data = validate_staging(tmp_path / 'staging')
+    assert len(data.matches) == 1 and len(data.history) == 2
+    assert data.history[0]['match_id'] == data.history[1]['match_id'] == data.matches[0]['match_id']
+    assert {r['revision'] for r in data.history} == {1, 2}
+    assert data.matches[0]['team_a'] == 'Reviewed Club One'
+
+
+@pytest.mark.parametrize('field', ['score', 'date', 'group', 'ground', 'opponent'])
+def test_pinned_publication_rejects_coherent_resealed_business_edits(staging_v2, field):
+    rows = _read(staging_v2 / 'matches.json')
+    target = next(r for r in rows if r['source_match_number'] == 104)
+    ident = target['match_id']
+    if field == 'score':
+        details = json.loads(target['score_details_json'])
+        details['ft'] = [2, 2]
+        details['et'] = [3, 2]
+        target.update(score_a=2, score_b=2, score_details_json=json.dumps(details, sort_keys=True, separators=(',', ':')))
+    elif field == 'date':
+        target.update(source_date='2026-07-20', start_time='2026-07-20T19:00:00.000000Z')
+    elif field == 'group':
+        target['source_group'] = 'Reviewed-looking invented group'
+    elif field == 'ground':
+        target['ground'] = 'Reviewed-looking invented ground'
+    else:
+        target['team_a'] = 'Invented National Team'
+        identity_bytes = json.dumps([target['team_namespace'], target['team_a']], ensure_ascii=False,
+                                    sort_keys=True, separators=(',', ':')).encode('utf-8')
+        target['team_a_id'] = 'openfootball:team:' + hashlib.sha256(identity_bytes).hexdigest()[:24]
+    excluded = {'observed_at', 'source_sha256', 'source_url', 'license', 'license_url', 'revision', 'event_id'}
+    content = {k: v for k, v in target.items() if k not in excluded}
+    digest = hashlib.sha256(json.dumps(content, ensure_ascii=False, sort_keys=True,
+                                      separators=(',', ':'), allow_nan=False).encode('utf-8')).hexdigest()
+    target['event_id'] = target['match_id'] + ':1:' + digest[:16]
+    history = [dict(target) if r['match_id'] == ident else r for r in _read(staging_v2 / 'history.json')]
+    _rewrite_rows(staging_v2, 'history', history)
+    _rewrite_rows(staging_v2, 'matches', rows)
+    with pytest.raises(ResearchValidationError, match='business fields differ from bundled trusted source'):
+        validate_staging(staging_v2)
+
+
+def test_pinned_publication_requires_reviewed_aliases(staging_v2):
+    sources = _read(staging_v2 / 'sources.json')
+    next(s for s in sources if s['source_id'] == 'worldcup-2026')['team_aliases'] = {'Spain': 'Invented National Team'}
+    _write(staging_v2 / 'sources.json', sources)
+    _rehash(staging_v2)
+    with pytest.raises(ResearchValidationError, match='aliases differ from reviewed catalogue'):
+        validate_staging(staging_v2)
+
+
+def test_worldcup_offline_fixture_and_packaged_trusted_bytes_are_identical():
+    packaged = files('arena_lakehouse').joinpath('resources/worldcup_2026.json').read_bytes()
+    offline = (Path(__file__).parent / 'fixtures/worldcup-2026-pinned.json').read_bytes()
+    assert packaged == offline and hashlib.sha256(packaged).hexdigest() == WORLD_CUP_SHA256

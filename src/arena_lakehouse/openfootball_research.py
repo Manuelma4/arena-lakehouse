@@ -8,17 +8,21 @@ import re
 import uuid
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from importlib.resources import files as resource_files
 from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from .openfootball import LICENSE_URL, STAGING_VERSION, Source, _name, _PARQUET_FIELDS, load_sources
+from .openfootball import (
+    LICENSE_URL, STAGING_VERSION, STAGING_VERSION_V2, WORLD_CUP_SHA256, Source, _name,
+    _PARQUET_FIELDS, _PARQUET_FIELDS_V2, load_sources, parquet_schema, parse_payload,
+)
 
 
 RESEARCH_VERSION = "openfootball-research-1.0"
+RESEARCH_VERSION_V2 = "openfootball-research-2.0"
 STAGING_FILES = {"matches.json", "history.json", "matches.parquet", "history.parquet",
                  "sources.json", "quarantine.json", "polls.json"}
 RESEARCH_FILES = {"gold/matches.parquet", "gold/match_history.parquet", "matches.json", "history.json",
@@ -28,6 +32,8 @@ BOUNDS = {"matches": 25_000, "revisions": 50_000, "quarantine_rows": 100_000,
 MAX_FILE_BYTES = 128_000_000
 MAX_PACKAGE_BYTES = 512_000_000
 PRECISION_NOTE = "Source calendar dates and optional local wall times; no inferred UTC kickoff or completion"
+PRECISION_NOTE_V2 = ("Source calendar dates and local wall times; UTC kickoff derived only from an explicit "
+                     "numeric offset; completion remains unknown")
 COVERAGE_NOTE = "Observed open-data coverage; incomplete or stale source results remain unknown; not official standings"
 
 
@@ -85,11 +91,8 @@ def _integer(value, label, low=0, high=None):
     _require(type(value) is int and value >= low and (high is None or value <= high), f"Invalid {label}")
 
 
-def _schema(edition=False):
-    fields = [(field, pa.int64() if field in ("score_a", "score_b", "revision", "occurrence")
-               else pa.float64() if field == "quality_score" else pa.bool_() if field == "prediction_eligible"
-               else pa.string()) for field in _PARQUET_FIELDS]
-    return pa.schema(fields + ([("edition_id", pa.string())] if edition else []))
+def _schema(edition=False, staging_version=STAGING_VERSION):
+    return parquet_schema(staging_version, edition=edition)
 
 
 @dataclass
@@ -104,26 +107,46 @@ class ValidatedStaging:
     as_of: str
 
 
-def _validate_row(row, sources):
-    _require(isinstance(row, dict) and set(row) == set(_PARQUET_FIELDS), "Staging row fields differ from contract")
+def _trusted_worldcup_rows(sources, staging_version):
+    pinned = [source for source in sources.values() if source.repository == "worldcup.json"]
+    if not pinned:
+        return {}
+    body = resource_files("arena_lakehouse").joinpath("resources/worldcup_2026.json").read_bytes()
+    _require(_sha(body) == WORLD_CUP_SHA256, "Bundled trusted World Cup source checksum differs")
+    trusted = {}
+    for source in pinned:
+        parsed = parse_payload(body, source, datetime(1970, 1, 1, tzinfo=timezone.utc), staging_version=staging_version)
+        _require(not parsed.quarantine and len(parsed.rows) == 104, "Trusted World Cup parser coverage differs")
+        trusted.update({row["match_id"]: row for row in parsed.rows})
+    return trusted
+
+
+def _validate_row(row, sources, staging_version=STAGING_VERSION, trusted_worldcup=None):
+    v2 = staging_version == STAGING_VERSION_V2
+    fields = _PARQUET_FIELDS_V2 if v2 else _PARQUET_FIELDS
+    _require(isinstance(row, dict) and set(row) == set(fields), "Staging row fields differ from contract")
     _require(isinstance(row["source_id"], str), "Invalid row source_id type")
     source = sources.get(row["source_id"])
     _require(source is not None, "Match references an unknown source")
-    for field in _PARQUET_FIELDS:
+    for field in fields:
         if field not in {"occurrence", "score_a", "score_b", "revision", "quality_score", "prediction_eligible",
-                          "timezone", "start_time", "completed_at", "local_time"}:
+                          "timezone", "start_time", "completed_at", "local_time", "source_match_number",
+                          "utc_offset_minutes", "source_group", "ground"}:
             _require(isinstance(row[field], str) and 0 < len(row[field]) <= 2000, f"Invalid row field {field}")
-    _require(row["staging_version"] == STAGING_VERSION and row["provider"] == "openfootball"
+    _require(row["staging_version"] == staging_version and row["provider"] == "openfootball"
              and row["sport"] == "football", "Invalid staging row provider/version")
-    _require(row["license"] == "CC0-1.0" and row["license_url"] == LICENSE_URL, "Row license differs from CC0")
+    _require(row["license"] == "CC0-1.0" and
+             row["license_url"] == (source.license_url if v2 else LICENSE_URL), "Row license differs from CC0")
     _require(row["competition_id"] == source.competition_id and row["competition"] == source.name
              and row["season"] == source.season and row["team_namespace"] == source.team_namespace,
              "Row scope differs from source catalogue")
     _require(row["source_ref"] == source.source_ref and row["source_url"] == source.url,
              "Row URL/ref is outside the fixed source allowlist")
     _require(re.fullmatch(r"[0-9a-f]{64}", row["source_sha256"]) is not None, "Invalid raw source checksum")
-    _require(row["timezone"] is row["start_time"] is row["completed_at"] is None,
-             "Staging must not infer UTC kickoff/timezone/completion")
+    _require(source.repository != "worldcup.json" or row["source_sha256"] == WORLD_CUP_SHA256,
+             "Pinned World Cup row checksum differs from reviewed source")
+    _require(row["timezone"] is row["completed_at"] is None,
+             "Staging must not infer UTC timezone/completion")
     _require(re.fullmatch(r"\d{4}-\d{2}-\d{2}", row["source_date"]) is not None, "Invalid source calendar date")
     try:
         date.fromisoformat(row["source_date"])
@@ -132,14 +155,39 @@ def _validate_row(row, sources):
     local = row["local_time"]
     _require(local is None or isinstance(local, str) and
              re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", local) is not None, "Invalid unzoned local clock")
-    _require(row["kickoff_precision"] == ("local_minute" if local is not None else "date_only"),
+    offset = row["utc_offset_minutes"] if v2 else None
+    if offset is not None:
+        _integer(offset, "UTC offset minutes", -840, 840)
+        _require(local is not None and source.repository == "worldcup.json", "Offset lacks a supported source clock")
+        expected_start = _utc(datetime.fromisoformat(row["source_date"] + "T" + local).replace(
+            tzinfo=timezone(timedelta(minutes=offset))))
+        _require(row["start_time"] == expected_start, "UTC kickoff differs from explicit source offset")
+    else:
+        _require(row["start_time"] is None, "Staging must not infer UTC kickoff")
+    _require(row["kickoff_precision"] == ("offset_minute" if offset is not None else
+                                          "local_minute" if local is not None else "date_only"),
              "Kickoff precision does not match source clock")
     _require(row["prediction_eligible"] is False, "Staging cannot assert prediction eligibility")
     _require(type(row["quality_score"]) in (int, float) and row["quality_score"] == 1.0,
              "Invalid staging schema quality score")
     _require(row["team_identity_status"] in {"unresolved_name_derived_not_official", "derived_reviewable_not_official"},
              "Staging cannot claim official team identity")
-    _require(row["identity_basis"] == "competition-season-round-ordered-teams-occurrence"
+    number = row["source_match_number"] if v2 else None
+    if v2:
+        _require(row["team_type"] == source.team_type, "Team type differs from reviewed source")
+        for field in ("source_group", "ground"):
+            if row[field] is not None:
+                _require(isinstance(row[field], str) and 0 < len(row[field]) <= 200,
+                         f"Invalid optional source {field}")
+                try:
+                    normalized = _name(row[field], field)
+                except ValueError as error:
+                    raise ResearchValidationError(f"Invalid source {field}") from error
+                _require(normalized == row[field], f"Invalid normalized source {field}")
+        if number is not None:
+            _integer(number, "source match number", 1, 10_000)
+    _require(row["identity_basis"] == ("competition-season-source-match-number" if number is not None
+                                       else "competition-season-round-ordered-teams-occurrence")
              and row["availability_basis"] == "first_collected_revision", "Unsupported identity/availability basis")
     aliases = source.team_aliases or {}
     for side in ("a", "b"):
@@ -151,6 +199,8 @@ def _validate_row(row, sources):
     _integer(row["occurrence"], "occurrence", 1, 100)
     _require(row["round"].strip() == row["round"] and len(row["round"]) <= 200, "Invalid round")
     ident = [source.competition_id, source.season, row["round"], row["team_a_id"], row["team_b_id"], row["occurrence"]]
+    if number is not None:
+        ident = [source.competition_id, source.season, number]
     _require(row["match_id"] == "openfootball:match:" + _sha(ident)[:24], "Match identity differs from source scope")
     details = _decode(row["score_details_json"].encode("utf-8"))
     _require(isinstance(details, dict) and not set(details) - {"ft", "ht", "et", "p"}, "Unsupported source score fields")
@@ -172,6 +222,12 @@ def _validate_row(row, sources):
     excluded = {"observed_at", "source_sha256", "source_url", "license", "license_url", "revision", "event_id"}
     content_hash = _sha({k: v for k, v in row.items() if k not in excluded})
     _require(row["event_id"] == f"{row['match_id']}:{row['revision']}:{content_hash[:16]}", "Invalid event content identity")
+    if source.repository == "worldcup.json":
+        trusted = (trusted_worldcup or {}).get(row["match_id"])
+        _require(trusted is not None and
+                 {k: v for k, v in row.items() if k not in {"observed_at", "revision", "event_id"}} ==
+                 {k: v for k, v in trusted.items() if k != "observed_at"},
+                 "World Cup business fields differ from bundled trusted source")
     return observed, content_hash
 
 
@@ -187,7 +243,9 @@ def validate_staging(staging: Path) -> ValidatedStaging:
     manifest_bytes = (staging / "manifest.json").read_bytes()
     manifest = _decode(manifest_bytes)
     _require(isinstance(manifest, dict), "Staging manifest must be an object")
-    _require(manifest.get("staging_version") == STAGING_VERSION and manifest.get("data_kind") == "open_data"
+    staging_version = manifest.get("staging_version")
+    _require(isinstance(staging_version, str) and staging_version in {STAGING_VERSION, STAGING_VERSION_V2}
+             and manifest.get("data_kind") == "open_data"
              and manifest.get("provider") == "openfootball" and manifest.get("canonical_compatible") is False,
              "Unsupported staging manifest/version/provider")
     _require(manifest.get("license") == "CC0-1.0" and manifest.get("license_url") == LICENSE_URL,
@@ -206,17 +264,19 @@ def validate_staging(staging: Path) -> ValidatedStaging:
     _require(sum(len(body) for body in verified_bytes.values()) <= MAX_PACKAGE_BYTES, "Staging byte bounds changed")
     values = {name: _decode(verified_bytes[f"{name}.json"]) for name in
               ("matches", "history", "sources", "quarantine", "polls")}
+    bounds = dict(BOUNDS, sources=10) if staging_version == STAGING_VERSION_V2 else BOUNDS
     for name, rows in values.items():
         _require(isinstance(rows, list), f"{name} must be an array")
-        bound = BOUNDS[{"history": "revisions", "quarantine": "quarantine_rows"}.get(name, name)]
+        bound = bounds[{"history": "revisions", "quarantine": "quarantine_rows"}.get(name, name)]
         _require(len(rows) <= bound, f"{name} exceeds row bounds")
     for count, name in (("matches", "matches"), ("revisions", "history"), ("sources", "sources"),
                         ("quarantine_rows", "quarantine")):
-        _integer(manifest.get(count), count, 0, BOUNDS[count])
+        _integer(manifest.get(count), count, 0, bounds[count])
         _require(manifest[count] == len(values[name]), f"Manifest {count} count differs from actual rows")
     for name in ("matches", "history"):
         parquet = pq.ParquetFile(pa.BufferReader(verified_bytes[f"{name}.parquet"]))
-        _require(parquet.metadata.num_rows == len(values[name]) and parquet.schema_arrow.equals(_schema()),
+        _require(parquet.metadata.num_rows == len(values[name]) and
+                 parquet.schema_arrow.equals(_schema(staging_version=staging_version)),
                  f"{name} Parquet schema/count differs from contract")
         _require(parquet.read().to_pylist() == values[name], f"{name} JSON/Parquet parity failed")
     catalogue = load_sources(resource_files("arena_lakehouse").joinpath("resources/openfootball_sources.json"))
@@ -229,13 +289,21 @@ def validate_staging(staging: Path) -> ValidatedStaging:
             raise ResearchValidationError("Invalid source catalogue row") from error
         expected = catalogue.get(source.source_id)
         _require(expected is not None and all(getattr(source, k) == getattr(expected, k) for k in
-                 ("competition_id", "season", "path", "name", "region", "team_namespace")),
+                 ("competition_id", "season", "path", "name", "region", "team_namespace", "repository", "team_type")),
                  "Source is outside the fixed OpenFootball catalogue allowlist")
+        _require(staging_version != STAGING_VERSION or source.repository == "football.json",
+                 "V1 cannot contain the World Cup repository")
+        if staging_version == STAGING_VERSION_V2:
+            _require("repository" in raw and "team_type" in raw, "V2 source catalogue lacks explicit repository/team type")
+        if source.repository == "worldcup.json":
+            _require(source.source_ref == expected.source_ref and source.team_aliases == expected.team_aliases,
+                     "Pinned World Cup source ref/aliases differ from reviewed catalogue")
         scope = (source.competition_id, source.season)
         _require(source.source_id not in sources and scope not in scopes, "Duplicate source/scope")
         sources[source.source_id] = source
         scopes.add(scope)
     _require(bool(sources) and bool(values["polls"]), "Research requires a source and a successful observed poll")
+    trusted_worldcup = _trusted_worldcup_rows(sources, staging_version)
     poll_ids, observations, poll_sources, changes, times = set(), Counter(), set(), 0, []
     quarantine_polls, quarantine_counts, known_archives, last_observed = set(), Counter(), set(), {}
     _require(all(isinstance(p, dict) and type(p.get("poll_id")) is int for p in values["polls"]), "Invalid poll IDs")
@@ -252,6 +320,8 @@ def validate_staging(staging: Path) -> ValidatedStaging:
                  "Invalid successful poll status")
         _require(isinstance(poll["sha256"], str) and re.fullmatch(r"[0-9a-f]{64}", poll["sha256"]) is not None,
                  "Invalid poll source checksum")
+        _require(sources[poll["source_id"]].repository != "worldcup.json" or poll["sha256"] == WORLD_CUP_SHA256,
+                 "Pinned World Cup poll checksum differs from reviewed source")
         instant = _timestamp(poll["observed_at"], "poll observation")
         _require(poll["source_id"] not in last_observed or last_observed[poll["source_id"]] <= instant,
                  "Source poll availability moves backwards")
@@ -277,7 +347,7 @@ def validate_staging(staging: Path) -> ValidatedStaging:
     as_of = max(times)
     history, event_ids, actual_observations = defaultdict(list), set(), Counter()
     for row in values["history"]:
-        observed, content_hash = _validate_row(row, sources)
+        observed, content_hash = _validate_row(row, sources, staging_version, trusted_worldcup)
         _require(observed <= as_of and row["event_id"] not in event_ids, "Duplicate event or future observation")
         event_ids.add(row["event_id"])
         history[row["match_id"]].append((row, observed, content_hash))
@@ -293,10 +363,12 @@ def validate_staging(staging: Path) -> ValidatedStaging:
         latest[ident] = records[-1][0]
     current = {}
     for row in values["matches"]:
-        _validate_row(row, sources)
+        _validate_row(row, sources, staging_version, trusted_worldcup)
         _require(row["match_id"] not in current, "Duplicate current match ID")
         current[row["match_id"]] = row
     _require(current == latest, "Current rows differ from latest revision history")
+    _require({ident for ident, row in current.items() if sources[row["source_id"]].repository == "worldcup.json"}
+             == set(trusted_worldcup), "World Cup coverage differs from bundled trusted source")
     quarantine_ids, quarantine_observations = set(), Counter()
     for problem in values["quarantine"]:
         _require(isinstance(problem, dict) and set(problem) ==
@@ -324,7 +396,7 @@ def validate_staging(staging: Path) -> ValidatedStaging:
                             values["sources"], values["quarantine"], values["polls"], _utc(as_of))
 
 
-def _competitions(matches, sources):
+def _competitions(matches, sources, staging_version=STAGING_VERSION):
     groups = defaultdict(list)
     for row in matches:
         groups[row["edition_id"]].append(row)
@@ -344,12 +416,18 @@ def _competitions(matches, sources):
             date_only=sum(r["kickoff_precision"] == "date_only" for r in rows),
             local_minute=sum(r["kickoff_precision"] == "local_minute" for r in rows),
             participants=[dict(team_id=ident, team_name=participants[ident]) for ident in sorted(participants)]))
+        if staging_version == STAGING_VERSION_V2:
+            result[-1].update(team_type=source["team_type"],
+                             offset_minute=sum(r["kickoff_precision"] == "offset_minute" for r in rows))
     return result
 
 
 def publish_research(staging: Path, destination: Path, *, generated_at=None) -> dict:
     """Publish a new checksum-covered research package after complete validation."""
     data = validate_staging(staging)
+    staging_version = data.manifest["staging_version"]
+    v2 = staging_version == STAGING_VERSION_V2
+    precision_note = PRECISION_NOTE_V2 if v2 else PRECISION_NOTE
     generated = _utc(generated_at or datetime.now(timezone.utc))
     _require(_timestamp(generated, "research generation") >= _timestamp(data.as_of, "as_of"),
              "Research publication cannot predate observed source evidence")
@@ -362,7 +440,7 @@ def publish_research(staging: Path, destination: Path, *, generated_at=None) -> 
     sources = sorted(data.sources, key=lambda row: row["source_id"])
     polls = sorted(data.polls, key=lambda row: row["poll_id"])
     quarantine = sorted(data.quarantine, key=lambda row: (row["source_id"], row["sha256"], row["row_index"], row["reason"]))
-    competitions = _competitions(matches, sources)
+    competitions = _competitions(matches, sources, staging_version)
     teams = {row[f"team_{side}_id"] for row in matches for side in ("a", "b")}
     quality = dict(match_count=len(matches), revision_count=len(history), source_count=len(sources),
         observed_results=sum(row["result_status"] == "observed_result" for row in matches),
@@ -371,9 +449,12 @@ def publish_research(staging: Path, destination: Path, *, generated_at=None) -> 
         local_minute=sum(row["kickoff_precision"] == "local_minute" for row in matches),
         unresolved_timezones=len(matches), unresolved_team_identities=len(teams), prediction_ineligible=len(matches),
         quarantine_rows=len(quarantine), scope="Observed current staging rows; not official standings",
-        notes=[PRECISION_NOTE, COVERAGE_NOTE, "Name-derived team identities remain unresolved and are not official IDs",
+        notes=[precision_note, COVERAGE_NOTE, "Name-derived team identities remain unresolved and are not official IDs",
                "Preserved ft/et/p scores do not establish a 90-minute prediction target",
                "Historical availability begins at actual revision collection, never at historical kickoff"])
+    if v2:
+        quality.update(offset_minute=sum(row["kickoff_precision"] == "offset_minute" for row in matches),
+                       unresolved_timezones=sum(row["utc_offset_minutes"] is None for row in matches))
     lineage = [dict(source="OpenFootball CC0 raw JSON", target="staging raw archives and source poll audit",
                     description="Fixed repository source URLs, body checksums and actual UTC collection evidence"),
                dict(source="staging current/history JSON + Parquet", target="gold/matches.parquet",
@@ -382,6 +463,9 @@ def publish_research(staging: Path, destination: Path, *, generated_at=None) -> 
                     description="Contiguous source revisions and poll availability; no UTC kickoff inferred"),
                dict(source="gold/matches.parquet", target="competitions.json and quality.json",
                     description="Observed calendar coverage, participants, result availability and unresolved precision")]
+    if v2:
+        lineage[2]["description"] = ("Contiguous source revisions and poll availability; UTC kickoff only from "
+                                     "explicit numeric offset; completion unknown")
     payloads = dict(matches=matches, history=history, sources=sources, competitions=competitions,
                     quality=quality, lineage=lineage, quarantine=quarantine, polls=polls)
     # Logical identity excludes both staging/research generation clocks and Parquet encoding metadata.
@@ -393,17 +477,18 @@ def publish_research(staging: Path, destination: Path, *, generated_at=None) -> 
     try:
         for name, payload in payloads.items():
             (temporary / f"{name}.json").write_text(_json(payload) + "\n", encoding="utf-8")
-        pq.write_table(pa.Table.from_pylist(matches, schema=_schema(True)), temporary / "gold/matches.parquet",
+        pq.write_table(pa.Table.from_pylist(matches, schema=_schema(True, staging_version)), temporary / "gold/matches.parquet",
                        compression="zstd")
-        pq.write_table(pa.Table.from_pylist(history, schema=_schema(True)), temporary / "gold/match_history.parquet",
+        pq.write_table(pa.Table.from_pylist(history, schema=_schema(True, staging_version)), temporary / "gold/match_history.parquet",
                        compression="zstd")
         files = {name: _sha((temporary / name).read_bytes()) for name in sorted(RESEARCH_FILES)}
-        manifest = dict(research_version=RESEARCH_VERSION, data_kind="open_data", provider="openfootball",
+        manifest = dict(research_version=RESEARCH_VERSION_V2 if v2 else RESEARCH_VERSION,
+            data_kind="open_data", provider="openfootball",
             license="CC0-1.0", canonical_compatible=False, dataset_version=dataset_version,
             generated_at=generated, as_of=data.as_of, matches=len(matches), revisions=len(history),
             quarantine_rows=len(quarantine), sources=len(sources), files=files,
             upstream_staging_fingerprint=data.upstream_staging_fingerprint,
-            precision_note=PRECISION_NOTE, coverage_note=COVERAGE_NOTE)
+            precision_note=precision_note, coverage_note=COVERAGE_NOTE)
         (temporary / "manifest.json").write_text(_json(manifest) + "\n", encoding="utf-8")
         _require(not destination.exists(), "Research destination appeared during publication")
         os.rename(temporary, destination)

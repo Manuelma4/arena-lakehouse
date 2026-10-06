@@ -12,7 +12,7 @@ private lesson content has not been copied.
 | 03. Spark/Delta streaming foundation | Implemented | AvailableNow, MERGE, CDF, checkpoint replay, correction, oracle parity |
 | 04. Prediction research baseline | Implemented on synthetic fixtures | Chronological split, availability cutoff, leakage tests, baseline metrics |
 | 05. Real API onboarding | Requires user's free tokens | First successful provider calls, field coverage report, reproducible private archive |
-| 05a. No-token open-data acquisition | Verified OpenFootball staging and research publication | Nine CC0 editions; raw archives, replay, source corrections, null UTC clocks, independent consumer contract |
+| 05a. No-token open-data acquisition | Verified OpenFootball staging and research publication | Ten CC0 editions; immutable archives, replay, explicit offset precision, source authenticity and independent consumer contract |
 | 06. Incremental execution path | Verified locally | Affected-match/history and team maintenance; cancellation tombstones; full oracle; bounded backfill |
 | 07. Operational reliability | Local stage runner verified; SLOs pending | Persistent attempts, bounded transient retries, restart after Silver commit, publication gate |
 | 08. Team/roster history and schema evolution | Planned | SCD2 identity history, contract migrations, late roster changes, archive reconciliation |
@@ -56,21 +56,55 @@ after Silver/recovery, SCD2 parity and gated snapshot publication. This is a loc
 single-writer demonstration with full independent verification, not a production
 scale or distributed reliability certification.
 
-Next work: real provider onboarding, freshness SLO/alerts, roster availability,
+Next work: authenticated provider onboarding, freshness SLO/alerts, roster availability,
 controlled larger benchmarks, explicit retention/deletion policy, managed
 workspace acceptance and the full portfolio release checklist.
 
 The [open-data acquisition design](docs/open-data-acquisition.md) adds a no-token
 football route and a concrete provider/competition/season coverage catalogue.
 Date-only kickoff precision, reviewed cross-provider identities and collection-time
-availability are acceptance requirements before activating those datasets.
+availability are acceptance requirements before activating additional datasets or real-data predictions.
 
-Milestone 0.4 activates the precision-aware research export for OpenFootball.
+Milestone 0.4 activated the precision-aware v1 research export for OpenFootball.
 Its recorded nine-source import contains 2,727 rows and preserves 1,639 unknown
 results. Actual collection establishes availability; no historical forecast or
 official table is derived from incomplete clocks and unverified score targets.
 Source revision audit, fixed catalogue packaging and installed-wheel verification
 complement the existing canonical Spark/Delta path.
+
+## World Cup and explicit contract evolution - 0.5.0
+
+The v2 research export adds the pinned OpenFootball men's World Cup 2026 source
+to the nine club editions. The measured package contains 2,831 current matches
+and revisions, ten sources, 20 successful polls and zero quarantine. A replay of
+all ten archives produced no new revisions and unchanged current/history content.
+See [v0.5 acquisition evidence](docs/evidence/openfootball-acquisition-v0.5.json).
+
+The 104 national-team matches preserve source group, ground, optional match number,
+separate FT/HT/ET/penalty scores and explicit numeric UTC offsets. Completion times
+remain unknown and all real research rows remain prediction-ineligible. The 72
+group matches receive no fabricated source numbers; 32 numbered knockout matches
+use identities independent of schedule, round and opponents. Club and national
+team namespaces remain distinct.
+
+Publication binds every World Cup business field to bundled, checksum-verified
+pinned bytes. Independent resealed score/group/ground/opponent mutations are
+rejected even when their JSON, Parquet and event identities agree. The authored
+catalogue cannot substitute a new ref or aliases for that immutable source.
+
+Version handling is explicit: v1 remains the default collector path, v2 requires
+a separate workspace, and neither original fixtures nor old stores are migrated.
+Actual v1 manifest/file hashes and old-store dry replay remain unchanged. Final
+software and the isolated 0.5.0 wheel are recorded in
+[v0.5 software evidence](docs/evidence/openfootball-software-verification-v0.5.json).
+No managed Databricks runtime, real-team predictive accuracy or new Spark scale
+claim is attached to this milestone.
+
+The next research extension must first define source availability, stable identities
+and score targets. Possible work includes reviewed additional international
+editions, source freshness checks and a genuine historical observation archive.
+The current JSON/TXT clock discrepancy stays documented until independently
+resolved; a source timestamp alone is insufficient to enable retrospective forecasts.
 
 Optional deeper extension after this foundation: PostgreSQL + genuine source CDC.
 Match API polling and downstream Delta CDF are not transaction-log CDC.

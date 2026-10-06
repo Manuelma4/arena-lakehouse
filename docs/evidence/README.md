@@ -3,6 +3,31 @@
 Environment: Windows host, Docker Desktop Linux backend, Python 3.11,
 Java 17, Spark 4.1.3 and Delta 4.4.0 (Spark 4.1 JVM artifact).
 
+## World Cup and ten-edition research - v0.5.0
+
+[openfootball-acquisition-v0.5.json](openfootball-acquisition-v0.5.json) records
+2,831 current matches/revisions, ten editions, 20 successful polls and zero
+quarantine. Nine verified club archives were replayed into a new v2 workspace;
+the pinned World Cup was fetched through the bounded no-token HTTP collector.
+Replaying all ten inputs produced zero revisions and identical current/history.
+
+The 104 World Cup rows preserve numeric offsets and separate FT/HT/ET/penalty
+scores. Publication binds business fields and full edition coverage to bundled,
+checksum-verified pinned bytes. Re-sealed mutations do not become authentic by
+retaining the original declared body checksum. Completion remains unknown, all
+real research predictions remain disabled, and the JSON/TXT clock disagreement
+is documented rather than silently reconciled.
+
+[openfootball-software-verification-v0.5.json](openfootball-software-verification-v0.5.json)
+records the final 207-test suite, independent hostile-source cases, Ruff and a fresh
+0.5.0 wheel imported in isolated Python outside the repository. The wheel validates
+and republishes both v1 and v2 with identical manifests/payload hashes at fixed
+publication clocks; packaged catalogue and trusted raw resources are included.
+The actual legacy SQLite store dry replay leaves its bytes and 2,727 rows unchanged.
+No new Spark benchmark or managed workspace run is claimed in this milestone.
+
+## Earlier evidence retained
+
 `openfootball-acquisition-v0.4.json` records an actual nine-source no-token CC0
 download: 2,727 current/history records, zero quarantine, 1,088 source results
 and 1,639 unknowns. Exact archive replay produced zero new revisions and retained

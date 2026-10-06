@@ -12,7 +12,8 @@ import pyarrow.parquet as pq
 import pytest
 
 from arena_lakehouse.openfootball import (
-    AcquisitionError, OpenFootballCollector, load_sources, parse_payload,
+    AcquisitionError, OpenFootballCollector, STAGING_VERSION, STAGING_VERSION_V2,
+    WORLD_CUP_REF, WORLD_CUP_SHA256, load_sources, parse_payload,
 )
 
 
@@ -33,11 +34,14 @@ def read_state(collector, table="current"):
 
 def test_catalogue_has_exactly_verified_no_token_sources():
     sources = load_sources(CATALOGUE)
-    assert len(sources) == 9
-    assert {s.region for s in sources.values()} == {"Europe", "South America"}
+    assert len(sources) == 10
+    assert {s.region for s in sources.values()} == {"Europe", "South America", "International"}
     assert sum(s.region == "Europe" for s in sources.values()) == 5
     assert all(s.url.startswith("https://raw.githubusercontent.com/openfootball/football.json/master/")
-               for s in sources.values())
+               for s in sources.values() if s.team_type == "club")
+    worldcup = sources["worldcup-2026"]
+    assert worldcup.url == f"https://raw.githubusercontent.com/openfootball/worldcup.json/{WORLD_CUP_REF}/2026/worldcup.json"
+    assert worldcup.team_type == "national"
 
 
 @pytest.mark.parametrize("bad", ["../private", "https://example.test/data", "2026-27/../data.json"])
@@ -314,3 +318,118 @@ def test_collection_time_requires_aware_instant_and_converts_offset():
         parse_payload(body(MATCH), SOURCE, NOW.replace(tzinfo=None))
     row = parse_payload(body(MATCH), SOURCE, NOW.astimezone(timezone(timedelta(hours=-5)))).rows[0]
     assert row["observed_at"] == "2026-10-06T12:00:00.000000Z"
+
+
+WORLD_CUP = load_sources(CATALOGUE)['worldcup-2026']
+PINNED_BODY = Path(__file__).parent / 'fixtures/worldcup-2026-pinned.json'
+
+
+def test_worldcup_pinned_fixture_preserves_native_precision_and_scores():
+    raw = PINNED_BODY.read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == WORLD_CUP_SHA256
+    parsed = parse_payload(raw, WORLD_CUP, NOW, staging_version=STAGING_VERSION_V2)
+    assert parsed.quarantine == [] and len(parsed.rows) == 104
+    assert len({r[f'team_{side}_id'] for r in parsed.rows for side in ('a', 'b')}) == 48
+    assert {r['source_match_number'] for r in parsed.rows if r['source_match_number'] is not None} == set(range(73, 105))
+    assert sum(r['source_match_number'] is None for r in parsed.rows) == 72
+    final = next(r for r in parsed.rows if r['source_match_number'] == 104)
+    assert (final['score_a'], final['score_b']) == (0, 0)
+    assert json.loads(final['score_details_json']) == {'ft': [0, 0], 'ht': [0, 0], 'et': [1, 0]}
+    assert all(r['kickoff_precision'] == 'offset_minute' and r['utc_offset_minutes'] is not None for r in parsed.rows)
+    assert all(r['timezone'] is r['completed_at'] is None and r['prediction_eligible'] is False for r in parsed.rows)
+    rollover = next(r for r in parsed.rows if r['team_a'] == 'South Korea' and r['source_date'] == '2026-06-11')
+    assert rollover['local_time'] == '20:00' and rollover['utc_offset_minutes'] == -360
+    assert rollover['start_time'] == '2026-06-12T02:00:00.000000Z'
+    assert rollover['source_group'] == 'Group A' and rollover['ground'] == 'Guadalajara (Zapopan)'
+
+
+@pytest.mark.parametrize('clock,expected', [
+    ('23:30 UTC-4', '2026-06-12T03:30:00.000000Z'),
+    ('00:30 UTC+5:30', '2026-06-10T19:00:00.000000Z'),
+    ('12:00 UTC+0', '2026-06-11T12:00:00.000000Z'),
+])
+def test_explicit_numeric_offsets_include_calendar_rollover(clock, expected):
+    row = dict(round='Group A', date='2026-06-11', time=clock, team1='Nation One', team2='Nation Two')
+    parsed = parse_payload(body(row, source=WORLD_CUP), WORLD_CUP, NOW, staging_version=STAGING_VERSION_V2)
+    assert parsed.quarantine == [] and parsed.rows[0]['start_time'] == expected
+
+
+@pytest.mark.parametrize('changes', [dict(time='20:00 CET'), dict(time='20:00 UTC-14:01'),
+    dict(time='20:00 UTC+15'), dict(time='20:00 UTC-4:60'), dict(num=True), dict(num=74.0),
+    dict(group=[]), dict(ground=''), dict(num=0)])
+def test_v2_unsupported_clocks_and_source_metadata_quarantine(changes):
+    match = dict(round='Round of 32', date='2026-06-29', time='20:00 UTC-4',
+                 team1='Nation One', team2='Nation Two', num=74)
+    parsed = parse_payload(body(dict(match, **changes), source=WORLD_CUP), WORLD_CUP, NOW,
+                           staging_version=STAGING_VERSION_V2)
+    assert parsed.rows == [] and len(parsed.quarantine) == 1
+
+
+def test_numbered_identity_survives_corrections_but_conflicts_are_symmetric():
+    match = dict(round='Round of 32', date='2026-06-29', time='20:00 UTC-4',
+                 team1='Nation One', team2='Nation Two', num=74, score={'ft': [1, 1], 'et': [1, 1], 'p': [3, 4]})
+    correction = dict(match, round='Revised source round', date='2026-06-30', team1='Reviewed Nation One')
+    before = parse_payload(body(match, source=WORLD_CUP), WORLD_CUP, NOW, staging_version=STAGING_VERSION_V2)
+    after = parse_payload(body(correction, source=WORLD_CUP), WORLD_CUP, NOW, staging_version=STAGING_VERSION_V2)
+    assert before.rows[0]['match_id'] == after.rows[0]['match_id']
+    assert before.rows[0]['identity_basis'] == 'competition-season-source-match-number'
+    for rows in ((match, correction), (correction, match)):
+        conflict = parse_payload(body(*rows, source=WORLD_CUP), WORLD_CUP, NOW, staging_version=STAGING_VERSION_V2)
+        assert conflict.rows == [] and len(conflict.quarantine) == 2
+
+
+def test_pinned_worldcup_acquisition_is_idempotent_and_archives_exact_bytes(tmp_path):
+    collector = OpenFootballCollector(tmp_path, staging_version=STAGING_VERSION_V2)
+    raw = PINNED_BODY.read_bytes()
+    first = collector.ingest_bytes(WORLD_CUP, raw, observed_at=NOW)
+    replay = collector.ingest_bytes(WORLD_CUP, raw, observed_at=NOW + timedelta(minutes=1))
+    assert first.changed == first.accepted == replay.unchanged == 104
+    assert replay.changed == 0 and len(read_state(collector, 'history')) == 104
+    assert (tmp_path / first.archive_path).read_bytes() == raw
+    assert all(row['observed_at'] == first.observed_at for row in read_state(collector))
+    stage = tmp_path / 'export'
+    manifest = collector.export(stage)
+    assert manifest['staging_version'] == STAGING_VERSION_V2
+    schema = pq.read_table(stage / 'matches.parquet').schema
+    assert str(schema.field('source_match_number').type) == str(schema.field('utc_offset_minutes').type) == 'int64'
+
+
+def test_pinned_source_rejects_modified_bytes_before_archival(tmp_path):
+    collector = OpenFootballCollector(tmp_path / 'runtime', staging_version=STAGING_VERSION_V2)
+    raw = PINNED_BODY.read_bytes() + b' '
+    with pytest.raises(AcquisitionError, match='reviewed immutable source'):
+        collector.ingest_bytes(WORLD_CUP, raw, observed_at=NOW)
+    assert not collector.workspace.exists()
+
+
+@pytest.mark.parametrize('first_version,second_version', [(STAGING_VERSION, STAGING_VERSION_V2),
+                                                         (STAGING_VERSION_V2, STAGING_VERSION)])
+def test_workspace_version_cannot_migrate_implicitly(tmp_path, first_version, second_version):
+    first = OpenFootballCollector(tmp_path, staging_version=first_version)
+    first.ingest_bytes(SOURCE, body(MATCH), observed_at=NOW)
+    before = first.state_path.read_bytes()
+    second = OpenFootballCollector(tmp_path, staging_version=second_version)
+    with pytest.raises(AcquisitionError, match='separate workspace'):
+        second.ingest_bytes(SOURCE, body(MATCH), observed_at=NOW + timedelta(minutes=1))
+    with pytest.raises(AcquisitionError, match='separate workspace'):
+        second.export(tmp_path / 'wrong-version-export')
+    assert first.state_path.read_bytes() == before
+
+
+def test_old_v1_workspace_fingerprint_and_business_identity_remain_exact(tmp_path):
+    # Golden values measured from the pre-v2 collector at HEAD, not recomputed with the new code.
+    assert SOURCE.fingerprint == 'f96477f8ec54b8cb1c4c6638a8103f9d05e74c1b15b6dcbace31e4ae506ebf9f'
+    collector = OpenFootballCollector(tmp_path)
+    collector.ingest_bytes(SOURCE, body(MATCH), observed_at=NOW)
+    row = read_state(collector)[0]
+    assert row['match_id'] == 'openfootball:match:e5b76d8146eb337a5bbfc167'
+    assert row['source_sha256'] == '845ecd7a527e3c19c5b05e731f8f6650e20a4dc00368955a9e4473e63310e067'
+    assert row['event_id'] == row['match_id'] + ':1:921ebf8cba170c2f'
+    with sqlite3.connect(collector.state_path) as connection:
+        connection.execute('DROP TABLE metadata')
+    replay = OpenFootballCollector(tmp_path).ingest_bytes(SOURCE, body(MATCH), observed_at=NOW + timedelta(minutes=1))
+    assert replay.changed == 0 and replay.unchanged == 1
+    export = tmp_path / 'legacy'
+    collector.export(export)
+    assert 'repository' not in json.loads((export / 'sources.json').read_text())[0]
+    assert 'team_type' not in json.loads((export / 'matches.json').read_text())[0]

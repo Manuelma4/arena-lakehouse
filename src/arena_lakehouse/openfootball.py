@@ -16,7 +16,7 @@ import unicodedata
 import uuid
 from contextlib import closing
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from importlib.resources import files
 from pathlib import Path
 
@@ -26,8 +26,11 @@ import pyarrow.parquet as pq
 
 
 STAGING_VERSION = "openfootball-staging-1.0"
+STAGING_VERSION_V2 = "openfootball-staging-2.0"
 RAW_BASE = "https://raw.githubusercontent.com/openfootball/football.json/master/"
 LICENSE_URL = "https://github.com/openfootball/football.json/blob/master/LICENSE.md"
+WORLD_CUP_REF = "516d3825c3bd23fdc298c4014e84bde78f2d4965"
+WORLD_CUP_SHA256 = "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca"
 MAX_BYTES = 10_000_000
 MAX_ROWS = 10_000
 
@@ -78,6 +81,8 @@ class Source:
     team_namespace: str
     team_aliases: dict | None = None
     source_ref: str = "master"
+    repository: str = "football.json"
+    team_type: str = "club"
 
     def __post_init__(self):
         for field in ("source_id", "competition_id", "team_namespace"):
@@ -91,6 +96,13 @@ class Source:
         _name(self.region, "region")
         if not re.fullmatch(r"master|[0-9a-f]{40}", self.source_ref):
             raise ValueError("source_ref must be master or a pinned commit SHA")
+        if self.repository not in {"football.json", "worldcup.json"} or self.team_type not in {"club", "national"}:
+            raise ValueError("Unsupported repository/team_type")
+        if self.repository == "worldcup.json" and (self.source_ref != WORLD_CUP_REF or
+                self.path != "2026/worldcup.json" or self.team_type != "national"):
+            raise ValueError("World Cup source must use the reviewed pinned 2026 JSON edition")
+        if self.repository == "football.json" and self.team_type != "club":
+            raise ValueError("Club repository cannot declare national teams")
         if self.team_aliases is not None:
             if not isinstance(self.team_aliases, dict):
                 raise ValueError("team_aliases must contain reviewed name mappings")
@@ -100,16 +112,27 @@ class Source:
 
     @property
     def url(self):
-        return RAW_BASE.replace("/master/", f"/{self.source_ref}/") + self.path
+        return f"https://raw.githubusercontent.com/openfootball/{self.repository}/{self.source_ref}/{self.path}"
+
+    @property
+    def license_url(self):
+        return f"https://github.com/openfootball/{self.repository}/blob/{self.source_ref}/LICENSE.md"
+
+    def to_wire(self, staging_version=STAGING_VERSION):
+        row = asdict(self)
+        if staging_version == STAGING_VERSION and self.repository == "football.json" and self.team_type == "club":
+            row.pop("repository")
+            row.pop("team_type")
+        return row
 
     @property
     def fingerprint(self):
-        return _hash(asdict(self))
+        return _hash(self.to_wire())
 
 
 def load_sources(path: Path) -> dict[str, Source]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
-    if payload.get("catalogue_version") != "1.0" or payload.get("license") != "CC0-1.0":
+    if payload.get("catalogue_version") not in {"1.0", "2.0"} or payload.get("license") != "CC0-1.0":
         raise ValueError("Unsupported source catalogue or license")
     sources, scopes = {}, set()
     for row in payload["sources"]:
@@ -146,9 +169,32 @@ def _score(value):
     return (ft[0], ft[1], _json(details)) if ft else (None, None, _json(details))
 
 
-def parse_payload(body: bytes, source: Source, observed_at: datetime) -> ParseResult:
+def _kickoff(value, source_date, *, allow_offset):
+    if value is None:
+        return None, None, None, "date_only"
+    if isinstance(value, str) and re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", value):
+        return value, None, None, "local_minute"
+    match = re.fullmatch(r"((?:[01]\d|2[0-3]):[0-5]\d) UTC([+-])(\d{1,2})(?::([0-5]\d))?", value) \
+        if isinstance(value, str) and allow_offset else None
+    if match is None:
+        raise ValueError("time must use local HH:MM or an explicitly supported numeric UTC offset")
+    clock, sign, hours, minutes = match.groups()
+    offset = int(hours) * 60 + int(minutes or 0)
+    if offset > 14 * 60:
+        raise ValueError("UTC offset exceeds the supported 14-hour bound")
+    offset *= -1 if sign == "-" else 1
+    instant = datetime.fromisoformat(source_date + "T" + clock).replace(
+        tzinfo=timezone(timedelta(minutes=offset))).astimezone(timezone.utc)
+    return clock, offset, _utc(instant), "offset_minute"
+
+
+def parse_payload(body: bytes, source: Source, observed_at: datetime, *, staging_version=STAGING_VERSION) -> ParseResult:
     """Pure offline parser. Conflicting identities are quarantined symmetrically."""
     observed = _utc(observed_at)
+    if staging_version not in {STAGING_VERSION, STAGING_VERSION_V2}:
+        raise ValueError("Unsupported staging version")
+    if staging_version == STAGING_VERSION and source.repository != "football.json":
+        raise ValueError("World Cup acquisition requires an explicit v2 staging workspace")
     if not isinstance(body, bytes) or len(body) > MAX_BYTES:
         raise ValueError("Payload must be bytes within the 10 MB staging bound")
     checksum = _hash(body)
@@ -175,10 +221,8 @@ def parse_payload(body: bytes, source: Source, observed_at: datetime) -> ParseRe
             if not isinstance(source_date, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", source_date):
                 raise ValueError("date must use YYYY-MM-DD")
             date.fromisoformat(source_date)
-            local_time = raw.get("time")
-            if local_time is not None and (not isinstance(local_time, str)
-                    or not re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", local_time)):
-                raise ValueError("time must use local HH:MM, with no inferred timezone")
+            local_time, offset, start, precision = _kickoff(raw.get("time"), source_date,
+                allow_offset=staging_version == STAGING_VERSION_V2 and source.repository == "worldcup.json")
             sf, sa, details = _score(raw.get("score"))
             aliases = source.team_aliases or {}
             a_identity = _name(aliases.get(a, a), "canonical team1")
@@ -191,22 +235,34 @@ def parse_payload(body: bytes, source: Source, observed_at: datetime) -> ParseRe
             if type(occurrence) is not int or not 1 <= occurrence <= 100:
                 raise ValueError("occurrence must be an explicit integer 1..100")
             ident = [source.competition_id, source.season, round_name, team_a_id, team_b_id, occurrence]
+            number = raw.get("num") if staging_version == STAGING_VERSION_V2 else None
+            if number is not None:
+                if type(number) is not int or not 1 <= number <= MAX_ROWS:
+                    raise ValueError("num must be an integer 1..10000")
+                ident = [source.competition_id, source.season, number]
             match_id = "openfootball:match:" + _hash(ident)[:24]
-            row = dict(staging_version=STAGING_VERSION, provider="openfootball", sport="football",
+            row = dict(staging_version=staging_version, provider="openfootball", sport="football",
                 source_id=source.source_id, competition_id=source.competition_id, competition=source.name,
                 season=source.season, round=round_name, occurrence=occurrence, match_id=match_id,
                 team_a_id=team_a_id, team_a=a, team_b_id=team_b_id, team_b=b,
                 team_namespace=source.team_namespace, team_identity_status="unresolved_name_derived_not_official",
                 source_date=source_date, local_time=local_time, timezone=None,
-                kickoff_precision="local_minute" if local_time else "date_only",
-                start_time=None, completed_at=None, result_status="observed_result" if sf is not None
+                kickoff_precision=precision,
+                start_time=start, completed_at=None, result_status="observed_result" if sf is not None
                 else "unknown_result", score_a=sf, score_b=sa, score_details_json=details,
                 score_basis="source_ft_unverified_regulation" if sf is not None else "unknown",
                 prediction_eligible=False,
                 observed_at=observed, source_url=source.url, source_sha256=checksum,
-                source_ref=source.source_ref, license="CC0-1.0", license_url=LICENSE_URL,
+                source_ref=source.source_ref, license="CC0-1.0",
+                license_url=LICENSE_URL if staging_version == STAGING_VERSION else source.license_url,
                 availability_basis="first_collected_revision",
-                identity_basis="competition-season-round-ordered-teams-occurrence", quality_score=1.0)
+                identity_basis="competition-season-source-match-number" if number is not None
+                else "competition-season-round-ordered-teams-occurrence", quality_score=1.0)
+            if staging_version == STAGING_VERSION_V2:
+                row.update(team_type=source.team_type, source_match_number=number,
+                           source_group=_name(raw["group"], "group") if raw.get("group") is not None else None,
+                           ground=_name(raw["ground"], "ground") if raw.get("ground") is not None else None,
+                           utc_offset_minutes=offset)
             candidates.setdefault(match_id, []).append((index, raw, row))
         except ValueError as error:
             quarantine.append(dict(index=index, reason=str(error), raw=raw))
@@ -241,8 +297,10 @@ class CollectionReport:
 class OpenFootballCollector:
     """Single-worker staging collector with transactional cursor/revision updates."""
 
-    def __init__(self, workspace: Path, client=None, *, attempts=3, min_interval=1.0,
+    def __init__(self, workspace: Path, client=None, *, staging_version=STAGING_VERSION, attempts=3, min_interval=1.0,
                  sleep=time.sleep, monotonic=time.monotonic):
+        if staging_version not in {STAGING_VERSION, STAGING_VERSION_V2}:
+            raise ValueError("Unsupported staging version")
         if type(attempts) is not int or not 1 <= attempts <= 5:
             raise ValueError("attempts must be 1..5")
         if not isinstance(min_interval, (float, int)) or not math.isfinite(min_interval) or not 0 <= min_interval <= 60:
@@ -250,11 +308,27 @@ class OpenFootballCollector:
         self.workspace = Path(workspace)
         self.state_path = self.workspace / "staging.sqlite"
         self.client, self.attempts, self.min_interval = client, attempts, min_interval
+        self.staging_version = staging_version
         self.sleep, self.monotonic, self.last_request = sleep, monotonic, None
+
+    def _check_version(self, connection):
+        has_metadata = connection.execute("SELECT name FROM sqlite_master WHERE name='metadata'").fetchone()
+        row = connection.execute("SELECT value FROM metadata WHERE key='staging_version'").fetchone() \
+            if has_metadata else None
+        stored = row[0] if row else STAGING_VERSION
+        if stored != self.staging_version:
+            raise AcquisitionError("Workspace staging version differs; create a separate workspace, never migrate implicitly")
 
     def _connect(self):
         self.workspace.mkdir(parents=True, exist_ok=True)
+        existing = self.state_path.exists()
         connection = sqlite3.connect(self.state_path, timeout=5)
+        if existing:
+            try:
+                self._check_version(connection)
+            except Exception:
+                connection.close()
+                raise
         connection.executescript("""
             CREATE TABLE IF NOT EXISTS sources(source_id TEXT PRIMARY KEY, fingerprint TEXT, source_json TEXT);
             CREATE TABLE IF NOT EXISTS cache(source_id TEXT PRIMARY KEY, sha256 TEXT, etag TEXT,
@@ -268,12 +342,19 @@ class OpenFootballCollector:
             CREATE TABLE IF NOT EXISTS polls(poll_id INTEGER PRIMARY KEY, source_id TEXT, observed_at TEXT,
                 status TEXT, sha256 TEXT, changed INTEGER, quarantined INTEGER);
         """)
+        if not existing:
+            connection.execute("CREATE TABLE metadata(key TEXT PRIMARY KEY, value TEXT)")
+            connection.execute("INSERT INTO metadata VALUES ('staging_version',?)", [self.staging_version])
+            connection.commit()
         return connection
 
     def _read_cache(self, source):
+        if self.staging_version == STAGING_VERSION and source.repository != "football.json":
+            raise ValueError("World Cup acquisition requires an explicit v2 staging workspace")
         if not self.state_path.exists():
             return None
         with closing(sqlite3.connect(self.state_path.resolve().as_uri() + "?mode=ro", uri=True)) as connection:
+            self._check_version(connection)
             previous = connection.execute("SELECT fingerprint FROM sources WHERE source_id=?", [source.source_id]).fetchone()
             if previous and previous[0] != source.fingerprint:
                 raise AcquisitionError("Source catalogue changed; use a reviewed new source ID/workspace")
@@ -283,6 +364,8 @@ class OpenFootballCollector:
         if cache and (not re.fullmatch(r"[0-9a-f]{64}", cache["sha256"]) or
                       cache["archive_path"] != f"raw/{source.source_id}/{cache['sha256']}.json"):
             raise AcquisitionError("Invalid content-addressed archive metadata")
+        if cache and source.repository == "worldcup.json" and cache["sha256"] != WORLD_CUP_SHA256:
+            raise AcquisitionError("Pinned World Cup cache checksum differs from the reviewed immutable source")
         return cache
 
     def _request(self, client, source, headers):
@@ -357,6 +440,8 @@ class OpenFootballCollector:
         if not isinstance(body, bytes) or len(body) > MAX_BYTES:
             raise ValueError("Payload must be bytes within the 10 MB staging bound")
         checksum = _hash(body)
+        if source.repository == "worldcup.json" and checksum != WORLD_CUP_SHA256:
+            raise AcquisitionError("Pinned World Cup body checksum differs from the reviewed immutable source")
         archive_path = f"raw/{source.source_id}/{checksum}.json"
         if not dry_run:
             archive = self.workspace / archive_path
@@ -371,7 +456,7 @@ class OpenFootballCollector:
                     os.replace(temporary, archive)
                 finally:
                     temporary.unlink(missing_ok=True)
-        parsed = parse_payload(body, source, observed_at)
+        parsed = parse_payload(body, source, observed_at, staging_version=self.staging_version)
         validators = validators or {}
         cache = dict(sha256=checksum, archive_path=archive_path, etag=validators.get("etag"),
                      last_modified=validators.get("last-modified"))
@@ -386,6 +471,8 @@ class OpenFootballCollector:
                       if dry_run and self.state_path.exists() else sqlite3.connect(":memory:")
                       if dry_run else self._connect())
         try:
+            if self.state_path.exists():
+                self._check_version(connection)
             if not dry_run:
                 connection.execute("BEGIN IMMEDIATE")
             has_tables = connection.execute("SELECT name FROM sqlite_master WHERE name='sources'").fetchone()
@@ -399,7 +486,7 @@ class OpenFootballCollector:
                 raise ValueError("Collection time cannot move backwards")
             if not dry_run:
                 connection.execute("INSERT OR IGNORE INTO sources VALUES (?,?,?)",
-                                   [source.source_id, source.fingerprint, _json(asdict(source))])
+                                   [source.source_id, source.fingerprint, _json(source.to_wire(self.staging_version))])
             for row in parsed.rows if parsed else []:
                 business = {k: v for k, v in row.items() if k not in
                             ("observed_at", "source_sha256", "source_url", "license", "license_url")}
@@ -449,6 +536,7 @@ class OpenFootballCollector:
         if output.exists():
             raise ValueError("Staging export destination already exists")
         with closing(sqlite3.connect(self.state_path.resolve().as_uri() + "?mode=ro", uri=True)) as connection:
+            self._check_version(connection)
             connection.execute("BEGIN")
             current = [json.loads(row[0]) for row in connection.execute("SELECT row_json FROM current ORDER BY match_id")]
             history = [json.loads(row[0]) for row in connection.execute(
@@ -465,18 +553,17 @@ class OpenFootballCollector:
         for name, rows in (("matches", current), ("history", history), ("sources", sources),
                            ("quarantine", quarantine), ("polls", polls)):
             (temporary / f"{name}.json").write_text(_json(rows) + "\n", encoding="utf-8")
-        schema = pa.schema([(field, pa.int64() if field in ("score_a", "score_b", "revision", "occurrence")
-                             else pa.float64() if field == "quality_score"
-                             else pa.bool_() if field == "prediction_eligible" else pa.string())
-                            for field in _PARQUET_FIELDS])
+        schema = parquet_schema(self.staging_version)
         for name, rows in (("matches", current), ("history", history)):
             pq.write_table(pa.Table.from_pylist(rows, schema=schema), temporary / f"{name}.parquet", compression="zstd")
         files = {path.name: _hash(path.read_bytes()) for path in sorted(temporary.iterdir())}
-        manifest = dict(staging_version=STAGING_VERSION, data_kind="open_data", provider="openfootball",
+        manifest = dict(staging_version=self.staging_version, data_kind="open_data", provider="openfootball",
             license="CC0-1.0", license_url=LICENSE_URL, canonical_compatible=False,
             generated_at=_utc(datetime.now(timezone.utc)), matches=len(current), revisions=len(history),
             quarantine_rows=len(quarantine), sources=len(sources), files=files,
-            precision_note="Source dates/local wall times have no inferred UTC kickoff or completion instant")
+            precision_note="Source dates/local wall times have no inferred UTC kickoff or completion instant"
+            if self.staging_version == STAGING_VERSION else
+            "UTC kickoff is derived only from an explicit source numeric offset; completion remains unknown")
         (temporary / "manifest.json").write_text(_json(manifest) + "\n", encoding="utf-8")
         os.replace(temporary, output)
         return manifest
@@ -489,6 +576,19 @@ _PARQUET_FIELDS = ("staging_version", "provider", "sport", "source_id", "competi
     "score_details_json", "score_basis", "prediction_eligible", "observed_at", "source_url", "source_sha256",
     "source_ref", "license", "license_url",
     "availability_basis", "identity_basis", "quality_score", "revision", "event_id")
+_PARQUET_FIELDS_V2 = _PARQUET_FIELDS + (
+    "team_type", "source_match_number", "source_group", "ground", "utc_offset_minutes")
+
+
+def parquet_schema(staging_version=STAGING_VERSION, *, edition=False):
+    if staging_version not in {STAGING_VERSION, STAGING_VERSION_V2}:
+        raise ValueError("Unsupported Parquet staging version")
+    fields = _PARQUET_FIELDS if staging_version == STAGING_VERSION else _PARQUET_FIELDS_V2
+    schema = [(field, pa.int64() if field in
+               ("score_a", "score_b", "revision", "occurrence", "source_match_number", "utc_offset_minutes")
+               else pa.float64() if field == "quality_score" else pa.bool_() if field == "prediction_eligible"
+               else pa.string()) for field in fields]
+    return pa.schema(schema + ([("edition_id", pa.string())] if edition else []))
 
 
 def main(argv=None):
@@ -496,6 +596,8 @@ def main(argv=None):
     parser.add_argument("--sources", type=Path,
                         default=files("arena_lakehouse").joinpath("resources/openfootball_sources.json"))
     parser.add_argument("--workspace", type=Path, default=Path("data/openfootball"))
+    parser.add_argument("--staging-version", choices=(STAGING_VERSION, STAGING_VERSION_V2), default=STAGING_VERSION,
+                        help="Use a separate workspace for v2; existing v1 state is never migrated")
     commands = parser.add_subparsers(dest="command", required=True)
     collect = commands.add_parser("collect")
     collect.add_argument("--source", required=True)
@@ -506,7 +608,7 @@ def main(argv=None):
     export = commands.add_parser("export")
     export.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
-    collector = OpenFootballCollector(args.workspace)
+    collector = OpenFootballCollector(args.workspace, staging_version=args.staging_version)
     if args.command == "export":
         result = collector.export(args.output)
     else:
