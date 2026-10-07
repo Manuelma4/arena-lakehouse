@@ -1,0 +1,126 @@
+{
+    "schema_version":  "arena-scale-preparation-1.0",
+    "measured_at":  "2026-10-07T10:54:05.5816583Z",
+    "status":  "generated_and_validated_only",
+    "environment":  "Windows host; Python 3.11; local source selected through PYTHONPATH",
+    "producer_git_commit":  "8912bb13dfa3185be178bc4c507771fe67e7230d",
+    "runtime_source":  {
+                           "sha256_before":  "d2043868203a0bfdcff705871b4115ec2fddd08700548137d56a58c8d6ccda92",
+                           "path":  "src/arena_lakehouse/scale.py",
+                           "sha256_after":  "d2043868203a0bfdcff705871b4115ec2fddd08700548137d56a58c8d6ccda92",
+                           "unchanged":  true
+                       },
+    "workload":  {
+                     "data_kind":  "synthetic",
+                     "observations":  1000000,
+                     "config":  {
+                                    "observations":  1000000,
+                                    "namespace":  "scale-1m-20261007-001",
+                                    "seed":  42,
+                                    "shard_observations":  100000,
+                                    "teams_per_sport":  64,
+                                    "shuffle_buffer":  1000,
+                                    "horizon_days":  30
+                                },
+                     "dataset_version":  "29a1776152be2dac",
+                     "shards":  [
+                                    {
+                                        "path":  "shards/000000.jsonl",
+                                        "observations":  100000,
+                                        "bytes":  59963534,
+                                        "sha256":  "69f6aff8ffe45f3c24bb051d49ec34b2ac725a18fa3f6f8850392b6f34a5148b"
+                                    },
+                                    {
+                                        "path":  "shards/000001.jsonl",
+                                        "observations":  100000,
+                                        "bytes":  59962174,
+                                        "sha256":  "e004caf3a5d36e7dd07cd9043bf3f958b8eed3af316bc3a495cd3f796ce6dd8f"
+                                    },
+                                    {
+                                        "path":  "shards/000002.jsonl",
+                                        "observations":  100000,
+                                        "bytes":  59962758,
+                                        "sha256":  "8f04567594c4f3a7c565d1c0a9edbe472969630120b3da57dd5240d0831042b9"
+                                    },
+                                    {
+                                        "path":  "shards/000003.jsonl",
+                                        "observations":  100000,
+                                        "bytes":  59963082,
+                                        "sha256":  "6ca0ee32a4771256d248da110e96e9d164b1b56a38f29ca43169d9921465024a"
+                                    },
+                                    {
+                                        "path":  "shards/000004.jsonl",
+                                        "observations":  100000,
+                                        "bytes":  59963634,
+                                        "sha256":  "e3ffdfaf2675a567c63dd354aa25c546d432d83623dd949dd97b552a3db726c3"
+                                    },
+                                    {
+                                        "path":  "shards/000005.jsonl",
+                                        "observations":  100000,
+                                        "bytes":  59965130,
+                                        "sha256":  "de7dbbc8addde9ac2156dcb09b497517fe3105ac63a04f163936826480f08354"
+                                    },
+                                    {
+                                        "path":  "shards/000006.jsonl",
+                                        "observations":  100000,
+                                        "bytes":  59964934,
+                                        "sha256":  "7e5cb709a8822dd79131a53caaab7752f6011a809b8823db246cb62799ef7baf"
+                                    },
+                                    {
+                                        "path":  "shards/000007.jsonl",
+                                        "observations":  100000,
+                                        "bytes":  59961722,
+                                        "sha256":  "ff9a16d17440cd6b64174073e530bbb03536cfe0a6b00242a70654dd407b8323"
+                                    },
+                                    {
+                                        "path":  "shards/000008.jsonl",
+                                        "observations":  100000,
+                                        "bytes":  59962674,
+                                        "sha256":  "c6ec5970f940bdc192dfc671fe5814e174cbd68b88bf6a46ecf1757555a1e766"
+                                    },
+                                    {
+                                        "path":  "shards/000009.jsonl",
+                                        "observations":  100000,
+                                        "bytes":  59963300,
+                                        "sha256":  "adf89ca1e52af5fdf1c07bf9f4107dcf6fe4960ba28b3be15e79bbebee4dc6dc"
+                                    }
+                                ],
+                     "matches":  500000,
+                     "manifest_sha256":  "338d4527513d668c3d71a05da8a39d533e19abfadef6db4fa50c078f1922d873"
+                 },
+    "measurements":  {
+                         "generation_seconds":  42.49033920000147,
+                         "validation_seconds":  67.97836539999844,
+                         "validation_resources":  {
+                                                      "cgroup_memory_current_bytes":  null,
+                                                      "cgroup_memory_peak_bytes":  null,
+                                                      "cgroup_memory_limit_bytes":  null,
+                                                      "process_max_rss_bytes":  null,
+                                                      "child_max_rss_bytes":  null
+                                                  },
+                         "generation_resources":  {
+                                                      "cgroup_memory_current_bytes":  null,
+                                                      "cgroup_memory_peak_bytes":  null,
+                                                      "cgroup_memory_limit_bytes":  null,
+                                                      "process_max_rss_bytes":  null,
+                                                      "child_max_rss_bytes":  null
+                                                  },
+                         "disk_bytes":  599636595
+                     },
+    "boundaries":  {
+                       "spark_started":  false,
+                       "github_writes":  0,
+                       "delta_ingestion_measured":  false,
+                       "github_actions_dispatched":  0,
+                       "preview_services_preserved":  true,
+                       "source_api_requests":  0,
+                       "model_requests":  0,
+                       "existing_demo_modified":  false
+                   },
+    "remaining_gates":  [
+                            "Execute existing 10,000-observation Spark scenario with full Python and SQLite parity.",
+                            "After the small execution gate passes, run this million-observation workload through Spark using the SQLite full-table oracle.",
+                            "Measure replay, corrections, cancellation, recovery, resources and retained reference disk usage.",
+                            "Do not use generation/validation timings as lakehouse throughput or predictive accuracy."
+                        ]
+}

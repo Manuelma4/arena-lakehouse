@@ -69,12 +69,20 @@ class IncrementalPipeline:
             raw_path = raw_dir / f"{candidate_id}.jsonl"
             raw_path.write_text("\n".join(canonical(r) for r in records) + "\n", encoding="utf-8")
             try:
-                match_ids = sorted({MatchEvent.model_validate(r).match_id for r in records})
+                identities = [MatchEvent.model_validate(r) for r in records]
+                match_ids = sorted({event.match_id for event in identities})
+                event_ids = sorted({event.event_id for event in identities})
                 existing = []
                 if match_ids and self._exists("bronze_observations"):
-                    keys = self.spark.createDataFrame([(m,) for m in match_ids], "match_id string")
-                    existing = [r.asDict() for r in self._read("bronze_observations").join(keys, "match_id")
-                                .select(*EVENT_COLUMNS).collect()]
+                    bronze = self._read("bronze_observations").select(*EVENT_COLUMNS)
+                    match_keys = self.spark.createDataFrame([(m,) for m in match_ids], "match_id string")
+                    event_keys = self.spark.createDataFrame([(e,) for e in event_ids], "event_id string")
+                    # Keep whole candidate match histories and detect IDs owned
+                    # by any other retained observation before the insert MERGE.
+                    relevant = (bronze.join(match_keys, "match_id", "left_semi")
+                                .unionByName(bronze.join(event_keys, "event_id", "left_semi"))
+                                .dropDuplicates(["event_id"]))
+                    existing = [r.asDict() for r in relevant.collect()]
                 new = validated_new_events(existing, records)
                 if not new and not self._exists("bronze_observations"):
                     raise ValueError("An initial replay requires at least one valid observation")

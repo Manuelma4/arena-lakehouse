@@ -3,6 +3,29 @@
 Environment: Windows host, Docker Desktop Linux backend, Python 3.11,
 Java 17, Spark 4.1.3 and Delta 4.4.0 (Spark 4.1 JVM artifact).
 
+The [7 October handoff](../HANDOFF.md) identifies the portable checkpoint and
+remaining execution gates. [Event identity preflight](../event-identity-preflight.md)
+records 26 passing offline relational/control tests; native Spark verification
+of that revision remains pending.
+
+## Million-observation workload preparation
+
+[scale-1m-workload-preparation.json](scale-1m-workload-preparation.json) records
+actual generation and full validation of 1,000,000 synthetic observations across
+500,000 matches and ten shards. Generation took 42.49 seconds; validation took
+67.98 seconds. The package occupies 599,636,595 bytes, with unchanged generator
+source hashes before and after execution. These are workload preparation
+measurements. Spark ingestion, replay, recovery and scale throughput remain
+unmeasured for this package; the existing 10k execution gate comes first.
+
+[scale-1m-reference-preparation.json](scale-1m-reference-preparation.json) records
+the independent SQLite reference prepared in 230.00 seconds: one million
+observations/history rows, 500,000 current matches and 128 team aggregates.
+Replaying the first 100,000 observations preserved the state and Gold values;
+a conflicting transaction rolled back completely. Four bounded Parquet exports
+retain checksums. This prepares expected results for the later Spark comparison;
+it measures neither Spark throughput nor pipeline recovery.
+
 ## Paired source publication - v0.7.0
 
 [remote-software-v0.7.json](remote-software-v0.7.json) records 395 passing tests
@@ -121,7 +144,8 @@ experiment. Six hundred current matches produce the same aggregates in layouts
 with 16 files (127,652 bytes) and two files (33,794 bytes). Median sampled query
 times were 1.125 seconds and 0.644 seconds. The 24.18-second first query exposes
 cold-start/cache effects; the 1.75x observed ratio is not a controlled production
-performance claim. There is no million-event or managed OPTIMIZE evidence yet.
+performance claim. There is no million-event Spark execution or managed OPTIMIZE
+evidence yet.
 
 `databricks-bundle-schema.json` records official CLI 1.19.0 offline JSON Schema
 validation. No authentication or workspace deployment occurred. Managed Auto

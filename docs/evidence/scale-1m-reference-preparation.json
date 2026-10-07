@@ -1,0 +1,191 @@
+{
+  "schema_version": "arena-scale-reference-preparation-1.0",
+  "status": "reference_prepared_without_spark",
+  "started_at": "2026-10-07T11:08:56.254283Z",
+  "workload_dataset_version": "29a1776152be2dac",
+  "source_sha256": {
+    "src/arena_lakehouse/scale.py": "d2043868203a0bfdcff705871b4115ec2fddd08700548137d56a58c8d6ccda92",
+    "src/arena_lakehouse/scale_oracle.py": "34720709fc52004a203fb89b4b6d91b5096262ab7c36b9ff4002c98abfac6819"
+  },
+  "workload_manifest_sha256": "338d4527513d668c3d71a05da8a39d533e19abfadef6db4fa50c078f1922d873",
+  "application_oracle_batch_rows": 4096,
+  "workload_shard_observations": 100000,
+  "sqlite_page_cache_mib": 16,
+  "spark_started": false,
+  "delta_ingestion_measured": false,
+  "provider_requests": 0,
+  "model_requests": 0,
+  "preview_restarted": false,
+  "shard_results": [
+    {
+      "index": 0,
+      "received": 100000,
+      "accepted": 100000,
+      "replayed": 0,
+      "accepted_cancellation_observations": 0,
+      "oracle_ingestion_seconds": 4.74226280000039
+    },
+    {
+      "index": 1,
+      "received": 100000,
+      "accepted": 100000,
+      "replayed": 0,
+      "accepted_cancellation_observations": 0,
+      "oracle_ingestion_seconds": 4.5727774999995745
+    },
+    {
+      "index": 2,
+      "received": 100000,
+      "accepted": 100000,
+      "replayed": 0,
+      "accepted_cancellation_observations": 0,
+      "oracle_ingestion_seconds": 5.78406779999932
+    },
+    {
+      "index": 3,
+      "received": 100000,
+      "accepted": 100000,
+      "replayed": 0,
+      "accepted_cancellation_observations": 0,
+      "oracle_ingestion_seconds": 4.744457300001159
+    },
+    {
+      "index": 4,
+      "received": 100000,
+      "accepted": 100000,
+      "replayed": 0,
+      "accepted_cancellation_observations": 0,
+      "oracle_ingestion_seconds": 4.6754963000003045
+    },
+    {
+      "index": 5,
+      "received": 100000,
+      "accepted": 100000,
+      "replayed": 0,
+      "accepted_cancellation_observations": 0,
+      "oracle_ingestion_seconds": 4.650918700001057
+    },
+    {
+      "index": 6,
+      "received": 100000,
+      "accepted": 100000,
+      "replayed": 0,
+      "accepted_cancellation_observations": 0,
+      "oracle_ingestion_seconds": 7.6636147999997775
+    },
+    {
+      "index": 7,
+      "received": 100000,
+      "accepted": 100000,
+      "replayed": 0,
+      "accepted_cancellation_observations": 0,
+      "oracle_ingestion_seconds": 6.286702600000353
+    },
+    {
+      "index": 8,
+      "received": 100000,
+      "accepted": 100000,
+      "replayed": 0,
+      "accepted_cancellation_observations": 0,
+      "oracle_ingestion_seconds": 6.354675299999144
+    },
+    {
+      "index": 9,
+      "received": 100000,
+      "accepted": 100000,
+      "replayed": 0,
+      "accepted_cancellation_observations": 0,
+      "oracle_ingestion_seconds": 6.877173599999878
+    }
+  ],
+  "base_ingestion_including_shard_validation_seconds": 86.84691609999936,
+  "base_counts": {
+    "received": 1000000,
+    "accepted": 1000000,
+    "replayed": 0,
+    "observations": 1000000,
+    "matches": 500000,
+    "gold_rows": 128,
+    "cancelled_current_matches": 0,
+    "cancellation_observations": 0,
+    "revised_observations": 500000,
+    "score_corrections": 0,
+    "rename_observations": 0
+  },
+  "materialization_and_conservation_check_seconds": 41.16075430000092,
+  "partial_replay": {
+    "received": 100000,
+    "accepted": 0,
+    "replayed": 100000,
+    "accepted_cancellation_observations": 0,
+    "unchanged_gold": true,
+    "duration_seconds": 14.279727799999819,
+    "scope": "First 100,000 observations, not a full million-observation replay"
+  },
+  "conflicting_transaction_rolled_back": true,
+  "reference_export_seconds": 80.93359149999924,
+  "reference_manifest": {
+    "oracle_version": "sqlite-scale-oracle-1.0",
+    "tables": {
+      "bronze_observations": {
+        "file": "bronze_observations.parquet",
+        "rows": 1000000,
+        "bytes": 28657460,
+        "sha256": "e2609efa33c133259d4fb3f5ff812bfe2e0b0f8ffdd702498e4abbc2541cd506"
+      },
+      "silver_matches": {
+        "file": "silver_matches.parquet",
+        "rows": 500000,
+        "bytes": 19289712,
+        "sha256": "c7901b9b40c4c409761b9a4da0c426a4076c199b97e99614446c0779561dc40c"
+      },
+      "silver_history": {
+        "file": "silver_history.parquet",
+        "rows": 1000000,
+        "bytes": 39088715,
+        "sha256": "b83b5a44ba85a2d37469ac1e5a824afc45fa554f021d2f15c3d18161418bf795"
+      },
+      "gold_team_stats": {
+        "file": "gold_team_stats.parquet",
+        "rows": 128,
+        "bytes": 10515,
+        "sha256": "be262f1cc8159f10fa39f2666209e92d228a83ba650fd1ea81b060cd78ab604c"
+      }
+    },
+    "counts": {
+      "received": 1100000,
+      "accepted": 1000000,
+      "replayed": 100000,
+      "observations": 1000000,
+      "matches": 500000,
+      "gold_rows": 128,
+      "cancelled_current_matches": 0,
+      "cancellation_observations": 0,
+      "revised_observations": 500000,
+      "score_corrections": 0,
+      "rename_observations": 0
+    },
+    "batch_rows": 4096,
+    "complete": true,
+    "accepted_observation_sha256": "0e773e9b18e3e9d7e0fd55b2361ea573da832ce791fa33293070d6baca4e581b"
+  },
+  "source_unchanged": true,
+  "duration_seconds": 229.99516949999997,
+  "completed_at": "2026-10-07T11:12:46.249182Z",
+  "output_disk_bytes_before_final_report_write": 2167274496,
+  "environment": "Windows host; Python 3.11; SQLite and PyArrow; no JVM or Docker started",
+  "published_evidence_prepared_at": "2026-10-07T11:14:50.360535Z",
+  "release_claim": false,
+  "database_and_reference_disk_bytes": 2167270721,
+  "windows_process_memory_peak": "Not measured; scoped process sampling occurred after the owned process had exited.",
+  "github_writes": 0,
+  "github_actions_dispatched": 0,
+  "verification_boundaries": [
+    "This disk-backed correctness reference is preparation for comparison with Spark/Delta outputs, not a Spark benchmark.",
+    "The workload contains synthetic scheduled/finished revisions; corrections, cancellations, backfills and failures remain part of the later Spark scenario.",
+    "Replay checks exactly the first 100,000 observations; no full million-observation replay is claimed.",
+    "The conflicting two-record transaction verifies reference rollback only, not pipeline recovery.",
+    "SQLite's configured page cache and Arrow export batch size do not represent total process memory bounds; input validation retains one 100,000-row shard.",
+    "The existing 10k Spark scenario with full Python/SQLite comparison remains the next execution gate."
+  ]
+}
