@@ -3,6 +3,21 @@
 Environment: Windows host, Docker Desktop Linux backend, Python 3.11,
 Java 17, Spark 4.1.3 and Delta 4.4.0 (Spark 4.1 JVM artifact).
 
+## Paired source publication - v0.7.0
+
+[paired-publication-v0.7.json](paired-publication-v0.7.json) records the final
+394-test local suite, one Windows symbolic-link privilege skip, eligibility and
+cursor recovery regressions, and the four-stage cross-repository mock bridge.
+Conflicting or ambiguous results preserve prior canonical history; original
+source announcements remain available as calendar evidence.
+[installed-wheel-v0.7.json](installed-wheel-v0.7.json) records exact package bytes,
+resources, LICENSE and text-only README metadata, isolated distribution/module
+origins and the same mock integration. The combined verifier's Windows socket
+guard failure and a subsequent API audit field error are retained; the corrected
+API-only probe passed without rebuilding or repeating the bridge. Existing runtime
+dependencies were reused. No new authenticated source, native model, Spark scale
+or managed Databricks measurement is claimed.
+
 ## Authenticated source polling - v0.6.0
 
 [source-operations-software-v0.6.json](source-operations-software-v0.6.json)

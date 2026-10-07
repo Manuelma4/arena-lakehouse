@@ -11,8 +11,9 @@ providers deliver the same event more than once. Arena Lakehouse preserves those
 observations, maintains consistent match history and team aggregates, and publishes
 immutable datasets for the companion research application.
 
-Version **0.6.0** adds authenticated fixtures and results, durable source polling
-and explicit freshness checks. The World Cup research package, Spark/Delta
+Version **0.7.0** publishes the canonical match dataset and its source calendar
+as one recoverable evidence unit. Unresolved teams, source-only dates and conflicting
+announcements remain visible without inventing match records. The World Cup research package, Spark/Delta
 pipeline and original football/VALORANT showcase remain independently reproducible.
 
 ## Published datasets
@@ -58,7 +59,10 @@ records into the canonical timestamp contract.
 Authenticated periodic collections currently use the SQLite/Arrow correctness
 reference. A durable request ledger counts retries against the free-plan quota;
 failed checks preserve the last successful publication. The companion API reloads
-validated immutable datasets as new versions arrive. These measured source polls
+validated immutable datasets and calendars as new versions arrive. A prepared
+publication intent binds archives, revision cursors and package checksums before
+the selected evidence changes; interrupted publication resumes that same intent
+before another provider request. These measured source polls
 are separate from the earlier Spark/Delta streaming measurements.
 
 ## Engineering decisions
@@ -90,8 +94,9 @@ records actual source access, exact polling scope, request budgets and stable
 publication on repeated responses. A separate nullable calendar preserves the
 18 VALORANT announcements excluded by the strict match contract. Its
 [contract](docs/provider-calendar.md) retains source occurrences and unresolved
-fields; automatic worker selection and event-directory integration remain
-separate implementation steps.
+fields. The [paired publication design](docs/provider-publication.md) connects
+that calendar to the worker and companion event directory. Its offline failure
+and recovery checks are recorded separately from authenticated source measurements.
 
 The [v0.5 acquisition report](docs/evidence/openfootball-acquisition-v0.5.json)
 records nine verified club archives replayed into a new workspace and one actual
@@ -115,6 +120,13 @@ The [v0.6 software report](docs/evidence/source-operations-software-v0.6.json)
 records 331 passing offline tests and unchanged published source inputs. The
 larger-workload generator and independent bounded oracle are implemented;
 10,000-event and million-event Spark measurements remain pending.
+
+The [v0.7 publication report](docs/evidence/paired-publication-v0.7.json) records
+the offline recovery, eligibility and cross-repository integration checks. The
+[packaged runtime report](docs/evidence/installed-wheel-v0.7.json) verifies the
+distributed code independently of the shared development installation. These
+checks use original fixtures and intercepted responses; they do not extend the
+authenticated collection or Spark measurements above.
 
 GitHub Actions checks the software and provides a separately triggered Linux
 Spark workflow. The [Databricks profile](docs/databricks-profile.md) includes Auto

@@ -56,7 +56,7 @@ after Silver/recovery, SCD2 parity and gated snapshot publication. This is a loc
 single-writer demonstration with full independent verification, not a production
 scale or distributed reliability certification.
 
-Next work: published-source freshness SLO/alerts, nullable event-directory integration, roster availability,
+Next work: published-source freshness SLO/alerts, roster availability,
 controlled larger benchmarks, explicit retention/deletion policy, managed
 workspace acceptance and the full portfolio release checklist.
 
@@ -129,6 +129,21 @@ SQLite oracle for Spark comparisons. A 10,000-event workload was generated; its
 Spark execution and the million-event benchmark remain unmeasured. The existing
 actual Spark/Delta evidence retains its original configuration and scope.
 
-Next acceptance work includes the nullable calendar's worker/version selection,
-event-directory presentation, actual authenticated-source Spark replay, controlled
-scale trials, retention/deletion behavior and managed Databricks verification.
+## Paired publication and event directories - 0.7.0
+
+The worker selects canonical matches and the nullable calendar as a single
+checksum-bound publication. Prepared intents preserve exact archives and complete
+revision cursors; recovery resumes the same poll before acquisition. Contradictory
+phase records and ambiguous scores remain calendar evidence and preserve prior
+canonical history. Valid dates without offsets and unresolved opponents never
+become invented strict records.
+
+The companion consumer displays observed football competitions and source-provided
+VALORANT league/series/tournament relationships. Original intercepted-response
+integration probes distinguish pending, resolved, conflicted and failed collections
+without accessing a provider or model.
+
+Next acceptance work includes actual authenticated-source Spark replay, controlled
+scale trials, forecast eligibility/calibration, retention/deletion behavior and
+managed Databricks verification. Offline publication checks do not replace those
+runtime measurements.

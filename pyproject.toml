@@ -4,8 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arena-lakehouse"
-version = "0.6.0"
+version = "0.7.0"
 description = "Reproducible football and VALORANT data engineering lab"
+readme = "README.md"
 requires-python = ">=3.11,<3.14"
 dependencies = ["pydantic>=2.10,<3", "httpx>=0.28,<1", "pyarrow>=19,<24", "numpy>=2,<3", "scikit-learn>=1.6,<2", "python-dotenv>=1,<2"]
 

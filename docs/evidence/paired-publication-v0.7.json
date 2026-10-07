@@ -1,0 +1,76 @@
+{
+  "recorded_at": "2026-10-07T09:26:39.996025+00:00",
+  "scope": "Final local producer publication software, original mock integration, and reviewed failure recovery",
+  "status": "passed",
+  "version": "0.7.0",
+  "software": {
+    "version": "0.7.0",
+    "passed": 394,
+    "skipped": 1,
+    "seconds": 869.63,
+    "ruff": "passed",
+    "skip_reason": "Windows symbolic-link privilege"
+  },
+  "source_sha256": {
+    "src/arena_lakehouse/__init__.py": "7cca56ebd8d17a5f694818a6f92781fae6f60dd1b90e9338357118907154ae21",
+    "src/arena_lakehouse/calendar.py": "332a461cc1a714bcac3f05a5fa750d44d03e603fc804822550e975b263a4ea8a",
+    "src/arena_lakehouse/cli.py": "1210b619912f216262022388c91086283f03b49d2577f8529ea3f6cd7b968370",
+    "src/arena_lakehouse/connectors.py": "81b5fa2a72107974bfebbb6daba6a826ed96520e50367615ef9af28a666627dd",
+    "src/arena_lakehouse/engine.py": "ee12f80c80cddd7c58aa8226beb354296cfa913a0f49530a19751b7784c4aa0b",
+    "src/arena_lakehouse/incremental.py": "4a7e3d98e4d2dbb3210aad9d81abc884bd4cd19d5179323ec0d2311469d1400d",
+    "src/arena_lakehouse/live.py": "7909ab66ed8c3d83e6021cd37d5fe4ec4c9d53f9f23aa7e01d5185493a958c4a",
+    "src/arena_lakehouse/managed_contract.py": "ff337d5da2499bc8cb14328b68b372812248b13bbba53f3318a4f8cacae304f7",
+    "src/arena_lakehouse/openfootball.py": "18b625a5f9b5af9399171f932b3c88b36172cb735a2d2a5dd2268c7a82b814ef",
+    "src/arena_lakehouse/openfootball_research.py": "2b7dd6bb4e37e1f91c5099d943f43b01276fb361cd5321bdf16c87ad276befb3",
+    "src/arena_lakehouse/operations.py": "968d5f507777fcf96b123501f400ef65c245a9f7c1db8bf1f410115e7b7c7ca3",
+    "src/arena_lakehouse/prediction.py": "cb4f5919bd57a9ceafb0d1b369d73ef4f2b1ff2f5f12e498b1bfb1b5e3f8207c",
+    "src/arena_lakehouse/provider_publication.py": "644210c1e8a2e4f353e285e06d669f6c35ca79bb8853485e30e21bb6c4c86584",
+    "src/arena_lakehouse/resources/openfootball_sources.json": "cee9dc5bfafece90e92a27c19b496b48851b999d274e9e9ce423dd3d666dd8dd",
+    "src/arena_lakehouse/resources/worldcup_2026.json": "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca",
+    "src/arena_lakehouse/scale.py": "d2043868203a0bfdcff705871b4115ec2fddd08700548137d56a58c8d6ccda92",
+    "src/arena_lakehouse/scale_oracle.py": "34720709fc52004a203fb89b4b6d91b5096262ab7c36b9ff4002c98abfac6819",
+    "src/arena_lakehouse/schema.py": "0c0ace5a6d6f73fba45c0297fa4bc8364b2bc153fa18191528958d9498af9810",
+    "src/arena_lakehouse/snapshot.py": "d7a15aefb83ba0ce89923423ba371cf713858c4b831e7e05bccc97a86b69ecc3",
+    "src/arena_lakehouse/spark_backend.py": "ef6d7c97b1a936a651e3f10ac9d090cb146677d9d97c0445987570956fe806ac",
+    "src/arena_lakehouse/synthetic.py": "c8bda7cf118c044710a9e314b15a5429ddb3f0270ead184b761dbd41a00c47a7"
+  },
+  "cross_repository_bridge": {
+    "runtime": "Isolated extracted v0.7 wheels; existing runtime dependencies",
+    "mock_transport_clients": 1,
+    "mocked_http_requests": 12,
+    "stages": [
+      "initial",
+      "resolved",
+      "conflicted",
+      "last-good"
+    ],
+    "status": "passed"
+  },
+  "reviewed_corrections": [
+    "Conflicting phase variants retain prior canonical history and complete cursors",
+    "Broader valid source announcements remain calendar-only; malformed source fields fail before canonical ingest",
+    "Finished canonical results require confirmed distinct opponent scores; duplicate result entries cannot overwrite a score",
+    "Recovery intents must cover every selected canonical identity across competition cursors",
+    "Consumer normalizes public UTC clocks without mutating private source package bytes"
+  ],
+  "provider_network_requests": 0,
+  "model_requests": 0,
+  "spark_runs": 0,
+  "retained_attempts": [
+    {
+      "scope": "Original mock bridge",
+      "result": "failed",
+      "reason": "Noncanonical UTC generated_at in consumer projection; source clocks now normalized without mutating package bytes"
+    },
+    {
+      "scope": "Earlier producer full suite",
+      "result": "stopped at 19 percent",
+      "reason": "Independent score-ambiguity review required a source correction; superseded by final full passing suite"
+    }
+  ],
+  "limits": [
+    "Windows local software verification; Linux CI is separate",
+    "Original mocked source responses; no new authenticated provider collection",
+    "No new native generation, Spark scale or managed Databricks execution"
+  ]
+}

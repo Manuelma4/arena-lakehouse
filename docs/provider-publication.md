@@ -69,8 +69,10 @@ The worker performs these steps while holding the provider writer lock:
 1. Recover any outstanding prepared intent before beginning another poll or
    making a provider request. Reject a corrupt already-selected pair before
    another collection attempt.
-2. Collect the complete configured scope. Retain only the explicit successful
-   collector archive references; raw directory glob discovery is prohibited.
+2. Collect the complete configured scope. For PandaScore, validate the entire
+   bounded calendar payload before producing canonical observations or cursor
+   revisions. Retain only the explicit successful collector archive references;
+   raw directory glob discovery is prohibited.
 3. Ingest canonical observations and prepare both packages with
    `select_latest=False`. Existing standalone snapshot and calendar APIs preserve
    `select_latest=True` defaults. No legacy pointer advances during preparation.
@@ -92,6 +94,12 @@ idempotent. Once an intent exists, recovery uses its original poll ID, archives,
 metrics, cursor states, and packages. It completes partially committed cursors
 without recollection or a new business revision.
 
+The union of all scope cursor states must cover every selected canonical match
+identity. Each entry must bind the selected revision and original connector hash
+through its event ID. Empty or truncated cursor state cannot acknowledge a
+nonempty canonical package; duplicate coverage across football scopes does not
+replace missing identities.
+
 If the intended poll has not been selected, recovery refreshes `selected_at`
 immediately before its swap. If it has already been selected, recovery requires
 exact agreement with the durable intended selector and preserves its bytes,
@@ -109,6 +117,21 @@ current team/date/result fields need not equal that historic record. The produce
 never fills calendar nulls from canonical history. A link with no selected
 canonical identity fails validation, even when both packages are internally
 consistent and rehashed.
+
+Conflicting same-ID records within a complete PandaScore poll remain calendar
+occurrences and produce a conflicted announcement. They do not produce canonical
+revisions at one shared collection clock or change that ID's retained cursor.
+A later unambiguous poll can then append one ordinary next revision without
+quarantining the prior chain.
+
+Valid calendar fields can exceed the strict match contract. Date-only or unzoned
+kickoffs, unresolved teams/names, missing format or tournament metadata, Player
+opponents, formats through Best of 101, and source scores through 1,000 remain
+calendar evidence and count as unsupported canonical rows. Existing strict
+history and cursors are retained. The collector still rejects malformed calendar
+fields, such as negative/fractional scores, boolean identities, invalid dates, or
+wrong metadata types, before any canonical ingest; it does not silently relabel
+malformed input as unsupported.
 
 `LATEST`, `CALENDAR_LATEST`, and `LIVE_STATUS.json` are compatibility views. The
 status schema remains `arena-live-status-1.0`; it does not carry the pair's poll ID.

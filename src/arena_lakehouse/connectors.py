@@ -8,7 +8,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
+from pydantic import ValidationError
 
+from .calendar import _business, _payload
 from .schema import MatchEvent, digest
 
 
@@ -61,24 +63,51 @@ def normalize_football(raw: dict, observed_at: datetime) -> dict | None:
 
 
 def normalize_valorant(raw: dict, observed_at: datetime) -> dict | None:
+    # Valid announcements have a broader contract than canonical matches.
+    # Parse that contract first: malformed fields still fail collection, while
+    # unresolved, unsupported, or wider bounded source facts stay calendar-only.
+    if (not isinstance(observed_at, datetime) or observed_at.tzinfo is None
+            or observed_at.utcoffset() is None):
+        raise ValueError("Canonical observation requires an aware clock")
+    business = _business(raw)
     statuses = {"not_started": "scheduled", "running": "running", "finished": "finished",
                 "canceled": "cancelled", "postponed": "postponed"}
-    opponents = raw.get("opponents", [])
-    if len(opponents) != 2 or not raw.get("begin_at") or raw.get("status") not in statuses:
+    teams = (business["team_a"], business["team_b"])
+    if (business["start_time"] is None or business["source_status"] not in statuses
+            or "unsupported_opponent_type" in business["pending_reasons"]
+            or any(team is None or team["team_id"] is None or team["team_name"] is None for team in teams)
+            or teams[0]["team_id"] == teams[1]["team_id"]
+            or business["source_number_of_games"] is None or business["source_number_of_games"] > 9
+            or raw.get("tournament") is None):
         return None
-    a, b = [o.get("opponent") for o in opponents]
-    if not a or not b:
+    competition = (raw["tournament"].get("name") or raw.get("name"))
+    if not competition:
         return None
-    scores = {r["team_id"]: r["score"] for r in raw.get("results", [])}
+    a, b = teams
+    results = business["source_results"]
+    result_ids = [result["source_team_id"] for result in results]
+    # Empty non-final scores are explicitly unknown. Any supplied result list
+    # must identify both distinct opponents exactly once; never collapse an
+    # ambiguous list into an apparently confirmed score dictionary.
+    if results and (len(result_ids) != 2 or len(set(result_ids)) != 2
+                    or set(result_ids) != {a["source_team_id"], b["source_team_id"]}):
+        return None
+    if business["source_status"] == "finished" and not business["result_known"]:
+        return None
+    scores = {result["source_team_id"]: result["score"] for result in results}
     status = statuses[raw["status"]]
-    return dict(match_id=f"pandascore:{raw['id']}", provider="pandascore", sport="valorant",
-                competition=raw.get("tournament", {}).get("name") or raw.get("name") or "Unknown tournament",
-                team_a_id=f"pandascore:{a['id']}", team_a=a["name"],
-                team_b_id=f"pandascore:{b['id']}", team_b=b["name"],
+    match = dict(match_id=f"pandascore:{raw['id']}", provider="pandascore", sport="valorant",
+                competition=competition, team_a_id=a["team_id"], team_a=a["team_name"],
+                team_b_id=b["team_id"], team_b=b["team_name"],
                 start_time=raw["begin_at"], observed_at=observed_at,
                 completed_at=raw.get("end_at") or observed_at if status == "finished" else None,
-                status=status, score_a=scores.get(a["id"]), score_b=scores.get(b["id"]),
-                best_of=raw.get("number_of_games") or 3)
+                status=status, score_a=scores.get(a["source_team_id"]), score_b=scores.get(b["source_team_id"]),
+                best_of=business["source_number_of_games"])
+    try:
+        MatchEvent.model_validate(dict(match, revision=1, event_id="canonical-eligibility"))
+    except ValidationError:
+        return None
+    return match
 
 
 def collect(provider: str, state_path: Path, competition="PL", pages=1, client=None, *, clock=None) -> tuple[list[dict], dict]:
@@ -125,11 +154,21 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
                     archive(data, f"valorant/matches/{phase}?page={page}&per_page=100")
                     raw_rows.extend(data)
                     time.sleep(0.4)
+        # Complete calendar validation precedes any canonical candidate or
+        # cursor revision. Conflicting phase variants are evidence to retain,
+        # never multiple revisions at the same post-collection observation time.
+        conflicted = set()
+        if provider == "pandascore":
+            calendar = _payload(raw_archives, state_path.parent / "provider_raw", pages, ())
+            conflicted = {row["announcement_id"] for row in calendar["announcements"] if row["conflicted"]}
         # A result can finish while a request is in flight. Availability is
         # recorded after the responses were received, never at request start.
         observed = now()
         normalizer = normalize_football if provider == "football-data" else normalize_valorant
         for raw in raw_rows:
+            if provider == "pandascore" and f"pandascore:{raw['id']}" in conflicted:
+                unsupported += 1
+                continue
             match = normalizer(raw, observed)
             if match is None:
                 unsupported += 1

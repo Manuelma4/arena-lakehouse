@@ -1,0 +1,154 @@
+{
+  "recorded_at": "2026-10-07T09:26:39.999024+00:00",
+  "scope": "Verified producer wheel plus cross-repository fixture/bridge runtime and separate corrected API probe",
+  "status": "passed",
+  "wheel": {
+    "build": {
+      "elapsed_seconds": 24.891,
+      "exit_code": 0,
+      "log": "logs/producer-build.log"
+    },
+    "build_dependencies": {
+      "configured_index": "https://pypi.org/simple",
+      "top_level_installed_backend": {
+        "name": "setuptools",
+        "version": "84.0.0"
+      },
+      "source": "Isolated PEP 517 resolver; build log reports a cached wheel",
+      "vendored_metadata_inventory": [
+        {
+          "metadata_sha256": "3800d9b91dceea2065a6ed6279383362e97ac38b8e56b9343f404ee531860099",
+          "name": "autocommand",
+          "source": "isolated PEP 517 build environment",
+          "version": "2.2.2"
+        },
+        {
+          "metadata_sha256": "8215c54ead77d9dc5a108a25c6bdc72b5999aa6f62c9499a440359412afa5a51",
+          "name": "backports.tarfile",
+          "source": "isolated PEP 517 build environment",
+          "version": "1.2.0"
+        },
+        {
+          "metadata_sha256": "a3e38b9ee4326289d4864704f30e299ee769e2309ce9f4a75f0de1a50ad0a356",
+          "name": "importlib_metadata",
+          "source": "isolated PEP 517 build environment",
+          "version": "8.7.1"
+        },
+        {
+          "metadata_sha256": "5c2fd09012c954f139b10624978d5335a654c34014cd06f6f466ca683dbc9c56",
+          "name": "jaraco.text",
+          "source": "isolated PEP 517 build environment",
+          "version": "4.0.0"
+        },
+        {
+          "metadata_sha256": "0435ebfc52055c5a9974ed20c171b6454383eaf9dbb1508814ba7ad97c59d712",
+          "name": "jaraco.context",
+          "source": "isolated PEP 517 build environment",
+          "version": "6.1.0"
+        },
+        {
+          "metadata_sha256": "2e79da8dc3469924abe3ac8b22a3feb5692a79bf9f47bbc86b6535d618641849",
+          "name": "jaraco.functools",
+          "source": "isolated PEP 517 build environment",
+          "version": "4.4.0"
+        },
+        {
+          "metadata_sha256": "6ab3515145abe58b067f087c867631cf4cf5d653fed81b9642ee12086c3904b8",
+          "name": "more-itertools",
+          "source": "isolated PEP 517 build environment",
+          "version": "10.8.0"
+        },
+        {
+          "metadata_sha256": "3362bb7d6a26da2962ba8daaa4785cd0bacac21aba908a1195cc8f59580a265a",
+          "name": "packaging",
+          "source": "isolated PEP 517 build environment",
+          "version": "26.0"
+        },
+        {
+          "metadata_sha256": "bbc5216d5f4c77bfbc57227264d52e66bccde71ccf79e75e1a6046d029d30223",
+          "name": "platformdirs",
+          "source": "isolated PEP 517 build environment",
+          "version": "4.4.0"
+        },
+        {
+          "metadata_sha256": "f5ac0a1f8fba908b4646cd655309e91aad969b6787616ac571ca462a3832ffce",
+          "name": "tomli",
+          "source": "isolated PEP 517 build environment",
+          "version": "2.4.0"
+        },
+        {
+          "metadata_sha256": "22910aa97ca89cbcc20a019e27fe31360b7929a4bd66ca0d310f99a44f6ccd35",
+          "name": "wheel",
+          "source": "isolated PEP 517 build environment",
+          "version": "0.46.3"
+        },
+        {
+          "metadata_sha256": "bdd67d4d16cf0bf3b893e7d18cd3d2d774adb82f37ed985bc7770c607226b35b",
+          "name": "zipp",
+          "source": "isolated PEP 517 build environment",
+          "version": "3.23.0"
+        },
+        {
+          "metadata_sha256": "3ef2975718dd31cabdd5829455e9b868ca14dbf79ed8fed2de0af4e87347006e",
+          "name": "setuptools",
+          "source": "isolated PEP 517 build environment",
+          "version": "84.0.0"
+        }
+      ],
+      "note": "Vendored dist-info records are not additional top-level installations."
+    },
+    "bytes": 107201,
+    "distribution": "arena-lakehouse",
+    "filename": "arena_lakehouse-0.7.0-py3-none-any.whl",
+    "label": "producer",
+    "license_bytes_exact": true,
+    "members": 27,
+    "readme_metadata_exact": true,
+    "readme_text_only": true,
+    "record_verified": true,
+    "sha256": "6c89442affcea12198c9ff4a3c96d7b2b1e62fc5955399016406fb282a684d0b",
+    "source_bytes_exact": true,
+    "source_files": 21,
+    "uncompressed_bytes": 373559,
+    "version": "0.7.0"
+  },
+  "distribution_version": "0.7.0",
+  "module_origin_audit": "All imported Arena modules in corrected isolated API probe belong to audited extraction",
+  "extracted_source_files_audited": 92,
+  "shared_environment_install": false,
+  "shared_install_inventory_unchanged": true,
+  "bridge": {
+    "mock_transport_clients": 1,
+    "mocked_http_requests": 12,
+    "stages": [
+      "initial",
+      "resolved",
+      "conflicted",
+      "last-good"
+    ],
+    "status": "passed"
+  },
+  "retained_harness_attempts": [
+    {
+      "scope": "First combined verifier",
+      "overall_status": "failed",
+      "failure": "Outbound socket guard also blocked Windows event-loop initialization; successful wheel/fixture/bridge subchecks retained"
+    },
+    {
+      "scope": "First API-only attempt",
+      "status": "failed",
+      "failure": "Status audit used private last_error_code instead of public error_code"
+    },
+    {
+      "scope": "Corrected API-only attempt",
+      "status": "passed",
+      "elapsed_seconds": 29.516,
+      "http_status": 200,
+      "initialization_socketpair_connections": 1
+    }
+  ],
+  "provider_network_requests": 0,
+  "model_requests": 0,
+  "spark_runs": 0,
+  "limits": "Extraction uses existing runtime dependencies. This is not a clean dependency installation, Linux runtime, provider/model/Spark or managed-platform verification."
+}

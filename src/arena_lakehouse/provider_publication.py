@@ -531,7 +531,7 @@ def validate_intent(root, value, *, now, started_at):
     if [row["basename"] for row in value["cursors"]] != expected_cursors:
         raise PublicationError("Recovery cursor scope mismatch")
     matches = {row["match_id"]: row for row in datasets.get("canonical", {}).get("matches", [])}
-    count = 0
+    count, covered = 0, set()
     for cursor in value["cursors"]:
         for ident, state in cursor["state"].items():
             count += 1
@@ -547,6 +547,9 @@ def validate_intent(root, value, *, now, started_at):
             if (match is None or match["revision"] != state["revision"]
                     or match["event_id"] != f"{ident}:{state['revision']}:{state['hash']}"):
                 raise PublicationError("Recovery cursor has no matching canonical record")
+            covered.add(ident)
+    if covered != set(matches):
+        raise PublicationError("Recovery cursors omit selected canonical identities")
     metric = value["metrics"]
     returned = sum(len(source["payload"] if candidate["provider"] == "pandascore" else source["payload"]["matches"])
                    for source in sources)

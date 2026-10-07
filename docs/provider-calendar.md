@@ -6,6 +6,13 @@ those fields. The private `arena-provider-calendar-1.0` publication retains thes
 announcements separately, so an event directory can show a pending match without
 inventing opponents, midnight UTC, or a result.
 
+The collector validates the complete calendar contract before canonical
+normalization. Valid calendar-only rows, including Player opponents, unzoned
+dates, Best of 101, and supplied scores up to 1,000, count as canonical unsupported
+without discarding their calendar facts. Conflicting same-ID phase records retain
+every occurrence while leaving that ID's strict history and cursor unchanged.
+Malformed calendar fields still fail the complete poll before canonical ingest.
+
 ## Publication boundary
 
 `arena_lakehouse.calendar.publish_calendar()` consumes the **explicit**
