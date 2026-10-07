@@ -46,6 +46,29 @@ git clone --branch checkpoint/2026-10-07 https://github.com/Manuelma4/arena-lake
 git clone --branch checkpoint/2026-10-07 https://github.com/Manuelma4/lakehouse-copilot.git
 ```
 
+## Alternativa portable si GitHub no está disponible
+
+Si GitHub todavía no tiene los commits por falta de autenticación en este PC,
+la copia portable conserva el código completo. Ambos bundles finales y el ZIP
+privado están juntos en
+`lakehouse-copilot/data/arena-retomar-20261007.zip` (fuera de Git).
+Copiar ese archivo al otro PC y extraerlo en una carpeta nueva. Para carpetas
+de repositorio existentes y limpias, desde cada repositorio:
+
+```powershell
+# En arena-lakehouse:
+git fetch "<carpeta-transferida>/arena-lakehouse-checkpoint-20261007-final.bundle" checkpoint/2026-10-07
+git switch checkpoint/2026-10-07
+git merge --ff-only FETCH_HEAD
+# En lakehouse-copilot, repetir con su bundle correspondiente.
+```
+
+También se puede clonar desde cada bundle en una carpeta nueva usando
+`git clone --branch checkpoint/2026-10-07 <bundle> <carpeta>`.
+En ese caso ajustar origin al URL GitHub correcto con `git remote set-url origin`.
+Desde el PC ya autenticado se pueden subir los commits con
+`git push origin checkpoint/2026-10-07`. No sobrescribir trabajo divergente.
+
 ## Abrir mañana sin Docker ni modelos
 
 Desde la carpeta padre, si todavía no existe el entorno compartido:
