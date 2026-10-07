@@ -1,0 +1,56 @@
+{
+  "recorded_at": "2026-10-07T21:07:06.391045+00:00",
+  "status": "recovery_failed_host_restart_review_pending",
+  "native_acceptance": "Completed successfully before this later idle failure; unchanged evidence retained",
+  "observed_idle_pause_timeout_at": "2026-10-07T20:21:34Z",
+  "subsequent_failures": [
+    "HTTP 500 from Engine proxy",
+    "no route to WSL host",
+    "no connected VM"
+  ],
+  "docker_only_termination_timeout_seconds": 30,
+  "admin_service_recovery": {
+    "started_at": "2026-10-07T20:54:33.7271865Z",
+    "finished_at": "2026-10-07T20:55:04.8140978Z",
+    "status": "failed",
+    "services_restarted": [],
+    "error_code": "WslService_Stop_WaitForStatus_timeout",
+    "wait_timeout_seconds": 30
+  },
+  "last_observed_service_state": {
+    "WslService": "StopPending",
+    "LxssManager": "Running"
+  },
+  "docker_desktop": "stopped",
+  "resource_saver": false,
+  "preserved_settings": {
+    "memoryMiB": 2048,
+    "cpus": 8
+  },
+  "memory_allocation_changed": false,
+  "volumes_deleted": false,
+  "global_wsl_shutdown": false,
+  "windows_restarted": false,
+  "other_distributions_closed": false,
+  "private_settings_backup_in_git": false,
+  "app_dependency": "Host compiled preview requires neither Docker nor Ollama",
+  "next_step": "User-controlled Windows restart/review, then verify Engine; recovery not guaranteed",
+  "scripts": [
+    {
+      "path": "scripts/repair-local-docker.ps1",
+      "bytes": 2779,
+      "sha256": "11542e7b4c8b25a3db2a9783da3f4d340ee02b221b8cff4d77f39965053cbbe1"
+    },
+    {
+      "path": "scripts/recover-docker-idle.ps1",
+      "bytes": 3797,
+      "sha256": "5875fd3c89bc152ef7801786533ff60a3f037407f3250f2a1a5dd31a3aea7b04"
+    },
+    {
+      "path": "scripts/recover-wsl-idle-admin.ps1",
+      "bytes": 3808,
+      "sha256": "a272c5804533490376015e311a918fea3569514cb98af0ac075dc4d8b75c6137"
+    }
+  ],
+  "script_boundary": "PowerShell AST parsing passed; recovery attempts failed and are not acceptance evidence"
+}

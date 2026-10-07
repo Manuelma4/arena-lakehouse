@@ -2,15 +2,33 @@
 
 import argparse
 import json
+import os
 import time
 from pathlib import Path
 
+def resource_policy():
+    """Bound local execution without altering the host's Docker/WSL allocation."""
+    result = {}
+    for name, default, lower, upper in (
+        ("ARENA_SPARK_THREADS", 2, 1, 2),
+        ("ARENA_SPARK_DRIVER_MEMORY_MB", 2048, 512, 2048),
+    ):
+        value = os.environ.get(name, str(default))
+        if not value.isascii() or not value.isdecimal() or not lower <= int(value) <= upper:
+            raise ValueError(f"Invalid local Spark resource budget: {name}")
+        result[name] = int(value)
+    return result
+
+
 def session():
+    policy = resource_policy()
+    threads = str(policy["ARENA_SPARK_THREADS"])
     from pyspark.sql import SparkSession
-    return (SparkSession.builder.appName("arena-lakehouse").master("local[2]")
-            .config("spark.driver.memory", "2g")
-            .config("spark.sql.shuffle.partitions", "2")
-            .config("spark.databricks.delta.snapshotPartitions", "2")
+    return (SparkSession.builder.appName("arena-lakehouse").master(f"local[{threads}]")
+            .config("spark.driver.memory", f"{policy['ARENA_SPARK_DRIVER_MEMORY_MB']}m")
+            .config("spark.default.parallelism", threads)
+            .config("spark.sql.shuffle.partitions", threads)
+            .config("spark.databricks.delta.snapshotPartitions", threads)
             .config("spark.jars.packages", "io.delta:delta-spark_4.1_2.13:4.4.0")
             .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
             .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")

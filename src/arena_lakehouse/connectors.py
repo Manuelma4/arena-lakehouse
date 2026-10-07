@@ -142,7 +142,9 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
             if not competition.isalnum() or len(competition) > 12:
                 raise ValueError("Invalid competition code")
             payload = request_json(client, f"https://api.football-data.org/v4/competitions/{competition}/matches",
-                                   {"X-Auth-Token": token}, {})
+                                   {"X-Auth-Token": token, "X-Unfold-Lineups": "true",
+                                    "X-Unfold-Goals": "true", "X-Unfold-Bookings": "true",
+                                    "X-Unfold-Subs": "true"}, {})
             archive(payload, f"competitions/{competition}/matches")
             raw_rows = payload.get("matches", [])
         else:

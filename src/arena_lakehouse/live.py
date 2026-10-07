@@ -22,6 +22,7 @@ from pydantic import ValidationError
 
 from .connectors import ProviderError, collect, commit_state
 from .calendar import publish_calendar
+from .provider_policy import ERROR_CODES, PROVIDERS
 from .engine import Pipeline
 from .schema import digest
 from .snapshot import export_snapshot
@@ -32,16 +33,6 @@ from .provider_publication import (
 )
 
 STATUS_VERSION = "arena-live-status-1.0"
-PROVIDERS = {
-    "football-data": dict(token="FOOTBALL_DATA_TOKEN", host="api.football-data.org", limit=10, window=60),
-    "pandascore": dict(token="PANDASCORE_TOKEN", host="api.pandascore.co", limit=1000, window=3600),
-}
-ERROR_CODES = frozenset({
-    "awaiting_credentials", "quota_exhausted", "authentication_denied", "provider_rate_limited",
-    "provider_unavailable", "provider_http_error", "network_error", "network_timeout",
-    "invalid_provider_payload", "ingest_failed", "publication_failed", "cursor_commit_failed",
-    "worker_interrupted", "clock_regression", "invalid_endpoint", "worker_error",
-})
 
 
 def _utc(value):
@@ -456,6 +447,14 @@ class LiveWorker:
             self._legacy_pointers(selected)
             status = self._publish_status(_utc(self.clock()))
             self.ledger.acknowledge_publication(poll_id)
+            # Optional display facts have their own checksum and exact source
+            # publication pin. A failure cannot replace or invalidate scores.
+            try:
+                from .match_insights import publish
+                publish(self.root, selected, [self.root / ref["path"] for ref in intent["archives"]],
+                        started_at=row["started_at"], generated_at=self.clock())
+            except (PublicationError, OSError, sqlite3.Error, ValueError, KeyError, TypeError):
+                pass
             return status
         except Exception:
             raise LiveFailure("publication_failed") from None

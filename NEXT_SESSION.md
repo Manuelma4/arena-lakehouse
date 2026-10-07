@@ -1,5 +1,26 @@
 # Verified checkpoint and next session
 
+**Start here for tomorrow's computer:** [RETOMAR_MANANA](docs/RETOMAR_MANANA.md)
+contains the current shared plan, portable launch commands, private-data transfer
+and final Docker failure. Native 10k acceptance passed; Docker subsequently
+blocked on idle and its repair is still pending. Historical sections below
+must not be read as the current credential/runtime state.
+
+Current continuation: see [docs/HANDOFF.md](docs/HANDOFF.md) for the 7 October
+Windows setup, source-check monitoring, repaired Docker and the outstanding
+Spark/Delta runtime gate, now passed for 10k observations and event identity.
+The dated notes below preserve the earlier milestone's evidence boundaries.
+
+The optional private match-insight package binds successful-poll archives to the
+selected publication. It makes no additional requests. The latest football check
+requested unfolded lineups over six existing competition requests, but the free
+response still supplied no lineups or individual statistics. VALORANT map
+outcomes are available; kills/KDA are not. Only free sources are authorized.
+Next: a permitted free player-stat source with measured match/season coverage,
+then reviewed identities. The million-event runtime gate and actual-process
+restart are separate: native recovery used a new instance in the same process.
+Ollama remains explicitly deferred by the user.
+
 Recorded: 2026-10-06. Milestone: World Cup research and explicit contract v2,
 package version 0.5.0, before the full public v1.0 portfolio release.
 

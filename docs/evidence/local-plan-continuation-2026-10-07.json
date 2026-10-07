@@ -1,0 +1,314 @@
+{
+  "schema_version": "arena-local-plan-evidence-1.0",
+  "recorded_at": "2026-10-07T19:12:20.139514+00:00",
+  "milestone": "Windows plan continuation: source monitoring, workload preparation and repaired Docker",
+  "runtime": {
+    "host": "Windows",
+    "python": "3.12.10",
+    "spark_executed": false,
+    "ollama_executed": false
+  },
+  "implementation": {
+    "source_health": "Bounded read-only polling ledger monitor with typed errors, check ratio, age and selector presence",
+    "provider_policy": "Lightweight shared provider/error metadata; collector compatibility preserved"
+  },
+  "checks": {
+    "collector_and_health": {
+      "tests": 34,
+      "passed": 34,
+      "seconds": 470.18,
+      "boundary": "Executed before lightweight provider metadata extraction"
+    },
+    "final_health": {
+      "artifact": "data/source-health-final.xml",
+      "sha256": "966d34bd7ca783d368ee1cb585c56752a463632bc60a2e54d981d5578aa39291",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_seconds": 28.228
+    },
+    "initial_health_attempt": {
+      "passed": 7,
+      "failed": 1,
+      "reason": "The new test looked for CURRENT_PUBLICATION.json in the wrong directory; corrected to snapshots."
+    },
+    "code_checks": [
+      "Ruff source/new tests passed",
+      "git diff --check passed"
+    ]
+  },
+  "observed_source_health": [
+    {
+      "schema_version": "arena-source-health-1.0",
+      "provider": "football-data",
+      "evaluated_at": "2026-10-07T19:05:29.846179+00:00",
+      "window_seconds": 86400,
+      "max_success_age_seconds": 7200,
+      "success_target": 0.99,
+      "scope": "Local provider check attempts; not match coverage or score latency",
+      "status": "healthy",
+      "completed_checks": 1,
+      "successful_checks": 1,
+      "success_ratio": 1.0,
+      "last_success_at": "2026-10-07T17:55:39.850126+00:00",
+      "success_age_seconds": 4189.996053,
+      "observed_window_seconds": 4234.330473,
+      "alerts": [],
+      "error_counts": {},
+      "publication_selected": true
+    },
+    {
+      "schema_version": "arena-source-health-1.0",
+      "provider": "pandascore",
+      "evaluated_at": "2026-10-07T19:05:29.890179+00:00",
+      "window_seconds": 86400,
+      "max_success_age_seconds": 7200,
+      "success_target": 0.99,
+      "scope": "Local provider check attempts; not match coverage or score latency",
+      "status": "healthy",
+      "completed_checks": 1,
+      "successful_checks": 1,
+      "success_ratio": 1.0,
+      "last_success_at": "2026-10-07T17:57:03.959717+00:00",
+      "success_age_seconds": 4105.930462,
+      "observed_window_seconds": 4157.539511,
+      "alerts": [],
+      "error_counts": {},
+      "publication_selected": true
+    }
+  ],
+  "source_health_boundary": "One successful retained check per provider is not sustained SLA evidence; selector presence is not checksum verification",
+  "workload_preparation": {
+    "generation": {
+      "manifest": {
+        "workload_version": "arena-scale-workload-1.0",
+        "config": {
+          "observations": 10000,
+          "namespace": "windows-resume-10k",
+          "seed": 42,
+          "shard_observations": 10000,
+          "teams_per_sport": 64,
+          "shuffle_buffer": 1000,
+          "horizon_days": 30
+        },
+        "files": {
+          "shards/000000.jsonl": "61a0aa8f4fa9a272fde6a16cd7ecaddeea6d8384dd499e23139a295c6f20a5b8"
+        },
+        "shards": [
+          {
+            "path": "shards/000000.jsonl",
+            "observations": 10000,
+            "bytes": 5876162,
+            "sha256": "61a0aa8f4fa9a272fde6a16cd7ecaddeea6d8384dd499e23139a295c6f20a5b8"
+          }
+        ],
+        "received_observations": 10000,
+        "base_unique_observations": 10000,
+        "matches": 5000,
+        "duplicate_observations": 0,
+        "fault_observations": 0,
+        "correction_observations": 0,
+        "kickoff_start": "2025-01-01T00:00:00.000000Z",
+        "kickoff_end": "2025-01-30T20:00:00.000000Z",
+        "observation_start": "2024-12-30T00:00:00.000000Z",
+        "observation_end": "2025-01-30T23:10:00.000000Z",
+        "data_kind": "synthetic",
+        "algorithm": "integer-sha256-and-bounded-hash-sort-v1",
+        "dataset_version": "fdbb774275b5e0fc"
+      },
+      "generation_seconds": 1.0259611000001314,
+      "disk_bytes": 5877254,
+      "resources": {
+        "cgroup_memory_current_bytes": null,
+        "cgroup_memory_peak_bytes": null,
+        "cgroup_memory_limit_bytes": null,
+        "process_max_rss_bytes": null,
+        "child_max_rss_bytes": null
+      }
+    },
+    "validation": {
+      "manifest": {
+        "workload_version": "arena-scale-workload-1.0",
+        "config": {
+          "observations": 10000,
+          "namespace": "windows-resume-10k",
+          "seed": 42,
+          "shard_observations": 10000,
+          "teams_per_sport": 64,
+          "shuffle_buffer": 1000,
+          "horizon_days": 30
+        },
+        "files": {
+          "shards/000000.jsonl": "61a0aa8f4fa9a272fde6a16cd7ecaddeea6d8384dd499e23139a295c6f20a5b8"
+        },
+        "shards": [
+          {
+            "path": "shards/000000.jsonl",
+            "observations": 10000,
+            "bytes": 5876162,
+            "sha256": "61a0aa8f4fa9a272fde6a16cd7ecaddeea6d8384dd499e23139a295c6f20a5b8"
+          }
+        ],
+        "received_observations": 10000,
+        "base_unique_observations": 10000,
+        "matches": 5000,
+        "duplicate_observations": 0,
+        "fault_observations": 0,
+        "correction_observations": 0,
+        "kickoff_start": "2025-01-01T00:00:00.000000Z",
+        "kickoff_end": "2025-01-30T20:00:00.000000Z",
+        "observation_start": "2024-12-30T00:00:00.000000Z",
+        "observation_end": "2025-01-30T23:10:00.000000Z",
+        "data_kind": "synthetic",
+        "algorithm": "integer-sha256-and-bounded-hash-sort-v1",
+        "dataset_version": "fdbb774275b5e0fc"
+      },
+      "validation_seconds": 1.343235000000277,
+      "resources": {
+        "cgroup_memory_current_bytes": null,
+        "cgroup_memory_peak_bytes": null,
+        "cgroup_memory_limit_bytes": null,
+        "process_max_rss_bytes": null,
+        "child_max_rss_bytes": null
+      }
+    },
+    "boundary": "Synthetic generation and validation only; no Spark ingestion, recovery or throughput"
+  },
+  "docker_check": {
+    "checked_at": "2026-10-07T19:04:34.236628+00:00",
+    "container": {
+      "image": "busybox:1.37.0",
+      "memory_limit_mib": 64,
+      "cpu_limit": 0.5,
+      "network": "none",
+      "mount": "workload read-only",
+      "exit_code": 0,
+      "stdout": "10000 /workload/shards/000000.jsonl\n61a0aa8f4fa9a272fde6a16cd7ecaddeea6d8384dd499e23139a295c6f20a5b8  /workload/shards/000000.jsonl\n",
+      "stderr": ""
+    },
+    "docker": {
+      "Client": {
+        "Version": "26.1.4",
+        "ApiVersion": "1.45",
+        "DefaultAPIVersion": "1.45",
+        "GitCommit": "5650f9b",
+        "GoVersion": "go1.21.11",
+        "Os": "windows",
+        "Arch": "amd64",
+        "BuildTime": "Wed Jun  5 11:29:54 2024",
+        "Context": "desktop-linux"
+      },
+      "Server": {
+        "Platform": {
+          "Name": "Docker Desktop 4.31.1 (153621)"
+        },
+        "Components": [
+          {
+            "Name": "Engine",
+            "Version": "26.1.4",
+            "Details": {
+              "ApiVersion": "1.45",
+              "Arch": "amd64",
+              "BuildTime": "Wed Jun  5 11:29:22 2024",
+              "Experimental": "false",
+              "GitCommit": "de5c9cf",
+              "GoVersion": "go1.21.11",
+              "KernelVersion": "6.18.40.1-microsoft-standard-WSL2",
+              "MinAPIVersion": "1.24",
+              "Os": "linux"
+            }
+          },
+          {
+            "Name": "containerd",
+            "Version": "1.6.33",
+            "Details": {
+              "GitCommit": "d2d58213f83a351ca8f528a95fbd145f5654e957"
+            }
+          },
+          {
+            "Name": "runc",
+            "Version": "1.1.12",
+            "Details": {
+              "GitCommit": "v1.1.12-0-g51d5e94"
+            }
+          },
+          {
+            "Name": "docker-init",
+            "Version": "0.19.0",
+            "Details": {
+              "GitCommit": "de40ad0"
+            }
+          }
+        ],
+        "Version": "26.1.4",
+        "ApiVersion": "1.45",
+        "MinAPIVersion": "1.24",
+        "GitCommit": "de5c9cf",
+        "GoVersion": "go1.21.11",
+        "Os": "linux",
+        "Arch": "amd64",
+        "KernelVersion": "6.18.40.1-microsoft-standard-WSL2",
+        "BuildTime": "2024-06-05T11:29:22.000000000+00:00"
+      }
+    },
+    "previous_attempt": {
+      "exit_code": 1,
+      "error": "PowerShell native argument quoting broke the shell expression; corrected using subprocess argument array."
+    },
+    "scope": "Docker daemon, Linux container and read-only Windows bind mount only; no Spark ingestion or throughput."
+  },
+  "docker_image_digest": "busybox@sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e",
+  "docker_repair": {
+    "initial_failure": "Hyper-V VM could not allocate configured 2048 MiB; WSL kernel initially missing",
+    "administrator_steps": "User performed the requested Administrator repair and selected WSL2",
+    "engine_verified": true,
+    "no_allocation_increase_by_agent": true,
+    "host_free_memory_mib_at_container_gate": 298,
+    "boundary": "No Spark image build or pipeline run; disposable container removed automatically"
+  },
+  "new_provider_requests": 0,
+  "model_requests": 0,
+  "pending": [
+    "Actual Spark/Delta event-ID preflight and 10k pipeline gate",
+    "Million-observation ingestion/recovery/throughput after the smaller gate",
+    "Real-data historical availability, forecast backtests/calibration",
+    "Authenticated Databricks execution and sustained operational review"
+  ],
+  "artifacts": [
+    {
+      "path": "data/source-health-local.json",
+      "sha256": "103443be72179b4c9db9c01774d47950294eb997060605e314921b013c4e5bca",
+      "git_ignored": true
+    },
+    {
+      "path": "data/docker-local-check.json",
+      "sha256": "9f2db53f65d2f8bb997b73330e8c3df7cebea173e1bd832e63c3606f2ecefeaf",
+      "git_ignored": true
+    },
+    {
+      "path": "data/scale-10k-windows-generation.json",
+      "sha256": "fed2e6d088ec2d0efee19f7886ac66877194e8cfe3470b979f746c9eef09a403",
+      "git_ignored": true
+    },
+    {
+      "path": "data/scale-10k-windows-validation.json",
+      "sha256": "57814e59ebca860bcc1e1707f90ddab596c2430045083385b452dd666a76ffbd",
+      "git_ignored": true
+    }
+  ],
+  "provenance": {
+    "base_commit": "c07e789b250927f00e80a5bd1d6b4bf319ae0a36",
+    "branch": "checkpoint/2026-10-07",
+    "working_tree_changes_uncommitted": true,
+    "source_sha256": {
+      "pyproject.toml": "536e0576ac0e2bbcfc11731d70c0081f817be446cba75864df46cca929795ece",
+      "src/arena_lakehouse/live.py": "fa51af2297d5d58440b697a3d69a71ad5062c181622ef7ab342cf0a30b8348b3",
+      "src/arena_lakehouse/provider_policy.py": "1dae1e85bedabcc3f3ef2233be3e2ed82ed59ffaed3cae9f93517b858758094b",
+      "src/arena_lakehouse/source_health.py": "d90a1cd982a1775b25aaf91c7c6ccc86900fefe9ee513dad0289d08c66ab5cf4",
+      "src/arena_lakehouse/scale.py": "d2043868203a0bfdcff705871b4115ec2fddd08700548137d56a58c8d6ccda92",
+      "tests/test_source_health.py": "efc6f54a83703355998043d4f8ecdb150fdd5e8ea25ba79fd754cbb069cb2720",
+      "scripts/repair-local-docker.ps1": "11542e7b4c8b25a3db2a9783da3f4d340ee02b221b8cff4d77f39965053cbbe1"
+    }
+  }
+}

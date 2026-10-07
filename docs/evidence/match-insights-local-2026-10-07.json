@@ -1,0 +1,325 @@
+{
+  "recorded_at": "2026-10-07T20:43:06.938779+00:00",
+  "status": "verified_locally_with_explicit_source_gaps",
+  "source_policy": "Free sources only",
+  "actual_coverage": {
+    "football-data": {
+      "records": 2132,
+      "publication_fingerprint": "be8ce5d272d5fef5896a6e3ffb08127022bb0dab85fc2e2a774ccfb6cb5edd19",
+      "collected_at": "2026-10-07T20:28:27.713338Z",
+      "package": {
+        "path": "data/live/football-data/match-insights/insights-41f3d6c8bf919f39280e2e7bf3891e64e4c3ce8f95c84c0e873adba2fb281625.json",
+        "bytes": 2313230,
+        "sha256": "41f3d6c8bf919f39280e2e7bf3891e64e4c3ce8f95c84c0e873adba2fb281625"
+      },
+      "lineup_matches": 0,
+      "map_matches": 0,
+      "any_team_statistics": 0,
+      "individual_stat_matches": 0,
+      "conflicts_omitted": 0,
+      "latest_source_check": {
+        "schema_version": "arena-live-status-1.0",
+        "provider": "football-data",
+        "data_kind": "api",
+        "status": "ready",
+        "source_scope": {
+          "kind": "competition_list",
+          "competition_codes": [
+            "PL",
+            "PD",
+            "BL1",
+            "SA",
+            "FL1",
+            "BSA"
+          ],
+          "phases": [],
+          "pages": 1
+        },
+        "last_attempt_at": "2026-10-07T20:28:18.743417Z",
+        "last_success_at": "2026-10-07T20:28:56.575604Z",
+        "last_change_at": "2026-10-07T17:55:39.850126Z",
+        "poll_interval_seconds": 60,
+        "last_error_code": null,
+        "latest_snapshot": "snapshot-32e0191d369070a2-6f09edf7",
+        "poll_counts": {
+          "attempted": 2,
+          "succeeded": 2,
+          "failed": 0,
+          "awaiting_credentials": 0,
+          "quota_limited": 0,
+          "interrupted": 0
+        },
+        "last_poll": {
+          "source_rows": 2132,
+          "changed_rows": 0,
+          "unsupported_rows": 0,
+          "requests": 6
+        },
+        "capabilities": {
+          "tier": "free",
+          "update_mode": "polled_rest",
+          "fixtures_and_results": true,
+          "scores_delayed": true,
+          "in_game_round_feed": false
+        },
+        "request_budget": {
+          "limit": 10,
+          "window_seconds": 60,
+          "used": 6,
+          "remaining": 4
+        }
+      }
+    },
+    "pandascore": {
+      "records": 122,
+      "publication_fingerprint": "cca4d2f52a984770af6ce30c159fe53b284decf337cf324f8e083fd6e621bd12",
+      "collected_at": "2026-10-07T17:56:17.800101Z",
+      "package": {
+        "path": "data/live/pandascore/match-insights/insights-88ce23d3d80e9f7967bf67eaec5b78a634f724dd325f3dd6f7b15fa1b9361781.json",
+        "bytes": 129677,
+        "sha256": "88ce23d3d80e9f7967bf67eaec5b78a634f724dd325f3dd6f7b15fa1b9361781"
+      },
+      "lineup_matches": 0,
+      "map_matches": 122,
+      "any_team_statistics": 0,
+      "individual_stat_matches": 0,
+      "conflicts_omitted": 0,
+      "latest_source_check": {
+        "schema_version": "arena-live-status-1.0",
+        "provider": "pandascore",
+        "data_kind": "api",
+        "status": "ready",
+        "source_scope": {
+          "kind": "match_phases",
+          "competition_codes": [],
+          "phases": [
+            "past",
+            "upcoming",
+            "running"
+          ],
+          "pages": 1
+        },
+        "last_attempt_at": "2026-10-07T17:56:12.350668Z",
+        "last_success_at": "2026-10-07T17:57:03.959717Z",
+        "last_change_at": "2026-10-07T17:57:03.959717Z",
+        "poll_interval_seconds": 3600,
+        "last_error_code": null,
+        "latest_snapshot": "snapshot-f8cc5bfe6587c1aa-df4243a7",
+        "poll_counts": {
+          "attempted": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "awaiting_credentials": 0,
+          "quota_limited": 0,
+          "interrupted": 0
+        },
+        "last_poll": {
+          "source_rows": 122,
+          "changed_rows": 106,
+          "unsupported_rows": 16,
+          "requests": 3
+        },
+        "capabilities": {
+          "tier": "free",
+          "update_mode": "polled_rest",
+          "fixtures_and_results": true,
+          "scores_delayed": null,
+          "in_game_round_feed": false
+        },
+        "request_budget": {
+          "limit": 1000,
+          "window_seconds": 3600,
+          "used": 3,
+          "remaining": 997
+        }
+      }
+    }
+  },
+  "producer_source_sha256": {
+    "src/arena_lakehouse/match_insights.py": "3051a829e08be28fee29151b7bd5996879b3c97e6cc41b3f62b06f775bac1bee",
+    "src/arena_lakehouse/connectors.py": "aeb5f92e53371a58e4bbe4f5cb7ac658047b4f9375cc6c13b53d79bb51e2b0c5",
+    "src/arena_lakehouse/live.py": "c922ed3b90fb66aee67fa12a4ef12312e770309ccc79bccbe8bf4e171895d64b",
+    "tests/test_match_insights.py": "de89036215276e34a171cc2bd491d73b0363502ed51d241e53f8942b5dab82fe",
+    "tests/test_match_insights_conflicts.py": "4b28551b04ca076e93b049fca890c0b27d214f04ecd908278983aa70822212f2"
+  },
+  "producer_tests": {
+    "initial": {
+      "path": "data/match-insights-backend.xml",
+      "bytes": 1009,
+      "sha256": "c98b42eaebfe0a734ce0d22c503cdb91be5ac2373371b2d25a0b2842031f6a1a",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 121.842
+    },
+    "final_worker": {
+      "path": "data/match-insights-worker-final.xml",
+      "bytes": 515,
+      "sha256": "6152fc3f96f0222f2b0c585dd71d2e0b7e66d8c64752df39b234f0c269447a08",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 26.119
+    },
+    "conflict": {
+      "path": "data/match-insights-conflicts.xml",
+      "bytes": 371,
+      "sha256": "865896553d3ff074045b4e07e8471276b470da61d99762ee256d4dcb532290e1",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.585
+    },
+    "distinct_cases_passed": 7
+  },
+  "consumer_tests": {
+    "path": "data/match-insights-backend.xml",
+    "bytes": 1572,
+    "sha256": "d14edf1071729e64ad6fa4a01ac2d5300513efedc7d93f73872f196c45dbca12",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 210.048
+  },
+  "actual_acquisition": {
+    "provider": "football-data",
+    "cycles": 1,
+    "requests": 6,
+    "scope": "PL,PD,BL1,SA,FL1,BSA",
+    "unfolding": [
+      "Lineups",
+      "Goals",
+      "Bookings",
+      "Subs"
+    ],
+    "changed_canonical_rows": 0,
+    "no_continuous_collector": true,
+    "paid_endpoints": 0
+  },
+  "browser": {
+    "distinct_cases_passed": 8,
+    "projects": "1440 desktop / Pixel 7 mobile, one worker, no retries",
+    "initial_failure": {
+      "report": {
+        "path": "data/match-insights-browser-initial.json",
+        "bytes": 42749,
+        "sha256": "57a4f61855cc898110834fb3a3d7dc769bef092cd6ecc3a8568ee3902739da60"
+      },
+      "failed": 8,
+      "reason": "New test helper read providers instead of parsing the actual provider_json wire envelope; corrected without changing the application contract."
+    },
+    "full_pass": {
+      "report": {
+        "path": "data/match-insights-browser-before-empty-state.json",
+        "bytes": 13938,
+        "sha256": "6db380adee9d95565fad730342d78d24a1cfb34e9f4d7b248a06ce94cd3c8e64"
+      },
+      "passed": 8,
+      "seconds": 39.2
+    },
+    "final_empty_state_and_lineup": {
+      "report": {
+        "path": "web/test-results/match-insights-results.json",
+        "bytes": 8734,
+        "sha256": "1a46034877ba854b024c793ab8f10175842959f08e40b99c329b6d6599d84486"
+      },
+      "passed": 4,
+      "seconds": 17.5
+    },
+    "fixture_boundary": "Original TEST ONLY lineup/profile data is intercepted inside the browser; production packages are never replaced.",
+    "scope_boundary": "VALORANT/stale-publication cases passed before the later football-only empty-state refinement; four affected football cases passed afterwards."
+  },
+  "visual": {
+    "report": {
+      "path": "data/match-insights-local-review/report.json",
+      "bytes": 2163,
+      "sha256": "bd27b5d2ff5a49cd069905b314309c2742ad2ae65efbaa4ed955bd2f157fc106"
+    },
+    "cases": [
+      {
+        "provider": "football-data",
+        "width": 1440,
+        "url": "http://127.0.0.1:8000/?view=live&live_provider=football-data&live_match=football-data-e4d532edd392302c",
+        "match_id": "football-data:554940",
+        "publication_fingerprint": "be8ce5d272d5fef5896a6e3ffb08127022bb0dab85fc2e2a774ccfb6cb5edd19",
+        "map_count": 0,
+        "lineup_status": "not_supplied",
+        "player_statistics_status": "not_supplied",
+        "overflow": false,
+        "localOverflow": false,
+        "logos_loaded": true
+      },
+      {
+        "provider": "football-data",
+        "width": 390,
+        "url": "http://127.0.0.1:8000/?view=live&live_provider=football-data&live_match=football-data-e4d532edd392302c",
+        "match_id": "football-data:554940",
+        "publication_fingerprint": "be8ce5d272d5fef5896a6e3ffb08127022bb0dab85fc2e2a774ccfb6cb5edd19",
+        "map_count": 0,
+        "lineup_status": "not_supplied",
+        "player_statistics_status": "not_supplied",
+        "overflow": false,
+        "localOverflow": false,
+        "logos_loaded": true
+      },
+      {
+        "provider": "pandascore",
+        "width": 1440,
+        "url": "http://127.0.0.1:8000/?view=live&live_provider=pandascore&live_match=pandascore-6a279bf7f78e8ad1",
+        "match_id": "pandascore:1685237",
+        "publication_fingerprint": "cca4d2f52a984770af6ce30c159fe53b284decf337cf324f8e083fd6e621bd12",
+        "map_count": 2,
+        "lineup_status": "not_supplied",
+        "player_statistics_status": "not_supplied",
+        "overflow": false,
+        "localOverflow": false,
+        "logos_loaded": true
+      },
+      {
+        "provider": "pandascore",
+        "width": 390,
+        "url": "http://127.0.0.1:8000/?view=live&live_provider=pandascore&live_match=pandascore-6a279bf7f78e8ad1",
+        "match_id": "pandascore:1685237",
+        "publication_fingerprint": "cca4d2f52a984770af6ce30c159fe53b284decf337cf324f8e083fd6e621bd12",
+        "map_count": 2,
+        "lineup_status": "not_supplied",
+        "player_statistics_status": "not_supplied",
+        "overflow": false,
+        "localOverflow": false,
+        "logos_loaded": true
+      }
+    ],
+    "posts": [],
+    "errors": [],
+    "providerCalls": 0,
+    "modelCalls": 0,
+    "initial_logo_boundary": "Initial image sampling preceded one desktop PandaScore logo load. Final bounded image readiness verifies both logos in all four selected views; this is not a full 180-asset audit."
+  },
+  "consumer_source_sha256": {
+    "src/arena_copilot/match_insights.py": "43a840344fcfa1dc2ae588887ceb8ccabafda0551139c8d792bfda932977f357",
+    "src/arena_copilot/api.py": "1f5691f3cd75f4d946456ab642a2554f8b47438166b20c88ea2d25c5a821ff97",
+    "web/src/components/MatchInsights.tsx": "c8b555ce18bf3d92e9669356dde7519a1863cd6336f2705b4d8e0801e7aced61",
+    "web/src/components/matchInsights.css": "79a63a263e92ca0ca60b3ff574aa0521d916bde23b1050e48b7d5e056e8aa868",
+    "web/src/components/PublishedLiveWorkspace.tsx": "ffd9073d582101532e1621902dc3193860898bb78a6dca43351185a9e02f86ca",
+    "web/src/LiveWorkspace.tsx": "9acbe8136cae8d85f3702669d399271f6e5b84a259f122b976c83a4099ce909e",
+    "web/src/live.ts": "c4781f119c4cbf251cce3132c1a0d9fa7e0d11531e58a879f289dd179340a22b",
+    "tests/test_match_insights.py": "143de09c5ade67f08ee495dfd7d824dac5342cd03d0672ccc868af21139f23aa",
+    "web/tests/match-insights.spec.ts": "45586658e3cb2cc774fe5c0dc1c620bc78a2af1b5a8e6397c4dbc4474689d9ef"
+  },
+  "compile": "TypeScript and Vite production build passed, 1762 modules, final 1.17 seconds. npm.cmd used on Windows; initial npm PowerShell-wrapper attempts exited without diagnostics; direct TypeScript/Vite passed before the successful npm.cmd build.",
+  "model_requests": 0,
+  "paid_subscriptions": 0,
+  "deployment": "not_run",
+  "remaining": [
+    "Permitted free source supplying kills/KDA/ACS/ADR and player identities",
+    "Actual football lineup/team/player-stat coverage",
+    "Map names/round scores when supplied",
+    "Reviewed cross-provider identities",
+    "Optional-detail agent tools",
+    "Screen-reader/more-browser review"
+  ]
+}

@@ -1,5 +1,9 @@
 # Arena engineering roadmap
 
+The current ordered continuation and second-computer setup are in
+[RETOMAR_MANANA](docs/RETOMAR_MANANA.md). Native 10k acceptance passed; a later
+host Docker idle failure is a separate unresolved operational issue.
+
 Each milestone ends with runnable evidence and an explanation of what it proves.
 The sequence spans multiple working sessions; it is not a claim that one session
 completes the entire curriculum. Module mappings use the user's Academy titles;
@@ -14,14 +18,20 @@ private lesson content has not been copied.
 | 05. Real API onboarding | Verified locally with free accounts | Six football competitions, three VALORANT phases, private archives, three repeated source polls and exact freshness scope |
 | 05a. No-token open-data acquisition | Verified OpenFootball staging and research publication | Ten CC0 editions; immutable archives, replay, explicit offset precision, source authenticity and independent consumer contract |
 | 06. Incremental execution path | Verified locally | Affected-match/history and team maintenance; cancellation tombstones; full oracle; bounded backfill |
-| 07. Operational reliability | Local stage runner verified; SLOs pending | Persistent attempts, bounded transient retries, restart after Silver commit, publication gate |
-| 08. Team/roster history and schema evolution | Planned | SCD2 identity history, contract migrations, late roster changes, archive reconciliation |
+| 07. Operational reliability | Local stage runner and source-check monitor verified; sustained SLO measurement pending | Persistent attempts, bounded transient retries, restart after Silver commit, publication gate, read-only check ratios/overdue alerts |
+| 08. Team/roster history and schema evolution | Private source-pinned match details implemented; roster history pending | Supplied football lineups/statistics and VALORANT map outcomes; free player-stat acquisition, roster SCD2 and identity review remain gates |
 | 09. Databricks target | Implemented adapter; offline schema verified; runtime pending | UC Volume input, Auto Loader, SDP expectations/AUTO CDC, manual Job and bundle |
-| 10. Performance and privacy | Small measured layout experiment; deeper work pending | 16 vs 2 files, plans/bytes/timings, soft-deletion audit; larger controlled runs and retention pending |
+| 10. Performance and privacy | Native 10k scenario verified on one CPU with a 1.5 GiB container cap; deeper work pending | Full Python/SQLite parity, replay/recovery/tombstones; million-event execution, controlled comparisons and retention pending |
 | 11. Real-data model validation | Planned | Rolling-origin backtests, calibration, drift, model card, competition holdout |
 | 12. Public v1.0.0 release | Planned | Full acceptance suite, video/captures, dependency locks, documented limitations |
 
 ## Course coverage and implementation boundary
+
+The [7 October native continuation](docs/evidence/spark-native-local-2026-10-07.json)
+records the exact image and synthetic execution separately from provider facts.
+[Match insight evidence](docs/evidence/match-insights-local-2026-10-07.json)
+records actual free-account coverage. The user requires only free sources:
+individual kills/KDA and unavailable lineups remain acquisition gates.
 
 | Academy course | Project learning objective | Current boundary |
 |---|---|---|
@@ -147,3 +157,8 @@ Next acceptance work includes actual authenticated-source Spark replay, controll
 scale trials, forecast eligibility/calibration, retention/deletion behavior and
 managed Databricks verification. Offline publication checks do not replace those
 runtime measurements.
+
+The [7 October Windows continuation](docs/evidence/local-plan-continuation-2026-10-07.json)
+adds read-only source-check health and restores Docker's WSL2 runtime. A bounded
+Linux container verified the prepared 10k workload's mount, count and checksum.
+That container check does not complete the actual Spark/Delta pipeline gate.

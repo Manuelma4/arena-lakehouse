@@ -19,6 +19,8 @@ arena-lakehouse = "arena_lakehouse.cli:main"
 arena-spark = "arena_lakehouse.incremental:main"
 arena-scale = "arena_lakehouse.scale:main"
 arena-live = "arena_lakehouse.live:main"
+arena-health = "arena_lakehouse.source_health:main"
+arena-match-insights = "arena_lakehouse.match_insights:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

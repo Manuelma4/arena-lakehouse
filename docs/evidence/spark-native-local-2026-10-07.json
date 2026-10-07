@@ -1,0 +1,206 @@
+{
+  "recorded_at": "2026-10-07T20:43:06.938779+00:00",
+  "status": "verified_locally",
+  "scope": "Synthetic native correctness and one measured 10k profile",
+  "build": {
+    "exit_code": 0,
+    "seconds": 776.2601891999984,
+    "log": "data\\spark-image-build-final-20261007.log",
+    "memory_limit_mib": 1536,
+    "cpu_limit": 1,
+    "previous_attempt": {
+      "log": "data/spark-image-build-20261007.log",
+      "timeout_seconds": 1200,
+      "reason": "Overall timeout during Maven resolution; dependencies had installed but combined RUN prevented a retained package layer."
+    }
+  },
+  "execution": {
+    "image": "arena-lakehouse:local-20261007",
+    "image_id": "sha256:bd2b94f38870f8cdb862645e11c056d5aaf43196dd1d078cc00a13a72c315cb5",
+    "memory_limit_mib": 1536,
+    "cpu_limit": 1,
+    "driver_memory_mib": 512,
+    "network": "none",
+    "steps": [
+      {
+        "name": "preflight",
+        "exit_code": 0,
+        "seconds": 323.11143749999974,
+        "log": "data\\spark-native-20261007\\preflight.log"
+      },
+      {
+        "name": "scale-10k",
+        "exit_code": 0,
+        "seconds": 723.7178783000018,
+        "log": "data\\spark-native-20261007\\scale-10k.log"
+      }
+    ]
+  },
+  "image_boundary": "Built after Spark resource policy, before later optional match-insight connector/live changes. Runtime source hashes below are from the actual installed image, not retrospectively relabelled current files.",
+  "resource_policy_tests": {
+    "path": "data/spark-resource-tests.xml",
+    "bytes": 1361,
+    "sha256": "ae7e35dbae2e42a88a408e1d90876ceaf4b9a83d9356186fff6750f95defeab4",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 0.25
+  },
+  "preflight": {
+    "report": {
+      "path": "data/spark-native-20261007/preflight/native-preflight-report.json",
+      "bytes": 1309,
+      "sha256": "dbc6687fd9d7c8e1d1a7d881ad49e8af10b29781dedd25ce1857222029fec98f"
+    },
+    "status": "verified_locally",
+    "scope": "Two synthetic matches; native event identity acceptance, not scale throughput",
+    "predictions": "not_run",
+    "provider_requests": 0,
+    "model_requests": 0,
+    "rejected": [
+      "retained_historical_id_borrowed_by_another_match",
+      "one_new_id_reused_within_candidate_batch"
+    ],
+    "runtime": {
+      "spark": "4.1.3",
+      "master": "local[1]",
+      "driver_heap_bytes": 518979584
+    },
+    "historical_collision_rejected": true,
+    "candidate_collision_rejected": true,
+    "no_job_for_rejected_candidates": true,
+    "exact_historical_retry_idempotent": true,
+    "delta_state": {
+      "bronze_observations": {
+        "rows": 3,
+        "version": 2,
+        "sha256": "2eef8cf3266b2dd927c06a6bae96ecfcff5e84db748124ff5ae3a89a55a6caae"
+      },
+      "silver_matches": {
+        "rows": 2,
+        "version": 1,
+        "sha256": "252cef94e1493ed36cf4d4bde98b1aa31ed611cd592cb12a618d4e608659457d"
+      },
+      "silver_history": {
+        "rows": 3,
+        "version": 1,
+        "sha256": "b9dab0b513bc507d41f905dffab5a1cca5300bd589776e1ae71b1be70198c649"
+      },
+      "gold_team_stats": {
+        "rows": 4,
+        "version": 1,
+        "sha256": "8954f3a88cd522212962c61564f4505b572a9c59813a95636b81b6371f89f30e"
+      },
+      "jobs": 3
+    },
+    "quarantine_records": 2,
+    "elapsed_seconds": 318.713027969
+  },
+  "scale": {
+    "report": {
+      "path": "data/spark-native-20261007/scale-10k/scale-report.json",
+      "bytes": 26134,
+      "sha256": "0043945e285b31a3ee7ca1f1a9f312bc918557e5e4c68b3844072bd8da8ec4a8"
+    },
+    "expected_counts": {
+      "base_unique_observations": 10000,
+      "scenario_setup_observations": 1,
+      "correction_observations": 4,
+      "fault_observations": 2,
+      "final_unique_observations": 10005
+    },
+    "final_unique_observations": 10005,
+    "active_gold_rows": 128,
+    "soft_deleted_gold_rows": 2,
+    "identical_replay_idempotent": true,
+    "unaffected_team_rows_preserved": 128,
+    "failure_after_silver_recovered": true,
+    "recovery_scope": "New IncrementalPipeline instance; same Python process and Spark session",
+    "rejected_faults_unchanged": true,
+    "oracle_parity": true,
+    "sqlite_crosscheck": true,
+    "tables": {
+      "bronze_observations": {
+        "expected_rows": 10005,
+        "actual_rows": 10005,
+        "missing_rows": 0,
+        "unexpected_rows": 0,
+        "schema_equal": true
+      },
+      "silver_matches": {
+        "expected_rows": 5001,
+        "actual_rows": 5001,
+        "missing_rows": 0,
+        "unexpected_rows": 0,
+        "schema_equal": true
+      },
+      "silver_history": {
+        "expected_rows": 10005,
+        "actual_rows": 10005,
+        "missing_rows": 0,
+        "unexpected_rows": 0,
+        "schema_equal": true
+      },
+      "gold_team_stats": {
+        "expected_rows": 128,
+        "actual_rows": 128,
+        "missing_rows": 0,
+        "unexpected_rows": 0,
+        "schema_equal": true
+      }
+    },
+    "elapsed_seconds": 716.423475481,
+    "base_observations_per_second": 47.533785646851115,
+    "resource_end": {
+      "cgroup_memory_current_bytes": 1432530944,
+      "cgroup_memory_peak_bytes": 1590865920,
+      "cgroup_memory_limit_bytes": 1610612736,
+      "process_max_rss_bytes": 245972992,
+      "child_max_rss_bytes": 0
+    },
+    "workspace_disk_bytes": 61354506,
+    "runtime_source_sha256": {
+      "__init__.py": "7cca56ebd8d17a5f694818a6f92781fae6f60dd1b90e9338357118907154ae21",
+      "calendar.py": "332a461cc1a714bcac3f05a5fa750d44d03e603fc804822550e975b263a4ea8a",
+      "cli.py": "1210b619912f216262022388c91086283f03b49d2577f8529ea3f6cd7b968370",
+      "connectors.py": "81b5fa2a72107974bfebbb6daba6a826ed96520e50367615ef9af28a666627dd",
+      "engine.py": "ee12f80c80cddd7c58aa8226beb354296cfa913a0f49530a19751b7784c4aa0b",
+      "incremental.py": "60478cccf439932186abdf0a11d31f7b7712f3efb14255b122d9e22a544dba55",
+      "live.py": "fa51af2297d5d58440b697a3d69a71ad5062c181622ef7ab342cf0a30b8348b3",
+      "managed_contract.py": "ff337d5da2499bc8cb14328b68b372812248b13bbba53f3318a4f8cacae304f7",
+      "openfootball.py": "18b625a5f9b5af9399171f932b3c88b36172cb735a2d2a5dd2268c7a82b814ef",
+      "openfootball_research.py": "2b7dd6bb4e37e1f91c5099d943f43b01276fb361cd5321bdf16c87ad276befb3",
+      "operations.py": "968d5f507777fcf96b123501f400ef65c245a9f7c1db8bf1f410115e7b7c7ca3",
+      "prediction.py": "cb4f5919bd57a9ceafb0d1b369d73ef4f2b1ff2f5f12e498b1bfb1b5e3f8207c",
+      "provider_policy.py": "1dae1e85bedabcc3f3ef2233be3e2ed82ed59ffaed3cae9f93517b858758094b",
+      "provider_publication.py": "644210c1e8a2e4f353e285e06d669f6c35ca79bb8853485e30e21bb6c4c86584",
+      "scale.py": "d2043868203a0bfdcff705871b4115ec2fddd08700548137d56a58c8d6ccda92",
+      "scale_oracle.py": "34720709fc52004a203fb89b4b6d91b5096262ab7c36b9ff4002c98abfac6819",
+      "schema.py": "0c0ace5a6d6f73fba45c0297fa4bc8364b2bc153fa18191528958d9498af9810",
+      "snapshot.py": "d7a15aefb83ba0ce89923423ba371cf713858c4b831e7e05bccc97a86b69ecc3",
+      "source_health.py": "d90a1cd982a1775b25aaf91c7c6ccc86900fefe9ee513dad0289d08c66ab5cf4",
+      "spark_backend.py": "2a3f9bc0325b5d6adfc38f4b7bbe463d1d14030890f5f011fe140a990a66f4ac",
+      "synthetic.py": "c8bda7cf118c044710a9e314b15a5429ddb3f0270ead184b761dbd41a00c47a7"
+    }
+  },
+  "current_source_sha256": {
+    "Dockerfile": "b0b9f451bfc6112e2fb56bceea935c424afa1a73931434d21c673c897baf604a",
+    ".dockerignore": "f6b9089ba1a8ca93bc3977d6b044ff0d3d8af26c044a5c5963a0c4f7a14b9d54",
+    "src/arena_lakehouse/spark_backend.py": "2a3f9bc0325b5d6adfc38f4b7bbe463d1d14030890f5f011fe140a990a66f4ac",
+    "scripts/verify_spark_preflight.py": "01c9cf0a75a8116c810253fc7723ea690479dd6679f0660dbc5fee443d5c7390",
+    "tests/test_spark_resources.py": "ec74dad8908be98a5c01ea73b3987200e6c04ab914a143b4763a7813934d7d89"
+  },
+  "provider_requests": 0,
+  "model_requests": 0,
+  "predictions": "not_run",
+  "deployment": "not_run",
+  "global_allocation_changes": false,
+  "remaining": [
+    "Actual-process/OS restart",
+    "Million-event execution",
+    "Controlled throughput/layout comparison",
+    "Real-source Spark replay and forecast calibration",
+    "Authenticated Databricks"
+  ]
+}

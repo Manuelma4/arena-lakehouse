@@ -1,12 +1,26 @@
 # Local verification evidence
 
+Final transfer: [handoff verification](handoff-verification-2026-10-07.json).
+The [Docker idle recovery](docker-idle-recovery-2026-10-07.json) records a later
+failed host repair, separately from the successful native Spark acceptance.
+
+Latest continuation: [native 10k Spark and event identity](spark-native-local-2026-10-07.json)
+and [private match insights](match-insights-local-2026-10-07.json). Native 10k
+execution passed; million-event execution and actual-process recovery remain
+pending. The older reports retain their original preparation boundaries.
+
+The [7 October Windows continuation](local-plan-continuation-2026-10-07.json)
+records read-only source monitoring, scoped tests, 10k workload preparation and
+a repaired Docker/WSL2 container check. It does not claim a new Spark run,
+source acquisition, managed execution or inference.
+
 Environment: Windows host, Docker Desktop Linux backend, Python 3.11,
 Java 17, Spark 4.1.3 and Delta 4.4.0 (Spark 4.1 JVM artifact).
 
 The [7 October handoff](../HANDOFF.md) identifies the portable checkpoint and
 remaining execution gates. [Event identity preflight](../event-identity-preflight.md)
 records 26 passing offline relational/control tests; native Spark verification
-of that revision remains pending.
+of that revision is now recorded in the native continuation above.
 
 ## Million-observation workload preparation
 
