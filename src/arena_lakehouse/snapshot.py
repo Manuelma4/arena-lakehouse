@@ -12,7 +12,6 @@ import pyarrow.parquet as pq
 
 from . import __version__
 from .engine import history, latest, team_stats
-from .prediction import train_and_predict
 from .schema import canonical, digest
 
 DOCUMENTS = {
@@ -73,7 +72,14 @@ def write_json(path: Path, value):
     path.write_text(json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False) + "\n", encoding="utf-8")
 
 
-def export_snapshot(pipeline, output: Path, with_predictions=True) -> Path:
+def export_snapshot(pipeline, output: Path, with_predictions=True, *, select_latest=True,
+                    generated_at: datetime | None = None) -> Path:
+    if type(select_latest) is not bool:
+        raise ValueError("select_latest must be a boolean")
+    generated_at = datetime.now(timezone.utc) if generated_at is None else generated_at
+    if (not isinstance(generated_at, datetime) or generated_at.tzinfo is None
+            or generated_at.utcoffset() is None):
+        raise ValueError("Snapshot publication requires an aware clock")
     quality = pipeline.quality()
     if quality["summary"]["last_run_status"] != "succeeded":
         raise ValueError("Publish only after a successful ingest")
@@ -83,7 +89,11 @@ def export_snapshot(pipeline, output: Path, with_predictions=True) -> Path:
     providers = sorted({e["provider"] for e in events})
     if "synthetic" in providers and len(providers) != 1:
         raise ValueError("Synthetic and API data require separate workspaces")
-    predictions, model_report = train_and_predict(events) if with_predictions else ([], {"status": "not_run"})
+    if with_predictions:
+        from .prediction import train_and_predict
+        predictions, model_report = train_and_predict(events)
+    else:
+        predictions, model_report = [], {"status": "not_run"}
     matches, stats = latest(events), team_stats(latest(events))
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
@@ -126,13 +136,14 @@ def export_snapshot(pipeline, output: Path, with_predictions=True) -> Path:
     files = {p.relative_to(stage).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
              for p in sorted(stage.rglob("*")) if p.is_file()}
     manifest = dict(schema_version="2.0", dataset_version=digest({"events": events})[:16],
-                    producer_version=__version__, generated_at=datetime.now(timezone.utc).isoformat(),
+                    producer_version=__version__, generated_at=generated_at.astimezone(timezone.utc).isoformat(),
                     as_of=max(e["observed_at"] for e in events),
                     data_kind="synthetic" if providers == ["synthetic"] else "api", providers=providers, files=files)
     write_json(stage / "manifest.json", manifest)
     destination = output / f"snapshot-{manifest['dataset_version']}-{uuid.uuid4().hex[:8]}"
     stage.replace(destination)
-    pointer = output / ".LATEST.tmp"
-    pointer.write_text(destination.name, encoding="utf-8")
-    pointer.replace(output / "LATEST")
+    if select_latest:
+        pointer = output / ".LATEST.tmp"
+        pointer.write_text(destination.name, encoding="utf-8")
+        pointer.replace(output / "LATEST")
     return destination

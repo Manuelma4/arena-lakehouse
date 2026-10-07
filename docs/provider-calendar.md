@@ -50,18 +50,18 @@ The publisher does not infer canonical eligibility from the announcement fields.
 Omitting the argument leaves every link null. A link is the exact canonical ID,
 such as `pandascore:501`; conflicting phase records remain unlinked.
 
-Recommended worker order is: collect all selected pages, ingest and publish the
-canonical snapshot, publish the calendar, commit the cursor, then record poll
-success. The worker should hold its existing provider writer lock throughout.
-The calendar publisher expects one writer; it does not create a second provider
-lock or poller. The current polling worker remains unchanged until coordinated
-integration is verified.
+The polling worker holds its provider writer lock throughout collection and
+publication. It prepares canonical and calendar packages with
+`select_latest=False`, validates both, and persists a SQLite recovery intent
+before advancing any cursor. It then commits cursors and atomically replaces
+`snapshots/CURRENT_PUBLICATION.json`. That selector chooses the complete pair;
+legacy `LATEST`, `CALENDAR_LATEST`, and status views converge afterwards. See the
+[provider publication contract](provider-publication.md) for ordering and recovery.
 
-The canonical and calendar pointers are **independent**, with different dataset
-versions. Updating two files cannot provide a shared atomic transaction. A future
-consumer should use the successful poll's explicit selected versions or validate
-and label each publication independently. It must not present an independently
-advanced calendar as a successfully checked canonical dataset after a failure.
+The standalone publisher keeps `select_latest=True` as its default. Its calendar
+pointer remains an independent compatibility interface with a separate dataset
+version. Consumers needing a coordinated pair must use the authoritative selector
+and validate its referenced packages.
 
 ## Wire format
 
@@ -77,8 +77,8 @@ packages. Each package has:
 | `quality.json` | Measured unresolved, duplicate, conflicting, linked, and known-result counts |
 
 `CALENDAR_LATEST` is an atomically replaced basename pointer beside these packages.
-Publication writes and validates a temporary package before renaming it and
-replacing the pointer. Replaying the same explicit inputs and link set reuses the
+Publication writes and validates a temporary package before renaming it. With
+`select_latest=True`, it then replaces the pointer. Replaying the same explicit inputs and link set reuses the
 validated package and preserves its original manifest. Failed publications leave
 previous packages available. This guarantees atomic file visibility for process
 failures, not a cross-pointer transaction or a power-loss storage guarantee.
@@ -192,6 +192,8 @@ The initial tests use original synthetic fixture rows only. They cover nullable
 announcements, canceled matches, unknown and unzoned dates, strict result types,
 duplicate and conflicting phase IDs, complete page coverage, malformed envelopes,
 path traversal, publication replay, failed writes, checksums, and resealed
-semantic mutations. Actual API acquisition and coordinated worker/consumer
-integration are separate verification steps. No live provider coverage claim is
-made by these unit tests.
+semantic mutations. Worker recovery tests additionally cover complete empty and
+unresolved polls, partial phase failure, cursor and selector crash boundaries,
+exact archive checksums, and retained canonical identities. Actual API
+acquisition remains a separate verification step. No live provider coverage
+claim is made by these unit tests.

@@ -628,15 +628,18 @@ def _validate_business(row):
 
 def publish_calendar(raw_archives: Iterable[Path], output_root: Path, *, archive_root: Path,
                      pages: int = 1, canonical_match_ids: Iterable[str] = (),
-                     generated_at: datetime | None = None) -> dict:
+                     generated_at: datetime | None = None, select_latest: bool = True) -> dict:
     """Publish one complete successful poll, returning its immutable manifest.
 
     ``raw_archives`` must be ``meta['raw_archives']`` from successful ``collect``.
     The caller supplies stored canonical IDs; this function never infers linkage
-    from fixture fields. The calendar and canonical pointers are independent.
+    from fixture fields. ``select_latest=False`` prepares an immutable package
+    without changing the standalone compatibility pointer.
     """
+    if type(select_latest) is not bool:
+        raise CalendarError("select_latest must be a boolean")
     payload = _payload(raw_archives, archive_root, pages, canonical_match_ids)
-    generated_at = generated_at or datetime.now(timezone.utc)
+    generated_at = datetime.now(timezone.utc) if generated_at is None else generated_at
     if not isinstance(generated_at, datetime) or generated_at.tzinfo is None or generated_at.utcoffset() is None:
         raise CalendarError("Publication requires an aware clock")
     as_of = max(source["observed_at"] for source in payload["sources"])
@@ -676,6 +679,8 @@ def publish_calendar(raw_archives: Iterable[Path], output_root: Path, *, archive
                     raise CalendarError("Unsafe calendar staging cleanup")
                 shutil.rmtree(staging)
     # One writer is expected, protected by the polling worker's provider lock.
+    if not select_latest:
+        return manifest
     pointer = output_root / f".CALENDAR_LATEST-{uuid.uuid4().hex}.tmp"
     try:
         with pointer.open("w", encoding="ascii", newline="\n") as handle:

@@ -5,6 +5,7 @@ import httpx
 import pytest
 
 from arena_lakehouse.live import LiveConfig, LiveFailure, LiveWorker, _writer_lock
+from arena_lakehouse.provider_publication import current_publication
 
 NOW = datetime(2026, 10, 6, 12, tzinfo=timezone.utc)
 TOKEN = "test-only-credential-never-real"
@@ -41,6 +42,11 @@ def client_for(payload):
 
 def status_file(worker):
     return json.loads((worker.snapshots / "LIVE_STATUS.json").read_text(encoding="utf-8"))
+
+
+def requests_made(worker):
+    with worker.ledger.connect() as db:
+        return db.execute("SELECT COUNT(*) FROM requests").fetchone()[0]
 
 
 def test_missing_credentials_is_explicit_without_requests_or_snapshot(tmp_path, monkeypatch):
@@ -166,13 +172,20 @@ def test_cursor_commit_failure_reuses_immutable_candidate_and_preserves_last_goo
         assert failed["last_success_at"] == first["last_success_at"]
         assert failed["last_error_code"] == "cursor_commit_failed" and worker.cursor.read_bytes() == cursor
         assert len(list(worker.snapshots.glob("snapshot-*"))) == 2
+        pending = worker.ledger.prepared()
+        intended = pending["intent"]["candidate"]
+        request_count = requests_made(worker)
         monkeypatch.setattr(module, "commit_state", original)
         clock.advance(60)
         recovered = worker.poll_once()
     assert recovered["latest_snapshot"] != first["latest_snapshot"]
     assert len(list(worker.snapshots.glob("snapshot-*"))) == 2
     assert len(worker.pipeline.events()) == 2
-    assert recovered["last_poll"]["changed_rows"] == 0
+    assert recovered["last_poll"]["changed_rows"] == 1
+    selected = current_publication(worker.root, now=clock())
+    assert selected["poll_id"] == pending["poll_id"] == worker.ledger.summary()["last"]["id"]
+    assert all(selected[key] == value for key, value in intended.items())
+    assert requests_made(worker) == request_count
 
 
 def test_retries_consume_durable_request_budget_and_denied_requests_never_send(tmp_path):
@@ -402,15 +415,22 @@ def test_partial_cursor_commit_failure_recovers_without_revisions_or_extra_snaps
         assert failed["latest_snapshot"] is None and failed["last_error_code"] == "cursor_commit_failed"
         assert worker.cursors["PL"].exists() and not worker.cursors["PD"].exists()
         assert len(original_observations) == 6 and len(list(worker.snapshots.glob("snapshot-*"))) == 1
+        pending = worker.ledger.prepared()
+        intended = pending["intent"]["candidate"]
+        request_count = requests_made(worker)
         monkeypatch.setattr(module, "commit_state", original)
         clock.advance(60)
         restarted = LiveWorker(tmp_path, LiveConfig("football-data", competitions=CODES), client=client, clock=clock)
         recovered = restarted.poll_once()
-    assert recovered["status"] == "ready" and recovered["last_poll"]["changed_rows"] == 0
+    assert recovered["status"] == "ready" and recovered["last_poll"]["changed_rows"] == 6
     assert recovered["last_poll"]["requests"] == 6
     assert restarted.pipeline.events() == original_observations
     assert len(list(restarted.snapshots.glob("snapshot-*"))) == 1
     assert all(path.exists() for path in restarted.cursors.values())
+    selected = current_publication(restarted.root, now=clock())
+    assert selected["poll_id"] == pending["poll_id"] == restarted.ledger.summary()["last"]["id"]
+    assert all(selected[key] == value for key, value in intended.items())
+    assert requests_made(restarted) == request_count
 
 
 def test_multiscope_cadence_and_scope_changes_are_rejected_before_poll(tmp_path):

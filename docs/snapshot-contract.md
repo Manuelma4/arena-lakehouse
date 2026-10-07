@@ -46,7 +46,11 @@ the chatbot. Insufficient point-in-time history means unavailable.
 ## Publication and privacy
 
 Publication follows a successful ingest only, builds a staging directory, then
-renames it atomically before changing `LATEST`. Old snapshots stay intact.
+renames it atomically. `export_snapshot(..., select_latest=True)` preserves the
+standalone default of advancing `LATEST`; `select_latest=False` prepares a
+candidate package. Provider workers select candidates through the atomic
+[provider publication contract](provider-publication.md) before updating legacy
+pointers. Old snapshots stay intact.
 No API token or private player identifier enters an export. API-derived runtime
 files are ignored by Git. MIT covers original code and fictional fixtures, not
 provider databases, logos or downloaded model weights.
