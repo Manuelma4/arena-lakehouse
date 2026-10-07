@@ -1,0 +1,19 @@
+{
+  "recorded_at": "2026-10-07T10:00:12.916842+00:00",
+  "version": "0.7.0",
+  "source_commit": "93d85b59322e55afb09e1afeb865d64f6616eaaf",
+  "run": 37600942601,
+  "url": "https://github.com/Manuelma4/arena-lakehouse/actions/runs/37600942601",
+  "runner": "ubuntu-latest",
+  "status": "passed",
+  "passed": 395,
+  "skipped": 0,
+  "seconds": 17.74,
+  "ruff": "passed",
+  "routine_timeout_minutes": 10,
+  "superseded_runs_cancelled": true,
+  "spark_workflow": "manual only",
+  "readme_inline_images": 0,
+  "billing_audited": false,
+  "limits": "Software fixtures and mock transport only; not a new provider/model/Spark or Databricks measurement."
+}

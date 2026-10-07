@@ -5,6 +5,11 @@ Java 17, Spark 4.1.3 and Delta 4.4.0 (Spark 4.1 JVM artifact).
 
 ## Paired source publication - v0.7.0
 
+[remote-software-v0.7.json](remote-software-v0.7.json) records 395 passing tests
+and Ruff on the standard Linux runner at the released producer source. These
+software checks use fixtures and intercepted responses; native Spark, inference
+and managed workspace measurements remain separate.
+
 [paired-publication-v0.7.json](paired-publication-v0.7.json) records the final
 394-test local suite, one Windows symbolic-link privilege skip, eligibility and
 cursor recovery regressions, and the four-stage cross-repository mock bridge.
