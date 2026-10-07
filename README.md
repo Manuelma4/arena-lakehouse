@@ -39,20 +39,9 @@ the football provider's free-tier score delay.
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    A[Provider observations] --> B[Bronze: append-only history]
-    B --> C[Silver: current matches and revision history]
-    C --> D[Gold: match and team results]
-    B --> E[Point-in-time model features]
-    D --> F[Versioned canonical snapshot]
-    E --> F
-    F --> G[Arena Copilot]
-    H[Reviewed OpenFootball CC0 sources] --> I[Immutable raw archives and source polls]
-    I --> J[Precision-aware staging v1 or v2]
-    J --> K[Validated research Gold and source history]
-    K --> G
-```
+Bronze retains source observations. Silver reconstructs current matches and their
+revision history. Gold serves match results and team aggregates through a
+versioned publication contract.
 
 The canonical execution layer uses Python, Spark 4.1.3 and Delta Lake 4.4.0.
 AvailableNow file streaming, persistent checkpoints, MERGE and Change Data Feed

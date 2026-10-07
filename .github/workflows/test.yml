@@ -1,10 +1,21 @@
 name: Software tests
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'tests/**', 'scripts/**', 'databricks/**', 'pyproject.toml', 'Dockerfile', '.github/workflows/test.yml']
+  pull_request:
+    branches: [main]
+    paths: ['src/**', 'tests/**', 'scripts/**', 'databricks/**', 'pyproject.toml', 'Dockerfile', '.github/workflows/test.yml']
+  workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: software-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   reference:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

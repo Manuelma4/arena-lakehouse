@@ -30,6 +30,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: spark-delta-evidence
+          retention-days: 3
           path: |
             data/spark-ci/smoke-report.json
             data/incremental-ci/incremental-report.json
