@@ -1,0 +1,731 @@
+{
+  "schema_version": "arena-pc-continuation-evidence/1.0.0",
+  "recorded_at": "2026-10-08T18:27:51.125643+00:00",
+  "branch": "checkpoint/2026-10-07",
+  "github_recovered_heads": {
+    "arena-lakehouse": "81994b6869f6546654b348a61697ba75be929dfb",
+    "lakehouse-copilot": "f6d04d4b58d97fab126eaf34a61b333a89fb8bc3"
+  },
+  "code_recovery": "Exact blob/tree/commit identities verified against GitHub; original histories retained; local branches fast-forwarded.",
+  "application_changes": "Local uncommitted Current/Archive route/test migration and configured forecast API client correction.",
+  "private_development_snapshot": {
+    "status": "restored",
+    "files_verified": 334,
+    "archive_sha256": "45fe2781fbd29e1e692579db9f8b2dadcdd049f322d0a3da73194bb0dc5142cb",
+    "release_id": 406934364,
+    "local_conflicts_backed_up": 26,
+    "fresh_workspace_files": 145,
+    "private_state_restored": true,
+    "credentials_preserved": true,
+    "historical_active_capture": "restored private World Cup 2018 capture",
+    "transferred_provider_capture": "preserved at producer/data/live; current browsing uses fresher resumed copy",
+    "backup_location": "Adjacent ignored .arena-tools/private-state-backup-20261008-*",
+    "active_current_workspace": "arena-lakehouse/data/live-resumed-20261008"
+  },
+  "manual_free_provider_refresh": {
+    "football-data": {
+      "schema_version": "arena-live-status-1.0",
+      "provider": "football-data",
+      "data_kind": "api",
+      "status": "ready",
+      "source_scope": {
+        "kind": "competition_list",
+        "competition_codes": [
+          "PL",
+          "PD",
+          "BL1",
+          "SA",
+          "FL1",
+          "BSA"
+        ],
+        "phases": [],
+        "pages": 1
+      },
+      "poll_id": 3,
+      "last_attempt_at": "2026-10-08T17:48:20.627578Z",
+      "last_success_at": "2026-10-08T17:49:57.166442Z",
+      "last_change_at": "2026-10-08T17:49:57.166442Z",
+      "poll_interval_seconds": 3600,
+      "last_error_code": null,
+      "latest_snapshot": "snapshot-f13c3a8cba959399-4d56250d",
+      "poll_counts": {
+        "attempted": 3,
+        "succeeded": 3,
+        "failed": 0,
+        "awaiting_credentials": 0,
+        "quota_limited": 0,
+        "interrupted": 0
+      },
+      "last_poll": {
+        "source_rows": 2132,
+        "changed_rows": 6,
+        "unsupported_rows": 0,
+        "requests": 6
+      },
+      "capabilities": {
+        "tier": "free",
+        "update_mode": "polled_rest",
+        "fixtures_and_results": true,
+        "scores_delayed": true,
+        "in_game_round_feed": false
+      },
+      "request_budget": {
+        "limit": 10,
+        "window_seconds": 60,
+        "used": 0,
+        "remaining": 10
+      }
+    },
+    "pandascore": {
+      "schema_version": "arena-live-status-1.0",
+      "provider": "pandascore",
+      "data_kind": "api",
+      "status": "ready",
+      "source_scope": {
+        "kind": "match_phases",
+        "competition_codes": [],
+        "phases": [
+          "past",
+          "upcoming",
+          "running"
+        ],
+        "pages": 1
+      },
+      "poll_id": 2,
+      "last_attempt_at": "2026-10-08T17:50:35.854574Z",
+      "last_success_at": "2026-10-08T17:52:05.777226Z",
+      "last_change_at": "2026-10-08T17:52:05.777226Z",
+      "poll_interval_seconds": 3600,
+      "last_error_code": null,
+      "latest_snapshot": "snapshot-01927d75c2d767eb-13b66262",
+      "poll_counts": {
+        "attempted": 2,
+        "succeeded": 2,
+        "failed": 0,
+        "awaiting_credentials": 0,
+        "quota_limited": 0,
+        "interrupted": 0
+      },
+      "last_poll": {
+        "source_rows": 119,
+        "changed_rows": 7,
+        "unsupported_rows": 14,
+        "requests": 3
+      },
+      "capabilities": {
+        "tier": "free",
+        "update_mode": "polled_rest",
+        "fixtures_and_results": true,
+        "scores_delayed": null,
+        "in_game_round_feed": false
+      },
+      "request_budget": {
+        "limit": 1000,
+        "window_seconds": 3600,
+        "used": 3,
+        "remaining": 997
+      }
+    }
+  },
+  "current_forecast_endpoint_checks": {
+    "football-data": {
+      "provider": "football-data",
+      "status": "ready",
+      "as_of": "2026-10-08T17:48:27.948038Z",
+      "total": 1596,
+      "stale": false,
+      "source_state": "ready",
+      "publication_fingerprint": "06f2cf996f3a33d8de88034797bb4f86664951daf07bd45797386e0bbdebef33",
+      "snapshot_fingerprint": "d8fdb3050cc6274b3e7f1bdc2c56c08b9cef18447ae2d721890f376ebffea73f",
+      "loaded": 100,
+      "available": 83,
+      "abstentions": 17
+    },
+    "pandascore": {
+      "provider": "pandascore",
+      "status": "ready",
+      "as_of": "2026-10-08T17:50:42.885039Z",
+      "total": 8,
+      "stale": false,
+      "source_state": "ready",
+      "publication_fingerprint": "e9c5900043c9a37097f5191f5d529a2d65f3eedd2a1f10cb29aa05ac47126488",
+      "snapshot_fingerprint": "de7e623591c0a72fe80e794801f554218d4b4e6d0fce25d0cb97870a278ad97b",
+      "loaded": 8,
+      "available": 2,
+      "abstentions": 6
+    }
+  },
+  "historical_acquisition": {
+    "bytes_read": 2426541,
+    "original_bytes": 2409848,
+    "requests": 9,
+    "schema_version": "historical-football-inputs/1.0.0",
+    "source_manifest_sha256": "144be33955b151d1616952d3c26cd664af20991f6f5b0946c1d6a43fd7f3f851",
+    "status": "acquired"
+  },
+  "historical_normalized_package": {
+    "dataset_version": "279ca4721d72720f",
+    "publication_fingerprint": "279ca4721d72720fd396f803996ff7e130c52c79a59b6e20e7cb2d2603453599",
+    "quality": {
+      "checks": [
+        "source hashes/size/version/license",
+        "aware ordered source clocks",
+        "2018 temporal scope",
+        "native kickoff clock agreement",
+        "unique source identities and sides",
+        "same-source references",
+        "match-bound participant ownership",
+        "substitution sequence",
+        "separate score-stage/winner parity"
+      ],
+      "formations_not_supplied": 0,
+      "participant_unknown_goals": 1944,
+      "row_score_definition": "1.0 means this row passed its explicit identity/type/reference contract; allowed unknowns do not imply complete statistics",
+      "violations": 0
+    },
+    "record_counts": {
+      "bench": 1477,
+      "matches": 64,
+      "players": 736,
+      "starters": 1408,
+      "substitutions": 381,
+      "teams": 32
+    },
+    "schema_version": "historical-football-details/1.0.0",
+    "scope": "historical_research"
+  },
+  "verification": {
+    "producer_offline_pytest": {
+      "tests": 619,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "passed": 618,
+      "report": "arena-lakehouse/data/continuation-20261008-producer.xml",
+      "sha256": "b2abebc2f33d01336e1bb5ec56cedcbe98c2423bdf213bba0b9c9063e958b609",
+      "skip_reasons": [
+        "Creating symlinks requires local Windows privilege"
+      ]
+    },
+    "consumer_offline_pytest": {
+      "tests": 924,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9,
+      "passed": 915,
+      "report": "lakehouse-copilot/data/continuation-20261008-consumer.xml",
+      "sha256": "6b28b9dbd75b15052ae6792d5757c654f9c26198ac8aac0c673866cff3b99001",
+      "skip_reasons": [
+        "Platform does not permit test symlinks: 22",
+        "This Windows account cannot create symbolic links",
+        "This Windows account cannot create test symlinks",
+        "This Windows host does not grant test symlink creation",
+        "Windows symbolic-link privilege unavailable",
+        "Windows symlink creation requires developer mode or privilege",
+        "collection skipped"
+      ]
+    },
+    "ruff": "passed in both repositories (src, tests, scripts)",
+    "typescript": "passed",
+    "production_build": "passed; 1773 modules",
+    "source_contracts": {
+      "passed": 25,
+      "failed": 0,
+      "included_in_default_suite": true
+    },
+    "saved_investigations": {
+      "stats": {
+        "startTime": "2026-10-08T18:09:55.299Z",
+        "duration": 11319.404999999999,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "report": "lakehouse-copilot/data/continuation-20261008-investigations-final.json",
+      "sha256": "91fe3dca6d92dc1c7c1fe58f0e86072d84dfbe5b4d5f9b2e03446eb8668ff086"
+    },
+    "default_browser_suite": {
+      "status": "all_cases_passed_after_focused_recheck",
+      "unique_passed_cases": 143,
+      "profile_specific_skips": 27,
+      "last_complete_run": {
+        "stats": {
+          "startTime": "2026-10-08T18:10:51.307Z",
+          "duration": 464684.761,
+          "expected": 142,
+          "skipped": 27,
+          "unexpected": 1,
+          "flaky": 0
+        },
+        "report": "lakehouse-copilot/data/continuation-20261008-e2e-default-second.json",
+        "sha256": "f96a443d767ded5e05ec96b7c25ba0ed0abc1b3c10fb8297e8c68352199b8d36"
+      },
+      "focused_final_recheck": {
+        "stats": {
+          "startTime": "2026-10-08T18:20:42.106Z",
+          "duration": 26925.762000000002,
+          "expected": 2,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "report": "lakehouse-copilot/data/continuation-20261008-e2e-final-recheck.json",
+        "sha256": "7175ffaeb7855b105bd679ca306108a6752746b42211573e098537ce1944838c"
+      },
+      "interpretation": "The complete run passed 142 cases and skipped 27; one mobile case failed because the test did not open the collapsed team directory. After correcting the test, both desktop and mobile versions passed the focused recheck. These are separate runs; no claim of a single fully green complete rerun."
+    },
+    "retained_previous_browser_runs": [
+      {
+        "stats": {
+          "startTime": "2026-10-08T18:05:24.233Z",
+          "duration": 229304.952,
+          "expected": 81,
+          "skipped": 86,
+          "unexpected": 3,
+          "flaky": 0
+        },
+        "report": "lakehouse-copilot/data/continuation-20261008-e2e-default-first.json",
+        "sha256": "77fbeb98558c59d8fac767e5b24629aea60a75026e991d0eb7b2992af81798b3"
+      },
+      {
+        "stats": {
+          "startTime": "2026-10-08T18:10:51.307Z",
+          "duration": 464684.761,
+          "expected": 142,
+          "skipped": 27,
+          "unexpected": 1,
+          "flaky": 0
+        },
+        "report": "lakehouse-copilot/data/continuation-20261008-e2e-default-second.json",
+        "sha256": "f96a443d767ded5e05ec96b7c25ba0ed0abc1b3c10fb8297e8c68352199b8d36"
+      },
+      {
+        "stats": {
+          "startTime": "2026-10-08T17:49:21.775Z",
+          "duration": 431833.388,
+          "expected": 44,
+          "skipped": 82,
+          "unexpected": 3,
+          "flaky": 0
+        },
+        "report": "lakehouse-copilot/data/continuation-20261008-e2e-initial.json",
+        "sha256": "a9a9101d33d17a373cdbec2309fd00242a955d0aecd05b79b346529f277fb213"
+      },
+      {
+        "stats": {
+          "startTime": "2026-10-08T17:57:37.904Z",
+          "duration": 216450.052,
+          "expected": 17,
+          "skipped": 0,
+          "unexpected": 2,
+          "flaky": 0
+        },
+        "report": "lakehouse-copilot/data/continuation-20261008-e2e-targeted-initial.json",
+        "sha256": "a448a49c4f7907e360fd2a99735120323c931af084d864d889f8ff1babdfb12f"
+      }
+    ],
+    "retained_initial_saved_investigations": {
+      "stats": {
+        "startTime": "2026-10-08T18:07:26.667Z",
+        "duration": 41039.359,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "report": "lakehouse-copilot/data/continuation-20261008-investigations-initial.json",
+      "sha256": "48f87b3b4c0247e8f832d1a8932e3fc5240ba443038d7bb8d5168d4fc76292bd"
+    },
+    "real_compiled_browser_scenes": {
+      "scenes": [
+        {
+          "provider": "football-data",
+          "width": 1440,
+          "loaded": 100,
+          "total": 1596,
+          "available": 83,
+          "stale": false,
+          "publication_fingerprint": "06f2cf996f3a33d8de88034797bb4f86664951daf07bd45797386e0bbdebef33",
+          "overflow": 0,
+          "errors": [],
+          "api_path_used": true,
+          "screenshot_sha256": "085e111387991c4e97d806ee45b0876a6011a5747f1639b97102a5d22dd032ad"
+        },
+        {
+          "provider": "pandascore",
+          "width": 1440,
+          "loaded": 8,
+          "total": 8,
+          "available": 2,
+          "stale": false,
+          "publication_fingerprint": "e9c5900043c9a37097f5191f5d529a2d65f3eedd2a1f10cb29aa05ac47126488",
+          "overflow": 0,
+          "errors": [],
+          "api_path_used": true,
+          "screenshot_sha256": "ad47801d8defbf2ecb48ea2fd17e1705c39c09bfd602e073c8173ee77340b3ba"
+        },
+        {
+          "source": "World Cup 2018",
+          "width": 1440,
+          "overflow": 0,
+          "errors": []
+        },
+        {
+          "provider": "football-data",
+          "width": 390,
+          "loaded": 100,
+          "total": 1596,
+          "available": 83,
+          "stale": false,
+          "publication_fingerprint": "06f2cf996f3a33d8de88034797bb4f86664951daf07bd45797386e0bbdebef33",
+          "overflow": 0,
+          "errors": [],
+          "api_path_used": true,
+          "screenshot_sha256": "8ee868883ff9f831e0a736a8224fe830d17680137018dd318d6267bf4db09bff"
+        },
+        {
+          "provider": "pandascore",
+          "width": 390,
+          "loaded": 8,
+          "total": 8,
+          "available": 2,
+          "stale": false,
+          "publication_fingerprint": "e9c5900043c9a37097f5191f5d529a2d65f3eedd2a1f10cb29aa05ac47126488",
+          "overflow": 0,
+          "errors": [],
+          "api_path_used": true,
+          "screenshot_sha256": "ae0f197dff573409982f098611738126ccdb55c1a750707ec856ad365cdcc46b"
+        },
+        {
+          "source": "World Cup 2018",
+          "width": 390,
+          "overflow": 0,
+          "errors": []
+        }
+      ],
+      "failures": [],
+      "model_requests": 0
+    },
+    "initial_visual_failure": [
+      "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /^Inspect historical match / }).first() to be visible\u001b[22m\n"
+    ],
+    "formatting": "Prettier passed on every changed frontend source/test/config file; git diff --check passed.",
+    "real_compiled_browser_scenes_before_restore": {
+      "scenes": [
+        {
+          "provider": "football-data",
+          "width": 1440,
+          "loaded": 100,
+          "total": 1596,
+          "available": 83,
+          "stale": false,
+          "publication_fingerprint": "06f2cf996f3a33d8de88034797bb4f86664951daf07bd45797386e0bbdebef33",
+          "overflow": 0,
+          "errors": [],
+          "api_path_used": true,
+          "screenshot_sha256": "085e111387991c4e97d806ee45b0876a6011a5747f1639b97102a5d22dd032ad"
+        },
+        {
+          "provider": "pandascore",
+          "width": 1440,
+          "loaded": 8,
+          "total": 8,
+          "available": 2,
+          "stale": false,
+          "publication_fingerprint": "e9c5900043c9a37097f5191f5d529a2d65f3eedd2a1f10cb29aa05ac47126488",
+          "overflow": 0,
+          "errors": [],
+          "api_path_used": true,
+          "screenshot_sha256": "ad47801d8defbf2ecb48ea2fd17e1705c39c09bfd602e073c8173ee77340b3ba"
+        },
+        {
+          "source": "World Cup 2018",
+          "width": 1440,
+          "overflow": 0,
+          "errors": []
+        },
+        {
+          "provider": "football-data",
+          "width": 390,
+          "loaded": 100,
+          "total": 1596,
+          "available": 83,
+          "stale": false,
+          "publication_fingerprint": "06f2cf996f3a33d8de88034797bb4f86664951daf07bd45797386e0bbdebef33",
+          "overflow": 0,
+          "errors": [],
+          "api_path_used": true,
+          "screenshot_sha256": "8ee868883ff9f831e0a736a8224fe830d17680137018dd318d6267bf4db09bff"
+        },
+        {
+          "provider": "pandascore",
+          "width": 390,
+          "loaded": 8,
+          "total": 8,
+          "available": 2,
+          "stale": false,
+          "publication_fingerprint": "e9c5900043c9a37097f5191f5d529a2d65f3eedd2a1f10cb29aa05ac47126488",
+          "overflow": 0,
+          "errors": [],
+          "api_path_used": true,
+          "screenshot_sha256": "ae0f197dff573409982f098611738126ccdb55c1a750707ec856ad365cdcc46b"
+        },
+        {
+          "source": "World Cup 2018",
+          "width": 390,
+          "overflow": 0,
+          "errors": []
+        }
+      ],
+      "failures": [],
+      "model_requests": 0
+    },
+    "restored_state_checks": {
+      "historical_health": {
+        "available": true,
+        "status": "ready",
+        "schema_version": "historical-football-details/1.0.0",
+        "provider": "wyscout-pappalardo-2019",
+        "scope": "historical_research",
+        "dataset_version": "3525a60c19065323",
+        "publication_fingerprint": "3525a60c19065323b2003644f374099ffa4f835d325a0e054484aacb9ebdfb5a",
+        "source_as_of": "2026-10-08T09:22:28.047459Z",
+        "business_date_range": {
+          "end": "2018-07-15T15:00:00.000000Z",
+          "start": "2018-06-14T15:00:00.000000Z"
+        },
+        "record_counts": {
+          "bench": 1477,
+          "matches": 64,
+          "players": 736,
+          "starters": 1408,
+          "substitutions": 381,
+          "teams": 32
+        },
+        "capabilities": {
+          "current_rosters": false,
+          "event_telemetry": false,
+          "forecasts": false,
+          "interpreted_card_counts": false,
+          "match_tactical_positions": false,
+          "pre_match_availability_evidence": false,
+          "retrospective_details": true
+        },
+        "attribution": {
+          "authors": [
+            "Luca Pappalardo",
+            "Emanuele Massucco"
+          ],
+          "changes": [
+            "Selected the World Cup 2018 archive member and match-bound participants",
+            "Normalized identifiers, UTC clocks and bounded Unicode name escapes",
+            "Kept separate native score stages and unknown values; omitted biographies and current rosters"
+          ],
+          "endorsement": "No endorsement by the authors or Wyscout is implied",
+          "license": "CC BY 4.0",
+          "license_url": "https://creativecommons.org/licenses/by/4.0/",
+          "paper": "Pappalardo et al. (2019), A public data set of spatio-temporal match events in soccer competitions, Scientific Data 6:236",
+          "paper_url": "https://doi.org/10.1038/s41597-019-0247-7",
+          "warranty": "Source data is provided without a warranty of accuracy or completeness"
+        },
+        "interpretation_notes": [
+          "Retrospective post-match details collected in 2026 are not evidence of pre-match availability in 2018",
+          "Player role and preferred foot are deposit metadata; match tactical positions are unknown",
+          "Native card tokens are uninterpreted source strings, never card counts",
+          "created_at/updated_at use the source capture observation as a deterministic initial-import audit clock; they do not assert the source record's original creation time"
+        ],
+        "sources": [
+          {
+            "article_id": 7770422,
+            "article_version": 1,
+            "bytes": 645097,
+            "doi": "https://doi.org/10.6084/m9.figshare.7770422.v1",
+            "file_id": 14464622,
+            "filename": "matches.zip",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0/",
+            "md5": "51d80beb17480919f69a53a0152c2d71",
+            "metadata_observed_at": "2026-10-08T09:16:53.565250Z",
+            "metadata_sha256": "6ec072abe0f4b444e66e910aac6696dbfaf715005bf63de0b2eaa5d440af9a61",
+            "observed_at": "2026-10-08T09:18:04.905275Z",
+            "published_at": "2019-02-26T12:15:54.000000Z",
+            "role": "matches",
+            "selected_member": {
+              "bytes": 395677,
+              "path": "matches_World_Cup.json",
+              "sha256": "1ddab20c8605c063a62341eb846466c8d040885a5f0f9a3e26d023123786abb6"
+            },
+            "sha256": "c8f92bb7533e5c127e043cee764c991b5c25b4f5e70a65be931baae0b1765ce9",
+            "url": "https://ndownloader.figshare.com/files/14464622"
+          },
+          {
+            "article_id": 7765196,
+            "article_version": 3,
+            "bytes": 1737347,
+            "doi": "https://doi.org/10.6084/m9.figshare.7765196.v3",
+            "file_id": 15073721,
+            "filename": "players.json",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0/",
+            "md5": "f28ddf6326281efeda6488b2169f5609",
+            "metadata_observed_at": "2026-10-08T09:16:53.718873Z",
+            "metadata_sha256": "40b7bf83ff678e6d7e095f99d0233f26f29aab12b2d576ed8806c51e2cbc3ef4",
+            "observed_at": "2026-10-08T09:22:27.861538Z",
+            "published_at": "2019-05-06T13:14:23.000000Z",
+            "role": "players",
+            "sha256": "877a111cb1005b73df5645e9338bd74fb4b496bace2fbc545a72abb3b73efa2e",
+            "url": "https://ndownloader.figshare.com/files/15073721"
+          },
+          {
+            "article_id": 7765310,
+            "article_version": 3,
+            "bytes": 27404,
+            "doi": "https://doi.org/10.6084/m9.figshare.7765310.v3",
+            "file_id": 15073697,
+            "filename": "teams.json",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0/",
+            "md5": "1381ff9449f21105090729cf0e086b5b",
+            "metadata_observed_at": "2026-10-08T09:16:53.863509Z",
+            "metadata_sha256": "18edcf9381c3f474493d19f3aa62fb3afbce3b22e63c015dd0bb129f218e5c87",
+            "observed_at": "2026-10-08T09:22:28.047459Z",
+            "published_at": "2019-05-06T13:08:43.000000Z",
+            "role": "teams",
+            "sha256": "9f7a4a3b3d92c0be33f40613ad6e6eb4316c3b9771ec74c61a22c9b8ece23a4d",
+            "url": "https://ndownloader.figshare.com/files/15073697"
+          }
+        ],
+        "quality": {
+          "checks": [
+            "source hashes/size/version/license",
+            "aware ordered source clocks",
+            "2018 temporal scope",
+            "native kickoff clock agreement",
+            "unique source identities and sides",
+            "same-source references",
+            "match-bound participant ownership",
+            "substitution sequence",
+            "separate score-stage/winner parity"
+          ],
+          "formations_not_supplied": 0,
+          "participant_unknown_goals": 1944,
+          "row_score_definition": "1.0 means this row passed its explicit identity/type/reference contract; allowed unknowns do not imply complete statistics",
+          "violations": 0
+        },
+        "sport": "football",
+        "competition": {
+          "name": "World Cup",
+          "source_id": 28
+        },
+        "season": {
+          "label": "2018",
+          "source_id": 10078
+        }
+      },
+      "sources": {
+        "demo": {
+          "total": 3,
+          "listed": 1,
+          "first_trace_id": "68d30bd640434c56a286358203f748c6",
+          "saved_scope": "demo",
+          "answer_fingerprint": "288a6032c309e5bec243461ddb9e35fcfb982c611eee94e659a4e07d179f5879",
+          "exact_read_only_replay": true,
+          "answer_present": true,
+          "mode": "ollama"
+        },
+        "research": {
+          "total": 0,
+          "listed": 0
+        },
+        "historical": {
+          "total": 18,
+          "listed": 1,
+          "first_trace_id": "49c9d31ce6724f1f8193299de9d002df",
+          "saved_scope": "historical",
+          "answer_fingerprint": "625e6dacf99365a477874703c569864c813189e6171a08ad2d262787b0f68670",
+          "exact_read_only_replay": true,
+          "answer_present": true,
+          "mode": "evidence"
+        },
+        "football-data": {
+          "total": 6,
+          "listed": 1,
+          "first_trace_id": "9af1e7f909af46a68922c4afa6fae85f",
+          "saved_scope": "football-data",
+          "answer_fingerprint": "3bc8e0ba0a6ee30c21e1945088c49a0f2cf606dc238281d77256b29f2e71770f",
+          "exact_read_only_replay": true,
+          "answer_present": true,
+          "mode": "evidence"
+        },
+        "pandascore": {
+          "total": 5,
+          "listed": 1,
+          "first_trace_id": "3c63e0e7c3bb42a3b511d5c58340edf3",
+          "saved_scope": "pandascore",
+          "answer_fingerprint": "8d97d9a2fe4bed3d7ae069c731384c3fe297b2e7d3b08c15cbc88c29fd4b8c90",
+          "exact_read_only_replay": true,
+          "answer_present": true,
+          "mode": "evidence"
+        }
+      }
+    },
+    "restored_saved_answer_browser": {
+      "scenes": [
+        {
+          "scope": "historical",
+          "width": 1440,
+          "answer_fingerprint": "625e6dacf99365a477874703c569864c813189e6171a08ad2d262787b0f68670",
+          "original_source_pin": "3525a60c19065323b2003644f374099ffa4f835d325a0e054484aacb9ebdfb5a",
+          "overflow": 0,
+          "errors": []
+        },
+        {
+          "scope": "football-data",
+          "width": 1440,
+          "answer_fingerprint": "3bc8e0ba0a6ee30c21e1945088c49a0f2cf606dc238281d77256b29f2e71770f",
+          "original_source_pin": "a0145ab9238114cb2808bf1e9e23a546440b3d9929ab6f9a199eb90d78e593f4",
+          "overflow": 0,
+          "errors": []
+        },
+        {
+          "scope": "historical",
+          "width": 390,
+          "answer_fingerprint": "625e6dacf99365a477874703c569864c813189e6171a08ad2d262787b0f68670",
+          "original_source_pin": "3525a60c19065323b2003644f374099ffa4f835d325a0e054484aacb9ebdfb5a",
+          "overflow": 0,
+          "errors": []
+        },
+        {
+          "scope": "football-data",
+          "width": 390,
+          "answer_fingerprint": "3bc8e0ba0a6ee30c21e1945088c49a0f2cf606dc238281d77256b29f2e71770f",
+          "original_source_pin": "a0145ab9238114cb2808bf1e9e23a546440b3d9929ab6f9a199eb90d78e593f4",
+          "overflow": 0,
+          "errors": []
+        }
+      ],
+      "failures": [],
+      "submissions": 0
+    },
+    "final_compiled_entry": "index-BIoDrHlx.js",
+    "actual_ollama_or_embedding_calls": 0
+  },
+  "boundaries": {
+    "actual_ollama_or_embedding_calls": 0,
+    "actual_spark_or_docker_workloads": 0,
+    "github_actions_runs": 0,
+    "paid_source_calls": 0,
+    "human_semantic_labels_added": 0,
+    "forecast_accuracy_measured": false,
+    "forecast_calibrated": false,
+    "model_errors_in_e2e": "mocked transport only",
+    "continuous_provider_workers_added": 0
+  },
+  "preview": {
+    "url": "http://127.0.0.1:8000/",
+    "profile": "ProductionPreview",
+    "status": "running after private recovery and production rebuild"
+  },
+  "next_priority": "Immutable pre-kickoff forecasts, original features/source pins and chronological later-outcome evaluation; report sample sizes, abstentions, log loss, Brier and reliability."
+}

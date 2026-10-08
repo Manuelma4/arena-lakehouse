@@ -192,8 +192,8 @@ def publish(root, selection, archives, *, started_at, generated_at):
                 conflicting_matches_omitted=len(conflicting), provider_requests=0)
 
 
-def build_selected(root, *, now=None):
-    """Rebuild from one completed intent; no archive discovery or new requests."""
+def selected_archives(root, *, now=None):
+    """Read exact hash-checked archives of one completed publication intent."""
     now = now or datetime.now(timezone.utc)
     root = Path(root)
     selection = current_publication(root, now=now)
@@ -210,13 +210,26 @@ def build_selected(root, *, now=None):
     intent = parse_json(row[0].encode())
     if intent["selection"] != selection:
         raise PublicationError("Publication intent differs from current selection")
+    if not isinstance(intent.get("archives"), list) or not 1 <= len(intent["archives"]) <= 30:
+        raise PublicationError("Invalid selected archive count")
     for ref in intent["archives"]:
         if not re.fullmatch(r"provider_raw/(football-data|pandascore)/\d{4}-\d{2}-\d{2}/[a-f0-9]{32}\.json", ref["path"]):
             raise PublicationError("Invalid match insight archive")
         if sha256(read_bytes(root / ref["path"], 4 * 1024 * 1024)) != ref["sha256"]:
             raise PublicationError("Match insight archive checksum mismatch")
-    return publish(root, selection, [root / ref["path"] for ref in intent["archives"]],
-                   started_at=poll[0], generated_at=now)
+    paths = [root / ref["path"] for ref in intent["archives"]]
+    references, _ = archive_references(root, paths, selection["source_scope"],
+        collected_at=selection["collected_at"], started_at=poll[0])
+    if references != intent["archives"]:
+        raise PublicationError("Selected archive references changed")
+    return selection, paths, poll[0]
+
+
+def build_selected(root, *, now=None):
+    """Rebuild from one completed intent; no archive discovery or new requests."""
+    now = now or datetime.now(timezone.utc)
+    selection, paths, started = selected_archives(root, now=now)
+    return publish(root, selection, paths, started_at=started, generated_at=now)
 
 
 def main():

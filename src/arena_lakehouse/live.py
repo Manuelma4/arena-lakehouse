@@ -456,6 +456,13 @@ class LiveWorker:
                         started_at=row["started_at"], generated_at=self.clock())
             except (PublicationError, OSError, sqlite3.Error, ValueError, KeyError, TypeError):
                 pass
+            if self.config.provider == "football-data":
+                try:
+                    from .forecast_context import publish as publish_forecast_context
+                    publish_forecast_context(self.root, selected, [self.root / ref["path"] for ref in intent["archives"]],
+                        started_at=row["started_at"], generated_at=self.clock())
+                except (PublicationError, OSError, sqlite3.Error, ValueError, KeyError, TypeError):
+                    pass
             return status
         except Exception:
             raise LiveFailure("publication_failed") from None

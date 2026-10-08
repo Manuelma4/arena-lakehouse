@@ -1,4 +1,54 @@
+# Current continuation — 8 October 2026 reprise
+
+Read [REPRISE_2026-10-08.md](docs/REPRISE_2026-10-08.md) first.
+Both repositories use `checkpoint/2026-10-08-reprise`. The consumer's
+`scripts/private-state.json` pins the latest private GitHub draft snapshot.
+Restore it with `scripts/sync_private_state.ps1`; local Git authentication is
+sufficient. Existing credentials survive; differing data is backed up first.
+
+The seven-edition v2 producer AND independent reader/API/UI/evidence assistant
+are implemented. All 1,941 retained matches were checked; gaps/conflicts remain
+explicit. Full catalogue/edition captures survive saved replay. Current includes
+season/venue forecasts and a 215-decision immutable prospective ledger: 108
+distinct matches, 172 estimates, 43 abstentions, one actual-start exclusion and
+zero eligible scored outcomes at the recorded checkpoint.
+
+Continue later free outcome reconciliation and the remaining acceptance work.
+Only free sources; do not install/download/start/test Ollama. Human labels,
+Spark million/restart, sustained SLO, authenticated Databricks and clean-install
+release remain open. Details and evidence are in the current reprise guide.
+
+## Earlier session records (historical, superseded by the reprise above)
+
 # Verified checkpoint and next session
+
+**Latest continuation (8 October, this PC):** read the shared consumer
+[Planning actual](../lakehouse-copilot/docs/PLANNING_ACTUAL_2026-10-08.md)
+and [historical v2 producer](docs/historical-football-editions-v2.md).
+The active Current workspace is `data/live-extended-20261008`; earlier folders
+are preserved. Optional football season/venue context is published from exact
+successful original archives without extra requests. Two free five-page
+VALORANT cycles used 30 requests. The consumer now quotes fixed forecasts and
+formats saved historical evidence. Seven immutable v2 edition packages contain
+1,941 matches, with explicit unknowns/conflicts; independent consumer/API/UI/agent
+validation is next before activation. World Cup v1 is still active. Producer
+regression: 632 passed, one Windows privilege skip. Actual Ollama and Spark are
+not run; Docker engine unavailable. All changes and new private state remain
+local/uncommitted/unpublished. Older entries below describe earlier captures.
+
+**Latest implementation:** [Planning actual](docs/PLANNING_ACTUAL_2026-10-08.md)
+links the shared consumer roadmap. The consumer now preserves 108 real
+pre-kickoff forecasts/abstentions with full source/feature pins and later-outcome
+evaluation. Zero actual outcomes are scored; broader features and history remain
+next. The new ledger and code are local. Only free sources; no Ollama execution.
+
+**Latest local continuation on this PC:** read
+[the resumed checkpoint](docs/continuation-pc-2026-10-08.md) and the adjacent
+consumer's note of the same name. GitHub source, the pinned private release and
+free captures are recovered. Active Current data is `data/live-resumed-20261008`;
+transferred records remain at `data/live`. Actual Ollama
+remains deferred. Its previously pending pre-kickoff storage and evaluation
+implementation is now recorded in the latest planning entry above.
 
 **Latest: 8 October forecast checkpoint.** The adjacent consumer's
 `docs/current-forecasts-2026-10-08.md` records the new read-only real-data baseline
