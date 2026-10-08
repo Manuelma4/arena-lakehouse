@@ -2,10 +2,12 @@
 
 **8 October transfer:** start with the adjacent consumer's
 `docs/CONTINUE_ON_OTHER_PC_2026-10-08.md`. Pull `checkpoint/2026-10-07` in both
-clones and copy the private `C:\Works\arena-retomar-20261008.zip`; credentials,
-retained source originals and investigations are not in Git. The new coverage
-audit measures 1,941 retained matches; the implemented v1 remains World Cup only.
-Implementation is paused after the checkpoint, with no owned processes running.
+clones, then run the consumer's `scripts/sync_private_state.ps1` with this clone's
+path. Both repositories are private; the pinned unpublished development release
+recovers credentials, retained originals and investigations without manual ZIP or
+`.env` transfer. Credentials remain outside Git history. The new coverage audit
+measures 1,941 retained matches; implemented v1 remains World Cup only. Application
+implementation is paused after the checkpoint, with no owned processes running.
 
 The new [historical acquisition command](docs/historical-football-acquisition.md)
 reconstructs the World Cup 2018 originals without the other-PC private ZIP or a
