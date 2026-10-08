@@ -1,0 +1,94 @@
+{
+  "schema_version": "arena-historical-acquisition-verification/1.0.0",
+  "verified_at": "2026-10-08T11:49:06.090039+00:00",
+  "status": "passed",
+  "scope": "Real explicit public Figshare acquisition, exact original-byte pins, adapter handoff and independent consumer reader; separate from TEST ONLY transport fixtures",
+  "source_requests": 9,
+  "bytes_read": 2426541,
+  "original_bytes": 2409848,
+  "input_manifest_sha256": "ef98dff2cb4332e3eb8edb558d7216865f8952195e3996fd6c53f5d523d7db1d",
+  "source_as_of": "2026-10-08T11:45:09.587383Z",
+  "source_observations": [
+    {
+      "role": "matches",
+      "article_id": 7770422,
+      "article_version": 1,
+      "file_id": 14464622,
+      "metadata_observed_at": "2026-10-08T11:45:07.574283Z",
+      "observed_at": "2026-10-08T11:45:08.207073Z",
+      "published_at": "2019-02-26T12:15:54Z",
+      "sha256": "c8f92bb7533e5c127e043cee764c991b5c25b4f5e70a65be931baae0b1765ce9",
+      "metadata_sha256": "bfdfc3fc14de5154078aae219faeb7df86971606e0ff4395c7eae8cbd34cd01c"
+    },
+    {
+      "role": "players",
+      "article_id": 7765196,
+      "article_version": 3,
+      "file_id": 15073721,
+      "metadata_observed_at": "2026-10-08T11:45:08.447485Z",
+      "observed_at": "2026-10-08T11:45:09.047849Z",
+      "published_at": "2019-05-06T13:14:23Z",
+      "sha256": "877a111cb1005b73df5645e9338bd74fb4b496bace2fbc545a72abb3b73efa2e",
+      "metadata_sha256": "2cf730089928c48eb88c546b0d8c0d8f0ecc391c27522b7970b72a4c95c43e47"
+    },
+    {
+      "role": "teams",
+      "article_id": 7765310,
+      "article_version": 3,
+      "file_id": 15073697,
+      "metadata_observed_at": "2026-10-08T11:45:09.263024Z",
+      "observed_at": "2026-10-08T11:45:09.587383Z",
+      "published_at": "2019-05-06T13:08:43Z",
+      "sha256": "9f7a4a3b3d92c0be33f40613ad6e6eb4316c3b9771ec74c61a22c9b8ece23a4d",
+      "metadata_sha256": "40588c4a23a9ea166d8253457546f9c0d9067cb296e6d385b287805df8dabe15"
+    }
+  ],
+  "publication_fingerprint": "4ff3400f27785988b4a4eaf26012717d623509f35a220bd065413928d247de9b",
+  "dataset_version": "4ff3400f27785988",
+  "record_counts": {
+    "bench": 1477,
+    "matches": 64,
+    "players": 736,
+    "starters": 1408,
+    "substitutions": 381,
+    "teams": 32
+  },
+  "quality": {
+    "checks": [
+      "source hashes/size/version/license",
+      "aware ordered source clocks",
+      "2018 temporal scope",
+      "native kickoff clock agreement",
+      "unique source identities and sides",
+      "same-source references",
+      "match-bound participant ownership",
+      "substitution sequence",
+      "separate score-stage/winner parity"
+    ],
+    "formations_not_supplied": 0,
+    "participant_unknown_goals": 1944,
+    "row_score_definition": "1.0 means this row passed its explicit identity/type/reference contract; allowed unknowns do not imply complete statistics",
+    "violations": 0
+  },
+  "independent_reader": {
+    "available": true,
+    "all_matches_checked": true,
+    "network_requests": 0
+  },
+  "replay": {
+    "status": "already_verified",
+    "requests": 0,
+    "bytes_read": 0,
+    "input_manifest_sha256": "ef98dff2cb4332e3eb8edb558d7216865f8952195e3996fd6c53f5d523d7db1d"
+  },
+  "test_only_transport_cases": 96,
+  "test_only_duration_seconds": 1.22,
+  "model_calls": 0,
+  "github_actions_runs": 0,
+  "limits": [
+    "2018 historical match squads, separate from Current",
+    "No current rosters, event telemetry or pre-match availability claim",
+    "Checked deadline does not forcibly preempt OS DNS resolution",
+    "Browser UI remains pinned to the separately verified earlier 3525a60c19065323 publication during review"
+  ]
+}

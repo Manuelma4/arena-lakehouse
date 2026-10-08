@@ -1,5 +1,15 @@
 # Local verification evidence
 
+[Historical acquisition and handoff](historical-acquisition-local-2026-10-08.json)
+records a real nine-request Figshare capture of the pinned CC BY 4.0 originals,
+successful World Cup detail normalization, independent consumer validation of all
+64 matches, and zero-request immutable replay. The separate 96 transport fixtures
+do not establish sporting accuracy or real-time availability.
+
+[8 October local continuation](local-continuation-2026-10-08.json) records bounded
+free collection, detail-integrity checks and durable polling identity. Earlier
+reports retain their original environment and verification scope.
+
 Final transfer: [handoff verification](handoff-verification-2026-10-07.json).
 The [Docker idle recovery](docker-idle-recovery-2026-10-07.json) records a later
 failed host repair, separately from the successful native Spark acceptance.

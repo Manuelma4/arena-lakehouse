@@ -1,5 +1,23 @@
 # Verified checkpoint and next session
 
+**8 October transfer:** start with the adjacent consumer's
+`docs/CONTINUE_ON_OTHER_PC_2026-10-08.md`. Pull `checkpoint/2026-10-07` in both
+clones and copy the private `C:\Works\arena-retomar-20261008.zip`; credentials,
+retained source originals and investigations are not in Git. The new coverage
+audit measures 1,941 retained matches; the implemented v1 remains World Cup only.
+Implementation is paused after the checkpoint, with no owned processes running.
+
+The new [historical acquisition command](docs/historical-football-acquisition.md)
+reconstructs the World Cup 2018 originals without the other-PC private ZIP or a
+provider key. Its actual acquisition, adapter and independent-consumer checks
+are recorded in [the measured handoff](docs/evidence/historical-acquisition-local-2026-10-08.json).
+The resulting package is retrospective and never joined to Current by team name.
+Raw originals and normalized captures remain ignored local files.
+
+Latest: [8 October local continuation](docs/local-continuation-2026-10-08.md).
+Fresh private captures were reconstructed because the other-PC ZIP was unavailable.
+The new workspace does not contain the old saved investigations or collection history.
+
 **Start here for tomorrow's computer:** [RETOMAR_MANANA](docs/RETOMAR_MANANA.md)
 contains the current shared plan, portable launch commands, private-data transfer
 and final Docker failure. Native 10k acceptance passed; Docker subsequently

@@ -1,0 +1,174 @@
+{
+  "recorded_at": "2026-10-08T08:53:43.311887+00:00",
+  "status": "verified_scoped_locally",
+  "date": "2026-10-08",
+  "source_policy": "Free accounts; two explicitly authorized bounded local cycles",
+  "private_handoff": "Other-PC ZIP not transferred; previous investigations and labels not reconstructed",
+  "collections": [
+    {
+      "provider": "football-data",
+      "scope": {
+        "kind": "competition_list",
+        "competition_codes": [
+          "PL",
+          "PD",
+          "BL1",
+          "SA",
+          "FL1",
+          "BSA"
+        ],
+        "phases": [],
+        "pages": 1
+      },
+      "source_rows": 2132,
+      "canonical_rows": 2132,
+      "calendar_only_rows": 0,
+      "requests": 6,
+      "poll_id": 1,
+      "collected_at": "2026-10-08T07:35:53.648986Z",
+      "last_success_at": "2026-10-08T07:36:07.606452Z",
+      "publication_fingerprint": "a0145ab9238114cb2808bf1e9e23a546440b3d9929ab6f9a199eb90d78e593f4",
+      "snapshot_fingerprint": "83b6032830197e425b915f54d14fe091c1d278baf28f0a67fa63900042b9ee2a",
+      "dataset_version": "ea853254816085a4",
+      "status_alignment": "same_collection",
+      "recurring_local_worker": false,
+      "individual_player_statistics": "not_supplied",
+      "predictions_available": false,
+      "in_game_round_feed": false
+    },
+    {
+      "provider": "pandascore",
+      "scope": {
+        "kind": "match_phases",
+        "competition_codes": [],
+        "phases": [
+          "past",
+          "upcoming",
+          "running"
+        ],
+        "pages": 1
+      },
+      "source_rows": 122,
+      "canonical_rows": 106,
+      "calendar_only_rows": 16,
+      "requests": 3,
+      "poll_id": 1,
+      "collected_at": "2026-10-08T07:37:05.319361Z",
+      "last_success_at": "2026-10-08T07:37:17.921476Z",
+      "publication_fingerprint": "ad2f806ead5e77666ebfcb34f9f83e75b12698ef06209ff604accad7a0086bb7",
+      "snapshot_fingerprint": "937724f96de5867f52e6e1d75ffc6f9b8eecaa83d6726406857083dff2dc6a11",
+      "dataset_version": "9fa9bd6c009012bc",
+      "status_alignment": "same_collection",
+      "recurring_local_worker": false,
+      "individual_player_statistics": "not_supplied",
+      "predictions_available": false,
+      "in_game_round_feed": false
+    }
+  ],
+  "provider_requests": 9,
+  "status_refresh": {
+    "recorded_at": "2026-10-08T08:18:46.744191+00:00",
+    "providers": [
+      {
+        "provider": "football-data",
+        "poll_id": 1,
+        "request_count": 6,
+        "added_requests": 0,
+        "last_success_at": "2026-10-08T07:36:07.606452Z",
+        "status": "ready"
+      },
+      {
+        "provider": "pandascore",
+        "poll_id": 1,
+        "request_count": 3,
+        "added_requests": 0,
+        "last_success_at": "2026-10-08T07:37:17.921476Z",
+        "status": "ready"
+      }
+    ]
+  },
+  "scopes_overlap": true,
+  "full_suite_run": false,
+  "verification_boundaries": {
+    "automated_fixtures": true,
+    "actual_capture_browser": true,
+    "human_semantic_review": false,
+    "ollama_inference": false,
+    "spark_execution": false,
+    "databricks": false,
+    "github_actions": false,
+    "deployment": false,
+    "commit": false,
+    "push": false
+  },
+  "pending": [
+    "120-case human annotation",
+    "permitted free detailed source with real acquisition and identity review",
+    "Docker recovery after explicit local review",
+    "million-observation native Spark execution",
+    "actual-process Spark recovery",
+    "real historical forecast backtesting and calibration",
+    "real-model and arbitrary process-kill investigation recovery"
+  ],
+  "local_artifacts": "Ignored files are absent from a fresh Git clone; these reports contain identities/counts, not provider payloads",
+  "repository": "Manuelma4/arena-lakehouse",
+  "base_commit": "bb5f683",
+  "branch": "checkpoint/2026-10-07",
+  "tests": [
+    {
+      "purpose": "Optional detail integrity: independent focused cases",
+      "artifact": "data/resume-2026-10-08/producer-integrity.xml",
+      "artifact_sha256": "02e7fb77a04f0b67b9940971745cc20385e4f27bb626fb06fb1f566f559fc34b",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_seconds": 0.79,
+      "timestamp": "2026-10-08T09:35:13.972058+02:00"
+    },
+    {
+      "purpose": "Existing optional details and new integrity cases; overlaps the focused run",
+      "artifact": "data/resume-2026-10-08/producer-details-final.xml",
+      "artifact_sha256": "499eb75f12618bbd9568ad219257ec5d0cebc03397ee2ecac7797695fb86c2a4",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_seconds": 38.981,
+      "timestamp": "2026-10-08T09:39:49.144748+02:00"
+    },
+    {
+      "purpose": "Attempt identity: five passed, initial-status fixture passed a datetime to a string-only internal helper",
+      "artifact": "data/resume-2026-10-08/producer-status-identity-initial.xml",
+      "artifact_sha256": "45d963a2222b28241795d9de8c27968dff45b1343bdda5c7e7ec079159baa1e6",
+      "tests": 6,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "junit_seconds": 461.308,
+      "timestamp": "2026-10-08T10:12:13.449208+02:00"
+    },
+    {
+      "purpose": "Corrected initial-status fixture, single-case rerun; production code unchanged",
+      "artifact": "data/resume-2026-10-08/producer-status-initial-corrected.xml",
+      "artifact_sha256": "b434a5abaeae87fd3b7f4075399d86c68e829b228410f132b89da31eaf7b585a",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_seconds": 0.499,
+      "timestamp": "2026-10-08T10:20:20.146631+02:00"
+    }
+  ],
+  "integrity_source_sha256": {
+    "src/arena_lakehouse/live.py": "b46f3bc57591dc7eac0e6f39ba2f75474f3494223feb8e168e094430a041eed0",
+    "src/arena_lakehouse/match_insights.py": "924fae6999541532a1810361c770236ea7e91838da5cb018d15026e0213bedcc",
+    "tests/test_live_status_identity.py": "220c8e5c4119e6f0d19d84eb487e936ac386876bce22362c3832d5f7a8987127",
+    "tests/test_match_insights_integrity.py": "eaadc250d2df07f6aa86cd5eff3ea161acf0b54549a664924a47c158dd1e716a"
+  },
+  "actual_source_gaps": [
+    "No football lineups or counters in selected free captures",
+    "No individual VALORANT statistics or round feed"
+  ],
+  "source_review": "docs/free-match-detail-sources.md"
+}

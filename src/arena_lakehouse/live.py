@@ -349,6 +349,7 @@ class LiveWorker:
                   "failed": "degraded", "interrupted": "degraded"}.get(poll_status, poll_status)
         return dict(schema_version=STATUS_VERSION, provider=self.config.provider, data_kind="api", status=status,
             source_scope=self.config.source_scope,
+            poll_id=last["id"] if last else None,
             last_attempt_at=last["started_at"] if last else None,
             last_success_at=success["finished_at"] if success else None,
             last_change_at=summary["last_change_at"], poll_interval_seconds=self.config.interval,

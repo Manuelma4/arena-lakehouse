@@ -24,6 +24,10 @@ FOOTBALL_STATS = ("ball_possession", "shots", "shots_on_goal", "shots_off_goal",
                   "corner_kicks", "offsides", "fouls", "saves", "yellow_cards", "red_cards")
 
 
+class AmbiguousMatchDetails(ValueError):
+    """Optional facts cannot establish one match/player/map ownership."""
+
+
 def text(value, maximum=120):
     if (isinstance(value, str) and 0 < len(value.strip()) <= maximum
             and not any(ord(char) < 32 or ord(char) == 127 for char in value)):
@@ -47,16 +51,21 @@ def display_id(provider, match_id):
 def _players(rows, provider, role):
     if not isinstance(rows, list) or len(rows) > 50:
         return []
-    result, seen = [], set()
+    result, seen = [], {}
     for raw in rows:
         if not isinstance(raw, dict):
             continue
         player_id, name = identity(provider, raw.get("id")), text(raw.get("name"))
-        if not player_id or not name or player_id in seen:
+        if not player_id or not name:
             continue
-        seen.add(player_id)
-        result.append(dict(player_id=player_id, name=name, role=role, position=text(raw.get("position")),
-                           shirt_number=number(raw.get("shirtNumber"), 999)))
+        player = dict(player_id=player_id, name=name, role=role, position=text(raw.get("position")),
+                      shirt_number=number(raw.get("shirtNumber"), 999))
+        if player_id in seen:
+            if seen[player_id] != player:
+                raise AmbiguousMatchDetails("Conflicting player facts")
+            continue
+        seen[player_id] = player
+        result.append(player)
     return result
 
 
@@ -80,8 +89,10 @@ def normalize(raw, provider, source_sha256, observed_at):
         return None
     football = provider == "football-data"
     teams = ([_team(raw.get(key), provider, "football") for key in ("homeTeam", "awayTeam")]
-             if football else [_team(value.get("opponent"), provider, "valorant")
-                               for value in raw.get("opponents", [])[:2] if isinstance(value, dict)])
+             if football else [_team(value.get("opponent") if isinstance(value, dict)
+                                      and value.get("type") in (None, "Team", "team") else None,
+                                      provider, "valorant")
+                               for value in raw.get("opponents", [])[:2]])
     games = []
     if not football:
         for game in (raw.get("games") or [])[:20]:
@@ -100,6 +111,13 @@ def normalize(raw, provider, source_sha256, observed_at):
                 status=game.get("status") if game.get("status") in ("finished", "running", "not_started") else "unknown",
                 length_seconds=number(game.get("length"), 86400) if played else None,
                 winner_team_id=winner_id))
+    players = [player["player_id"] for team in teams for player in team["lineup"] + team["bench"]]
+    if len(players) != len(set(players)):
+        raise AmbiguousMatchDetails("Conflicting player ownership")
+    for values in ([game["game_id"] for game in games if game["game_id"] is not None],
+                   [game["position"] for game in games if game["position"] is not None]):
+        if len(values) != len(set(values)):
+            raise AmbiguousMatchDetails("Conflicting map identity or position")
     referees = raw.get("referees") or []
     return dict(match_id=match_id, display_id=display_id(provider, match_id),
         sport="football" if football else "valorant", source_sha256=source_sha256, observed_at=stamp(observed_at),
@@ -120,7 +138,13 @@ def publish(root, selection, archives, *, started_at, generated_at):
     for ref, source in zip(refs, sources, strict=True):
         rows = source["payload"]["matches"] if provider == "football-data" else source["payload"]
         for raw in rows:
-            value = normalize(raw, provider, ref["sha256"], source["observed_at"])
+            try:
+                value = normalize(raw, provider, ref["sha256"], source["observed_at"])
+            except AmbiguousMatchDetails:
+                key = identity(provider, raw.get("id"))
+                if key:
+                    conflicting.add(key)
+                continue
             if value is None:
                 continue
             key = value["match_id"]
@@ -136,6 +160,13 @@ def publish(root, selection, archives, *, started_at, generated_at):
                 signatures[key] = signature
             if len(records) > MAX_MATCHES:
                 raise PublicationError("Match insight count bound exceeded")
+    game_owners = {}
+    for match_id, record in records.items():
+        for game in record["games"]:
+            if game["game_id"] is not None:
+                prior = game_owners.setdefault(game["game_id"], match_id)
+                if prior != match_id:
+                    conflicting.update((prior, match_id))
     package = dict(schema_version=SCHEMA, provider=provider, publication_fingerprint=selection["fingerprint"],
         collected_at=selection["collected_at"], generated_at=stamp(generated_at),
         sources=[dict(sha256=ref["sha256"], endpoint=source["endpoint"], observed_at=stamp(source["observed_at"]))
