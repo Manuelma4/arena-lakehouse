@@ -1,5 +1,13 @@
 # Verified checkpoint and next session
 
+**Latest: 8 October forecast checkpoint.** The adjacent consumer's
+`docs/current-forecasts-2026-10-08.md` records the new read-only real-data baseline
+and next steps. Current/Archive remain; Demo is removed from the application.
+Existing provider captures and logos are recovered through the private GitHub
+snapshot. Producer acquisition/normalization code was unchanged in this iteration.
+Next prediction work requires immutable pre-kickoff feature/forecast storage and
+chronological evaluation before making accuracy claims or adding more features.
+
 **8 October transfer:** start with the adjacent consumer's
 `docs/CONTINUE_ON_OTHER_PC_2026-10-08.md`. Pull `checkpoint/2026-10-07` in both
 clones, then run the consumer's `scripts/sync_private_state.ps1` with this clone's
