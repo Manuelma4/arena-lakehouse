@@ -1,3 +1,20 @@
+# Current continuation — 9 October 2026
+
+Read [CONTINUATION_2026-10-09.md](docs/CONTINUATION_2026-10-09.md) first, then the
+consumer's full handoff with the same name. Both repositories remain on
+`checkpoint/2026-10-08-reprise`. The other PC's commits and private state have
+been recovered. Bounded free polls refreshed the existing source scope; four
+football matches now score under both saved methods. The consumer verified all
+215 original decisions remained unchanged and improved correction handling and
+historical URL navigation.
+
+The consumer's `scripts/private-state.json` pins the current private snapshot.
+Continue later outcome reconciliation and the remaining acceptance work. Only
+free sources; do not install/download/start/test Ollama. No main merge or public
+deployment. Detailed validation and open gates are in the current handoff.
+
+## Previous handoff — 8 October 2026 (historical)
+
 # Current continuation — 8 October 2026 reprise
 
 Read [REPRISE_2026-10-08.md](docs/REPRISE_2026-10-08.md) first.
