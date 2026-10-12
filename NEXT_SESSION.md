@@ -12,6 +12,8 @@ Its follow-up now verifies 600 warmed read requests over ten minutes (maximum
 route p95 109 ms) and a newly installed consumer wheel/dependency environment.
 The 44 offline GETs use bundled fixtures and explicit disconnected-source states;
 full sustained SLO and complete clean-install/release acceptance remain open.
+Next feasible check: restore the pinned snapshot into isolated new clones and
+validate the consumer's installed readers, original ledgers and fresh frontend.
 Docker Linux engine is unavailable here; Spark million/restart and other
 acceptance gates remain open. Continue free reconciliation and human review.
 Do not install/download/start/probe/test Ollama, merge main or publicly deploy.

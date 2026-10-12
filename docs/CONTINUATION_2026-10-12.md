@@ -24,7 +24,20 @@ See consumer `docs/local-read-observation-2026-10-12.md` and
 are included in private exports. All 215 decisions and 122 outcome/evidence rows
 remain unchanged; no provider polls or model calls occurred in this follow-up.
 Wider SLO, Spark/restart, human review, Databricks and full clean-install/release
-gates remain open. The subsequent follow-up delivery record pins the snapshot.
+gates remain open.
+
+Latest follow-up delivery: private draft `private-state-20261012-read-verification`,
+asset `arena-read-verification-20261012.zip`, 943 files, 48 SQLite online backups,
+34,438,205 bytes. SHA-256:
+`2cfaff415905f1ebfcb1b294919e97c1781e781eda1e1215443405e43ea17215`.
+Normal consumer `-VerifyOnly` downloaded and verified it again without changing
+state/configuration. The pointer pins producer
+`cb99e8d1fb2de3b5668e5a4dc39c5e0a5886285c` and consumer
+`0296d1c6a5884c0634a2c8a2ffb7b91ebdea5b1a`; later delivery commits retain them
+as ancestors. Both repositories are private, Pages disabled and implementation
+workflow-run counts zero. Pull both branch tips for the final pointer and notes.
+Next feasible clean-install task: actual restoration into isolated new clones,
+installed-reader/captured-ledger checks, then a fresh frontend build.
 
 One bounded free poll refreshed `data/live-extended-20261008` for each provider:
 
