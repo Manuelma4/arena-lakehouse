@@ -5,6 +5,27 @@ entry supersedes 9 October. Both clones started clean; fetch and fast-forward
 found no new remote changes. The consumer's full handoff with this same filename
 is authoritative for UI, evidence contracts and delivery verification.
 
+Follow-up verification in the consumer passed a 600-request, ten-minute warmed
+local read observation across eight routes: 75 valid attempts per route, no
+failures or gaps, maximum route p95 109 ms. Independent journal arithmetic and
+unchanged source/ledger checks passed. Two earlier observer versions/windows
+remain diagnostics; 42 focused observer regressions passed.
+
+A current consumer wheel and dependencies also installed in a new Python 3.11.9
+environment outside both checkouts. `pip check` and the final offline installed
+read verifier passed: 44 GETs plus resource, semantic and cleanup checks. Initial
+verifier failures exposed urllib3's import-only IPv6 bind probe; the final tool
+suppresses that probe with the network audit still strict. No application code
+or wheel change was needed. This fixture/absent-source subset is separate from
+full private-state restoration, frontend setup and release acceptance.
+
+See consumer `docs/local-read-observation-2026-10-12.md` and
+`docs/installed-read-api-2026-10-12.md` with their portable evidence. Raw records
+are included in private exports. All 215 decisions and 122 outcome/evidence rows
+remain unchanged; no provider polls or model calls occurred in this follow-up.
+Wider SLO, Spark/restart, human review, Databricks and full clean-install/release
+gates remain open. The subsequent follow-up delivery record pins the snapshot.
+
 One bounded free poll refreshed `data/live-extended-20261008` for each provider:
 
 | Provider | Scope | Requests | Source rows | Changed rows | Unsupported rows |
