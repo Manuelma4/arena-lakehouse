@@ -1,3 +1,19 @@
+# Current continuation — 12 October 2026
+
+Read [CONTINUATION_2026-10-12.md](docs/CONTINUATION_2026-10-12.md), then the
+consumer's full handoff with that filename. Both private repositories remain
+on `checkpoint/2026-10-08-reprise`. Bounded free polls refreshed the existing
+scope. The consumer now scores 42 football matches under each saved method;
+all 215 original decisions remain unchanged. VALORANT has no scored estimates.
+
+Archive adds pinned historical head-to-head comparisons and saved replay.
+The consumer's `scripts/private-state.json` pins the transferable private data.
+Docker Linux engine is unavailable here; Spark million/restart and other
+acceptance gates remain open. Continue free reconciliation and human review.
+Do not install/download/start/probe/test Ollama, merge main or publicly deploy.
+
+## Previous handoff — 9 October 2026 (historical)
+
 # Current continuation — 9 October 2026
 
 Read [CONTINUATION_2026-10-09.md](docs/CONTINUATION_2026-10-09.md) first, then the

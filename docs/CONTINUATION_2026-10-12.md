@@ -1,0 +1,57 @@
+# Continuation — 12 October 2026
+
+Both private repositories remain on `checkpoint/2026-10-08-reprise`. This
+entry supersedes 9 October. Both clones started clean; fetch and fast-forward
+found no new remote changes. The consumer's full handoff with this same filename
+is authoritative for UI, evidence contracts and delivery verification.
+
+One bounded free poll refreshed `data/live-extended-20261008` for each provider:
+
+| Provider | Scope | Requests | Source rows | Changed rows | Unsupported rows |
+| --- | --- | ---: | ---: | ---: | ---: |
+| football-data.org | PL, PD, BL1, SA, FL1, BSA | 6 | 2,132 | 48 | 0 |
+| PandaScore | Past/upcoming/running, five pages per phase | 15 | 510 | 11 | 9 |
+
+Both completed `ready`; no ongoing worker was left running. These are saved
+REST observations rather than a guaranteed continuously live feed. Producer
+poll logs are at `data/live-refresh-20261012-{football,pandascore}.json`.
+Their structured status is also recorded in the consumer's portable evidence.
+
+The consumer reconciled the original immutable forecast cohort. All 215 original
+decisions over 108 distinct matches retain their payload checksums. Each football
+method now has 42 eligible scored matches on the same sample. Season/home-away
+Poisson log loss is 1.000894 and Brier 0.596880; recent form is 1.054916 and
+0.634951. The saved frequency reference is 1.046136 and 0.626728. Lower is better;
+this small non-random sample does not establish general accuracy. PandaScore has
+nine excluded decisions and zero scored estimates; its losses remain null.
+
+Archive now supports typed, pinned historical head-to-head explanations with
+retained meetings, W/D/L, separate penalty scores and source-conflict exclusions.
+Saved comparisons reopen from their immutable catalogue/edition captures. The
+consumer independently compared real Arsenal–Leicester and Spain–Russia
+responses against the original licensed source at desktop and mobile widths.
+No producer transforms or catalogue contracts changed for this feature.
+
+The consumer recorded 51 passing backend checks, 65 answer/navigation contract
+checks, 18 historical comparison/navigation browser checks and 16 forecast
+tracking browser checks. Actual local Current/Archive/forecast views were
+checked separately from TEST ONLY fixtures. See its dated evidence report;
+counts include existing coverage and must not be added to older suite totals.
+
+The private recovery snapshot pinned by the consumer's `scripts/private-state.json`
+contains provider observations, licensed originals, all seven historical editions,
+saved evidence, the original forecast ledger, later outcomes and session audits.
+Pull both clean checkpoint clones and use the consumer recovery script. Adjust
+`-LakehousePath` to this clone's folder; do not restore while a preview is running.
+Existing local credentials are preserved and excluded from the snapshot.
+
+The Linux Docker engine was checked and was unavailable (missing Desktop engine
+pipe). No Spark/container attempt was made. Remaining gates: one-million Spark
+and real restart, 120 genuine human answer labels, sustained SLO, authenticated
+Databricks and clean-install/release verification. Continue free outcome
+reconciliation without retuning against the scored sample.
+
+Keep Current and Archive; no Demo. Only free sources. **Do not install, download,
+start, probe or test Ollama.** No main merge, workflow dispatch or public deployment.
+Software push workflows remain main-only; Spark remains manual. Read the
+consumer's final delivery record before transferring ignored state to another PC.
