@@ -18,6 +18,19 @@ the exact scope, retained failed verifier attempts and source pins. Detailed
 artifacts live in its private `data/resume-20261012/recovery/` directory and are
 included by the next private snapshot export.
 
+The new private draft `private-state-20261012-clean-recovery` now retains this
+evidence: `arena-clean-recovery-20261012.zip`, 989 files, 48 SQLite online backups,
+38,578,979 bytes. SHA-256:
+`5eaf1c4e133d473c4aab78c4d4c52cc4bdc07ad2ecbe258f69cf5f9b30bc2689`.
+Normal recovery downloaded and verified the new asset with `-VerifyOnly`.
+The actual clean restore above used the 943-file predecessor; these delivery
+checks are distinct. The pointer pins producer
+`301b216da208d0ed1a745e07f90cea080169c63a` and consumer
+`f77692695fa2ff929e4175cdfb3670798018c1a0`. Pull both checkpoint branch tips for
+the final pointer and notes. Repositories remain private, Pages disabled and
+verification-commit workflow counts zero. Credentials and model binaries are
+excluded; older private drafts are preserved.
+
 This closes the bounded consumer clean-clone recovery subset, not whole-producer
 installation, second-PC verification or release acceptance. Continue free outcome
 reconciliation and genuine human review. Spark million-event/restart, wider SLO,

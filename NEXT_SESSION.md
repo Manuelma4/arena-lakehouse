@@ -16,6 +16,8 @@ That bounded clean-clone recovery check now passed: 943 manifest hashes,
 48 SQLite databases, 44 installed-reader GETs and 14 actual browser scenes
 against a fresh frontend install/build. Read docs/clean-recovery-2026-10-12.md
 and the consumer's detailed evidence before repeating any work.
+The consumer pointer now selects private-state-20261012-clean-recovery,
+including the new evidence; its normal VerifyOnly redownload passed.
 Docker Linux engine is unavailable here; Spark million/restart and other
 acceptance gates remain open. Continue free reconciliation and human review.
 Do not install/download/start/probe/test Ollama, merge main or publicly deploy.
