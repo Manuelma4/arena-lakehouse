@@ -1,5 +1,27 @@
 # Continuation — 12 October 2026
 
+## Latest follow-up: later captures and Current team navigation
+
+Read [Later free captures and consumer team navigation](current-team-navigation-2026-10-12.md)
+first, then the consumer's full document. One further bounded free poll per
+provider refreshed the existing workspace: football six requests / 13 changes;
+PandaScore 15 requests / zero canonical changes / nine unsupported. The consumer
+now links processed/canonical matches to exact teams and corrects paired-source
+outcome precedence. All 215 original decisions are intact; 45 shared football
+targets score under each method, with 239 evidence rows total and zero scored
+VALORANT estimates.
+
+Consumer verification passed 27 ledger tests, 17 lookup contracts, four controlled
+browser cases and 32 actual desktop/mobile scenes; all 464 API/image responses
+were HTTP 200. Independent raw-result facts and score arithmetic passed. The
+consumer private-state pointer remains authoritative. No model call, workflow
+dispatch, main merge or public deploy occurred. Next bound equivalent evidence
+growth before continuous reconciliation; preserve first-import chronology and
+immutable history. Earlier sections below describe their own pre-change wheel,
+42-target cohort and earlier recovery snapshot.
+
+## Earlier checkpoints from the same day
+
 Both private repositories remain on `checkpoint/2026-10-08-reprise`. This
 entry supersedes 9 October. Both clones started clean; fetch and fast-forward
 found no new remote changes. The consumer's full handoff with this same filename

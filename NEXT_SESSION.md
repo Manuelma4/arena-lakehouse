@@ -1,26 +1,27 @@
 # Current continuation — 12 October 2026
 
-Read [CONTINUATION_2026-10-12.md](docs/CONTINUATION_2026-10-12.md), then the
-consumer's full handoff with that filename. Both private repositories remain
-on `checkpoint/2026-10-08-reprise`. Bounded free polls refreshed the existing
-scope. The consumer now scores 42 football matches under each saved method;
-all 215 original decisions remain unchanged. VALORANT has no scored estimates.
+Read [Later free captures and team navigation](docs/current-team-navigation-2026-10-12.md)
+first, then the consumer's full document with that filename. Both private repos
+remain on `checkpoint/2026-10-08-reprise`.
 
-Archive adds pinned historical head-to-head comparisons and saved replay.
-The consumer's `scripts/private-state.json` pins the transferable private data.
-Its follow-up now verifies 600 warmed read requests over ten minutes (maximum
-route p95 109 ms) and a newly installed consumer wheel/dependency environment.
-The 44 offline GETs use bundled fixtures and explicit disconnected-source states;
-full sustained SLO and complete clean-install/release acceptance remain open.
-That bounded clean-clone recovery check now passed: 943 manifest hashes,
-48 SQLite databases, 44 installed-reader GETs and 14 actual browser scenes
-against a fresh frontend install/build. Read docs/clean-recovery-2026-10-12.md
-and the consumer's detailed evidence before repeating any work.
-The consumer pointer now selects private-state-20261012-clean-recovery,
-including the new evidence; its normal VerifyOnly redownload passed.
-Docker Linux engine is unavailable here; Spark million/restart and other
-acceptance gates remain open. Continue free reconciliation and human review.
-Do not install/download/start/probe/test Ollama, merge main or publicly deploy.
+One additional bounded free poll refreshed the existing Current workspace:
+football six requests / 2,132 rows / 13 changes; VALORANT 15 requests / 510 rows /
+zero canonical changes / nine unsupported. No continuous worker was left running. Current
+now reaches exact team profiles from both match drawers; paired calendar outcome
+precedence is corrected. All 215 original decisions and prior evidence remain intact.
+
+Each football method now scores the same 45 targets; VALORANT still scores zero.
+Independent native-result facts and scoring arithmetic passed. Consumer checks:
+27 ledger tests, 17 lookup contracts, four controlled browser cases and 32 actual
+scenes at 1440 / 390 px; 464 API/image responses all HTTP 200, with logos loaded.
+
+The consumer's `scripts/private-state.json` pins transferable private data.
+Earlier clean recovery passed 943 hashes / 48 SQLite databases / 44 reader GETs /
+14 browser scenes; its 42-target cohort and consumer wheel predate this update.
+The compiled local preview remains on port 8000. Next address equivalent outcome
+evidence growth before continuous reconciliation, then the remaining acceptance
+gates. Docker Linux engine is unavailable here; only free sources. Do not install/
+download/start/probe/test Ollama, merge main, publicly deploy or dispatch Actions.
 
 ## Previous handoff — 9 October 2026 (historical)
 
