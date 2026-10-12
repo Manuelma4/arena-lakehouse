@@ -45,6 +45,17 @@ Pull both clean checkpoint clones and use the consumer recovery script. Adjust
 `-LakehousePath` to this clone's folder; do not restore while a preview is running.
 Existing local credentials are preserved and excluded from the snapshot.
 
+Verified delivery: private draft `private-state-20261012-continuation`, asset
+`arena-continuation-20261012.zip`, 916 files, 48 SQLite online backups and
+34,200,915 bytes. SHA-256:
+`92b130b7085a0cfe4107f1b444bae5f01eced60b036650252484ca74b7391849`.
+The normal consumer recovery script downloaded and verified it again with
+`-VerifyOnly` without changing local state. It pins producer
+`14a2e1ba77ab56586b44bef17c6ce9af2abe24fd` and consumer
+`3f4c0aee18eb9436225d545db1b842839e573c11`, which remain ancestors of the final
+delivery commits. GitHub reported zero workflow runs for these implementation
+commits. Pull the branch tips to obtain the final pointer and delivery notes.
+
 The Linux Docker engine was checked and was unavailable (missing Desktop engine
 pipe). No Spark/container attempt was made. Remaining gates: one-million Spark
 and real restart, 120 genuine human answer labels, sustained SLO, authenticated
