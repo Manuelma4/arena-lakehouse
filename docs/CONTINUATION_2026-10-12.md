@@ -5,7 +5,17 @@ entry supersedes 9 October. Both clones started clean; fetch and fast-forward
 found no new remote changes. The consumer's full handoff with this same filename
 is authoritative for UI, evidence contracts and delivery verification.
 
-Follow-up verification in the consumer passed a 600-request, ten-minute warmed
+Latest verification: actual private recovery into new GitHub clones passed all
+943 file hashes and 48 SQLite integrity checks. The installed consumer passed
+44 GETs, semantic source/state checks and final integrity. A new frontend
+dependency install/build and 14 actual desktop/mobile scenes passed; all 345
+observed API/image responses were HTTP 200. Current, Archive, saved comparisons
+and the original forecast ledger survived relocation. Fourteen focused recovery
+boundary tests and the 42 observer tests passed together. Read
+[clean recovery](clean-recovery-2026-10-12.md) and the consumer's detailed evidence.
+No producer pipeline, provider poll or model execution occurred.
+
+Earlier follow-up verification in the consumer passed a 600-request, ten-minute warmed
 local read observation across eight routes: 75 valid attempts per route, no
 failures or gaps, maximum route p95 109 ms. Independent journal arithmetic and
 unchanged source/ledger checks passed. Two earlier observer versions/windows
@@ -26,7 +36,7 @@ remain unchanged; no provider polls or model calls occurred in this follow-up.
 Wider SLO, Spark/restart, human review, Databricks and full clean-install/release
 gates remain open.
 
-Latest follow-up delivery: private draft `private-state-20261012-read-verification`,
+Earlier follow-up delivery: private draft `private-state-20261012-read-verification`,
 asset `arena-read-verification-20261012.zip`, 943 files, 48 SQLite online backups,
 34,438,205 bytes. SHA-256:
 `2cfaff415905f1ebfcb1b294919e97c1781e781eda1e1215443405e43ea17215`.
@@ -36,8 +46,8 @@ state/configuration. The pointer pins producer
 `0296d1c6a5884c0634a2c8a2ffb7b91ebdea5b1a`; later delivery commits retain them
 as ancestors. Both repositories are private, Pages disabled and implementation
 workflow-run counts zero. Pull both branch tips for the final pointer and notes.
-Next feasible clean-install task: actual restoration into isolated new clones,
-installed-reader/captured-ledger checks, then a fresh frontend build.
+That proposed bounded same-host consumer recovery task is now verified. Broader
+whole-producer/second-PC installation and full release gates remain open.
 
 One bounded free poll refreshed `data/live-extended-20261008` for each provider:
 
