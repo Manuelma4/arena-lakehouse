@@ -1,5 +1,8 @@
 # Current continuation — 12 October 2026
 
+**Stop requested for tonight.** Resume with [the 13 October handoff](docs/RETOMAR_2026-10-13.md)
+and the consumer's full note. The goal is unfinished; the owner will resume tomorrow.
+
 Read [Later free captures and team navigation](docs/current-team-navigation-2026-10-12.md)
 first, then the consumer's full document with that filename. Both private repos
 remain on `checkpoint/2026-10-08-reprise`.
