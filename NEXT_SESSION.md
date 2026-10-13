@@ -46,6 +46,11 @@ The later private delivery `private-state-20261013-recovery-incidents` contains
 1,503 files/51 SQLite backups. All 951 active-data files match the actually
 restored research-detail asset; two extra databases are isolated replay evidence.
 Use the consumer's committed pointer and exact continuation scopes.
+The newest calibration delivery supersedes that pointer: draft
+`private-state-20261013-historical-calibration`, 1,641 files/51 SQLite backups.
+It carries the historical experiment and later bounded provider observations.
+The source study, independent audit and new frontend are locally checked;
+this latest asset's separate installed clean-clone recovery remains pending.
 
 ## Previous handoff — 12 October 2026 (historical)
 
