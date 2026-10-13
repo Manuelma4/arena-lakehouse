@@ -1,3 +1,32 @@
+# Current continuation — 13 October 2026
+
+The goal resumed today and remains active and unfinished. Read
+[pinned World Cup detail](docs/worldcup-detail-and-ledger-2026-10-13.md)
+and the consumer's `docs/CONTINUATION_2026-10-13.md` first.
+Both repositories remain private on `checkpoint/2026-10-08-reprise`.
+
+New atomic CC0 detail acquisition/publication preserves 104 records: 102 verified
+joins and two withheld conflicts. The independent consumer reader, API and
+desktop/mobile drawer are checked. No current roster, complete bench or historical
+forecast availability is inferred. The consumer normalizes repeated outcome
+evidence and excludes contradictory completed facts from team aggregates.
+
+Successful bounded free polls retained 2,132 football rows/seven changes and
+509 VALORANT rows/one change/nine unsupported. A later football candidate failed
+on a finished record with missing scores: last good publication/cursors remain
+intact. Inspect its retained raw diagnostic offline before further retries.
+There is no continuous worker. Football now has 52 shared scored targets per
+method; original 215 decisions/239 earlier evidence packets are unchanged.
+
+Use the consumer's latest `scripts/private-state.json` for recovery. Its reviewed
+restore rebases approved data paths and preserves local credentials. Stop the
+other preview before an actual restore. Current code/state has not undergone a
+new clean-clone restore. Do not install/download/start/probe/test Ollama, merge
+main, publicly deploy, dispatch Actions or alter global OS/memory. Docker Linux,
+managed Databricks, human evaluation and full release gates remain pending.
+
+## Previous handoff — 12 October 2026 (historical)
+
 # Current continuation — 12 October 2026
 
 **Stop requested for tonight.** Resume with [the 13 October handoff](docs/RETOMAR_2026-10-13.md)
