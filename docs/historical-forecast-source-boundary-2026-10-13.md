@@ -34,3 +34,20 @@ incomplete football result was complete in the later upstream response; no
 fabricated score or weakened validator was introduced. Compact consumer receipts
 record both new observations without adding full outcome payloads or altering
 the original decision cohort. There is no unattended polling worker.
+
+The subsequent installed recovery restored the historical-calibration private
+snapshot into two fresh clones on the same PC: 1,641 verified files and 51 SQLite
+integrity checks, followed by installed-package and browser verification. The
+consumer's `docs/calibration-recovery-2026-10-13.md` records the exact scope.
+
+A read-only VALORANT audit found 510 native matches across the four retained
+canonical snapshots, including 505 finished results from July–October 2026.
+Only 152 targets meet the exploratory five-prior-results-per-team requirement
+with a two-calendar-day kickoff embargo. This is insufficient for a 200-target
+calibration period plus independent test period. Actual local observation clocks
+begin on 8 October; earlier kickoff dates must not become fabricated collection
+times. Of the finished records, 495 join and agree with the selected bounded
+calendar; ten are absent from it. Event-aware work must use native league,
+series and tournament IDs rather than generic competition labels. See the
+consumer's `docs/valorant-history-readiness-2026-10-13.md` before expanding or
+fitting this cohort. No additional acquisition or VALORANT fitting was performed.
