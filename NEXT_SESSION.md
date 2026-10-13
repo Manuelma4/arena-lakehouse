@@ -1,6 +1,6 @@
 # Current continuation — 13 October 2026
 
-The goal resumed today and remains active and unfinished. Read
+The owner resumed work today; the objective remains unfinished. Read
 [pinned World Cup detail](docs/worldcup-detail-and-ledger-2026-10-13.md)
 and the consumer's `docs/CONTINUATION_2026-10-13.md` first.
 Both repositories remain private on `checkpoint/2026-10-08-reprise`.
@@ -20,6 +20,11 @@ Successful bounded free polls retained 2,132 football rows/seven changes and
 509 VALORANT rows/one change/nine unsupported. A later football candidate failed
 on a finished record with missing scores: last good publication/cursors remain
 intact. Inspect its retained raw diagnostic offline before further retries.
+The subsequent [row-rejection diagnostics](docs/provider-row-rejections-2026-10-13.md)
+retain bounded private archive/checksum/index evidence. An isolated replay
+reproduced the BSA failure, preserved all 216 original workspace files and
+proved selector/cursor/event stability. Corrected regression: 87 passed, one
+Windows privilege skip. This is not a new successful provider refresh.
 There is no continuous worker. Football now has 52 shared scored targets per
 method; original 215 decisions/239 earlier evidence packets are unchanged.
 
@@ -29,6 +34,8 @@ other preview before an actual restore. Current code/state has not undergone a
 new clean-clone restore. Do not install/download/start/probe/test Ollama, merge
 main, publicly deploy, dispatch Actions or alter global OS/memory. Docker Linux,
 managed Databricks, human evaluation and full release gates remain pending.
+The goal controller last returned `blocked` despite continued implementation
+progress; no pause or completion was requested by the implementation turn.
 
 ## Previous handoff — 12 October 2026 (historical)
 

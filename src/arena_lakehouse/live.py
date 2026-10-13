@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 from pydantic import ValidationError
 
 from .connectors import ProviderError, collect, commit_state
+from .provider_rejections import RejectedProviderRow, RowRejection
 from .calendar import publish_calendar
 from .provider_policy import ERROR_CODES, PROVIDERS
 from .engine import Pipeline
@@ -153,6 +154,17 @@ class LiveLedger:
                 CREATE TABLE IF NOT EXISTS publication_intents(poll_id INTEGER PRIMARY KEY,
                   payload TEXT NOT NULL, payload_sha256 TEXT NOT NULL, phase TEXT NOT NULL,
                   FOREIGN KEY(poll_id) REFERENCES polls(id));
+                CREATE TABLE IF NOT EXISTS rejected_provider_rows(poll_id INTEGER PRIMARY KEY,
+                  recorded_at TEXT NOT NULL, provider TEXT NOT NULL, endpoint TEXT NOT NULL,
+                  archive_path TEXT NOT NULL, archive_sha256 TEXT NOT NULL,
+                  row_index INTEGER NOT NULL, category TEXT NOT NULL,
+                  FOREIGN KEY(poll_id) REFERENCES polls(id));
+                CREATE TRIGGER IF NOT EXISTS immutable_rejected_provider_rows_update
+                  BEFORE UPDATE ON rejected_provider_rows BEGIN
+                  SELECT RAISE(ABORT, 'Provider row rejections are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS immutable_rejected_provider_rows_delete
+                  BEFORE DELETE ON rejected_provider_rows BEGIN
+                  SELECT RAISE(ABORT, 'Provider row rejections are immutable'); END;
             """)
             expected = json.dumps(dict(provider=config.provider, source_scope=config.source_scope),
                                   sort_keys=True)
@@ -239,12 +251,30 @@ class LiveLedger:
                        "WHERE status='polling'", (now,))
 
     def finish(self, poll_id, now, status, error=None, *, source_rows=0, changed_rows=0, unsupported_rows=0,
-               snapshot=None, snapshot_changed=False):
+               snapshot=None, snapshot_changed=False, rejection=None):
+        if rejection is not None and (not isinstance(rejection, RowRejection)
+                or rejection.provider != self.config.provider or status != "failed"
+                or error != "invalid_provider_payload"):
+            raise ValueError("Invalid provider row rejection context")
         with closing(self.connect()) as db, db:
-            db.execute("UPDATE polls SET finished_at=?,status=?,error_code=?,source_rows=?,changed_rows=?,"
+            changed = db.execute("UPDATE polls SET finished_at=?,status=?,error_code=?,source_rows=?,changed_rows=?,"
                        "unsupported_rows=?,snapshot=?,snapshot_changed=? WHERE id=? AND status!='succeeded'",
                        (now, status, error, source_rows, changed_rows, unsupported_rows, snapshot,
-                        int(snapshot_changed), poll_id))
+                        int(snapshot_changed), poll_id)).rowcount
+            if rejection is not None:
+                if changed != 1:
+                    raise ValueError("Missing failed provider poll")
+                db.execute("INSERT INTO rejected_provider_rows "
+                    "(poll_id,recorded_at,provider,endpoint,archive_path,archive_sha256,row_index,category) "
+                    "VALUES (?,?,?,?,?,?,?,?)",
+                    (poll_id, now, rejection.provider, rejection.endpoint, rejection.archive_path,
+                     rejection.archive_sha256, rejection.row_index, rejection.category))
+
+    def rejected_row(self, poll_id):
+        """Private audit lookup; does not alter the public live-status contract."""
+        with closing(self.connect()) as db:
+            row = db.execute("SELECT * FROM rejected_provider_rows WHERE poll_id=?", (poll_id,)).fetchone()
+        return dict(row) if row else None
 
     def budget(self, now):
         config = PROVIDERS[self.config.provider]
@@ -567,7 +597,8 @@ class LiveWorker:
                 self.ledger.finish(poll_id, _utc(self.clock()),
                     "quota_limited" if code == "quota_exhausted" else "failed", code,
                     source_rows=meta.get("returned", 0), changed_rows=changed,
-                    unsupported_rows=meta.get("unsupported", 0))
+                    unsupported_rows=meta.get("unsupported", 0),
+                    rejection=error.rejection if isinstance(error, RejectedProviderRow) else None)
             finally:
                 if owned:
                     client.close()

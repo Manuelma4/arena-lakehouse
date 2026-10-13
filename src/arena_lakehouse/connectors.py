@@ -1,6 +1,7 @@
 """Quota-aware free fixtures/results API adapters. Credentials never enter landing files."""
 
 import json
+import hashlib
 import os
 import time
 import uuid
@@ -12,6 +13,7 @@ from pydantic import ValidationError
 
 from .calendar import _business, _payload
 from .schema import MatchEvent, digest
+from .provider_rejections import RejectedProviderRow, RowRejection
 
 
 class ProviderError(RuntimeError):
@@ -132,10 +134,14 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
         directory = state_path.parent / "provider_raw" / provider / received_at.date().isoformat()
         directory.mkdir(parents=True, exist_ok=True)
         destination = directory / f"{uuid.uuid4().hex}.json"
-        destination.write_text(json.dumps(dict(provider=provider, endpoint=endpoint,
+        body = json.dumps(dict(provider=provider, endpoint=endpoint,
             requested_at=requested_at.isoformat(), observed_at=received_at.isoformat(), payload=payload),
-            ensure_ascii=False), encoding="utf-8")
+            ensure_ascii=False).encode("utf-8")
+        destination.write_bytes(body)
         raw_archives.append(str(destination))
+        return dict(provider=provider, endpoint=endpoint,
+                    archive_path=destination.relative_to(state_path.parent).as_posix(),
+                    archive_sha256=hashlib.sha256(body).hexdigest())
 
     try:
         if provider == "football-data":
@@ -145,16 +151,16 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
                                    {"X-Auth-Token": token, "X-Unfold-Lineups": "true",
                                     "X-Unfold-Goals": "true", "X-Unfold-Bookings": "true",
                                     "X-Unfold-Subs": "true"}, {})
-            archive(payload, f"competitions/{competition}/matches")
-            raw_rows = payload.get("matches", [])
+            provenance = archive(payload, f"competitions/{competition}/matches")
+            raw_rows = [(raw, provenance, index) for index, raw in enumerate(payload.get("matches", []))]
         else:
             raw_rows = []
             for page in range(1, pages + 1):
                 for phase in ("past", "upcoming", "running"):
                     data = request_json(client, f"https://api.pandascore.co/valorant/matches/{phase}",
                                         {"Authorization": f"Bearer {token}"}, {"page": page, "per_page": 100})
-                    archive(data, f"valorant/matches/{phase}?page={page}&per_page=100")
-                    raw_rows.extend(data)
+                    provenance = archive(data, f"valorant/matches/{phase}?page={page}&per_page=100")
+                    raw_rows.extend((raw, provenance, index) for index, raw in enumerate(data))
                     time.sleep(0.4)
         # Complete calendar validation precedes any canonical candidate or
         # cursor revision. Conflicting phase variants are evidence to retain,
@@ -167,7 +173,7 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
         # recorded after the responses were received, never at request start.
         observed = now()
         normalizer = normalize_football if provider == "football-data" else normalize_valorant
-        for raw in raw_rows:
+        for raw, provenance, index in raw_rows:
             if provider == "pandascore" and f"pandascore:{raw['id']}" in conflicted:
                 unsupported += 1
                 continue
@@ -183,7 +189,11 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
             revision = previous["revision"] + 1 if previous else 1
             match.update(revision=revision, event_id=f"{match['match_id']}:{revision}:{content_hash}")
             # Validation failure aborts collection; the cursor is not advanced.
-            rows.append(MatchEvent.model_validate(match).row())
+            try:
+                validated = MatchEvent.model_validate(match).row()
+            except ValidationError:
+                raise RejectedProviderRow(RowRejection(**provenance, row_index=index)) from None
+            rows.append(validated)
             pending[match["match_id"]] = {"hash": content_hash, "revision": revision}
         return rows, dict(state=pending, unsupported=unsupported, returned=len(raw_rows), raw_archives=raw_archives)
     finally:

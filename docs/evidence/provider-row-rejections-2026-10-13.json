@@ -1,0 +1,128 @@
+{
+  "schema_version": "arena-provider-rejection-evidence/1.0.0",
+  "status": "passed",
+  "recorded_at": "2026-10-13T11:15:22.273385+00:00",
+  "source_sha256": {
+    "src/arena_lakehouse/connectors.py": "0ee5e1fb5db3b28f217d5bd43a1a49c45e0cb94301a3d9f44829a0476df4ab9e",
+    "src/arena_lakehouse/live.py": "f549a361b251057805a44743a186ff4e8483802728137f9d8a206afbb3aabf4d",
+    "src/arena_lakehouse/provider_rejections.py": "d6d3d377743c8355e8f27520d3e5fec69cb19b544de81cd300c8388d2e946ebc",
+    "tests/test_provider_rejections.py": "699f7f0bbafdfcb619a72910f91c0a840a7102acdfa624485e97ea8d2401d061"
+  },
+  "integrated_tests": {
+    "tests": 88,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 87,
+    "duration_seconds": 431.648,
+    "modules": [
+      "test_provider_rejections",
+      "test_connectors",
+      "test_live",
+      "test_provider_publication",
+      "test_live_status_identity"
+    ],
+    "report_sha256": "9e8801de4fa545445a79709ba881e4f05f4ed64650b31b4d6603e290a7a1e4ae"
+  },
+  "replay": {
+    "source_poll_ids": {
+      "last_success": 9,
+      "failed": 10
+    },
+    "initial_rows": 2132,
+    "rejected_endpoint": "competitions/BSA/matches",
+    "rejected_zero_based_index": 298,
+    "category": "invalid_match_event",
+    "original_source_archives": [
+      {
+        "role": "last_success",
+        "path": "provider_raw/football-data/2026-10-13/23e486a2fe5b4da9832f6fc69fb89f4d.json",
+        "sha256": "7f880159f2a1550ac615efb31292b47c16aeb6a9d9e33298883f516a63d19748",
+        "original_observed_at": "2026-10-13T09:32:51.471876+00:00"
+      },
+      {
+        "role": "last_success",
+        "path": "provider_raw/football-data/2026-10-13/b6023ef212b242fda93af5e2d851a2e5.json",
+        "sha256": "ee57410011ded4a1678f6a3648838b090a788661f8f27470fb6f5bed4090aace",
+        "original_observed_at": "2026-10-13T09:32:51.807017+00:00"
+      },
+      {
+        "role": "last_success",
+        "path": "provider_raw/football-data/2026-10-13/a5fb34f750794ab09b62b7ae8058eb70.json",
+        "sha256": "5a1d1b786729dcaa116679f83c1b630b9bdc63add8346ada84342a10f9ba175e",
+        "original_observed_at": "2026-10-13T09:32:52.138313+00:00"
+      },
+      {
+        "role": "last_success",
+        "path": "provider_raw/football-data/2026-10-13/6153e782a9f64a60a5302c5bc71d7985.json",
+        "sha256": "9d26b82d8c96f3175947ba4622dc000ccab2ef68f166dabf0f03ea10a925024b",
+        "original_observed_at": "2026-10-13T09:32:52.521974+00:00"
+      },
+      {
+        "role": "last_success",
+        "path": "provider_raw/football-data/2026-10-13/8021b7713e8b4281b9250fec344d20db.json",
+        "sha256": "77ed0f789dd0394cfc1fad189f5600d5ed681dbbaa4717c6a1a43f8549d68803",
+        "original_observed_at": "2026-10-13T09:32:52.974154+00:00"
+      },
+      {
+        "role": "last_success",
+        "path": "provider_raw/football-data/2026-10-13/36043e11d25149a58a6363c86775138e.json",
+        "sha256": "41d6ae893a7ba63994028369eceac959334eb279023803efbe55523c00c1792d",
+        "original_observed_at": "2026-10-13T09:32:53.368351+00:00"
+      },
+      {
+        "role": "failed_capture",
+        "path": "provider_raw/football-data/2026-10-13/2b97a8f818024504b677974b31588108.json",
+        "sha256": "0095d79e317221d6bb2d49e5c3386ef48c1621faa603ce6b810a4dd5462fecf9",
+        "original_observed_at": "2026-10-13T09:38:48.260240+00:00"
+      },
+      {
+        "role": "failed_capture",
+        "path": "provider_raw/football-data/2026-10-13/2df177f8c15944c19735d1c13561f77a.json",
+        "sha256": "06b147070606dc6f6943e452a3d4ed6bba5ca8ccdcae9387bf5c13ea157b62a1",
+        "original_observed_at": "2026-10-13T09:38:47.858701+00:00"
+      },
+      {
+        "role": "failed_capture",
+        "path": "provider_raw/football-data/2026-10-13/85691ece594f482c955c163a91c828fd.json",
+        "sha256": "33ded975b4bdf2416e45b7c16a34f994843e33e4630ec0838814ae6e5f9d7607",
+        "original_observed_at": "2026-10-13T09:38:48.651755+00:00"
+      },
+      {
+        "role": "failed_capture",
+        "path": "provider_raw/football-data/2026-10-13/a2e9e53abdd94ba5a7a02cb575b6811a.json",
+        "sha256": "8a6ab78d7cf18379d4b6874ca5f9ade5d77a6e972172a0a4cf5894852484b45b",
+        "original_observed_at": "2026-10-13T09:38:47.534283+00:00"
+      },
+      {
+        "role": "failed_capture",
+        "path": "provider_raw/football-data/2026-10-13/dcca4a0f08704cf8b078fa9e7a11f851.json",
+        "sha256": "47b86fd095815ae307ca90f9e2ef063d4279a5582e2cbdf11e7053260388221c",
+        "original_observed_at": "2026-10-13T09:38:49.842763+00:00"
+      },
+      {
+        "role": "failed_capture",
+        "path": "provider_raw/football-data/2026-10-13/dec33bf4d60b4f81b0f18f8442663bc0.json",
+        "sha256": "744c3c0f51f29c68882750f3ade6f5d52dfb51d0d498ae5c05bca821b90f99f5",
+        "original_observed_at": "2026-10-13T09:38:48.994820+00:00"
+      }
+    ],
+    "mocked_request_count": 12,
+    "actual_network_requests": 0,
+    "model_calls": 0,
+    "original_live_workspace_files_verified_unchanged": 216,
+    "selector_unchanged": true,
+    "cursors_unchanged": true,
+    "pipeline_events_unchanged": true,
+    "restart_lookup_unchanged": true,
+    "report_sha256": "d5941ca39ba23a80605757baa77add57e2c2bd8bde228fde038f640ff3601f1d"
+  },
+  "boundaries": [
+    "Only final canonical MatchEvent rejection gets this first-row diagnostic.",
+    "Parsed archived JSON is preserved; HTTP wire bytes are not claimed.",
+    "Replay has controlled clocks/new serialized bytes; original failed poll remains unchanged.",
+    "No successful provider refresh, upstream repair, result retraction, model quality or sustained SLA is claimed.",
+    "Current public live-status shape and publication/cursor behavior remain unchanged.",
+    "Initial failed SQL insertion tests are retained; only corrected integrated regression is counted here."
+  ]
+}
