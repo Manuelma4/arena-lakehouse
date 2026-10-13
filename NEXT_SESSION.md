@@ -30,8 +30,11 @@ method; original 215 decisions/239 earlier evidence packets are unchanged.
 
 Use the consumer's latest `scripts/private-state.json` for recovery. Its reviewed
 restore rebases approved data paths and preserves local credentials. Stop the
-other preview before an actual restore. Current code/state has not undergone a
-new clean-clone restore. Do not install/download/start/probe/test Ollama, merge
+other preview before an actual restore. The consumer's bounded clean-clone
+recovery now passed for today's research-detail asset: 1,404 file hashes/49
+SQLite databases, installed producer/consumer wheel content, 87 restored-reader
+checks and 28 browser scenes. Full producer execution remains a separate gate.
+Do not install/download/start/probe/test Ollama, merge
 main, publicly deploy, dispatch Actions or alter global OS/memory. Docker Linux,
 managed Databricks, human evaluation and full release gates remain pending.
 The goal controller last returned `blocked` despite continued implementation
