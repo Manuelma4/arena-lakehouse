@@ -37,8 +37,11 @@ checks and 28 browser scenes. Full producer execution remains a separate gate.
 Do not install/download/start/probe/test Ollama, merge
 main, publicly deploy, dispatch Actions or alter global OS/memory. Docker Linux,
 managed Databricks, human evaluation and full release gates remain pending.
-The goal controller last returned `blocked` despite continued implementation
-progress; no pause or completion was requested by the implementation turn.
+The owner reactivated the goal; its controller now confirms `active`.
+The latest [historical forecast boundary](docs/historical-forecast-source-boundary-2026-10-13.md)
+describes the consumer's frozen calibration study. Later bounded checks passed
+for both providers without canonical changes. Compact consumer receipts preserve
+the new observations; the old incomplete-result incident remains in history.
 The later private delivery `private-state-20261013-recovery-incidents` contains
 1,503 files/51 SQLite backups. All 951 active-data files match the actually
 restored research-detail asset; two extra databases are isolated replay evidence.

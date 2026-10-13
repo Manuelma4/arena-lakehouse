@@ -2,7 +2,6 @@
 
 **A versioned data platform for football and competitive VALORANT research.**
 
-[Research application](https://manuelma4.github.io/lakehouse-copilot/) |
 [Arena Copilot](https://github.com/Manuelma4/lakehouse-copilot) |
 [Architecture and measured evidence](docs/evidence/README.md)
 
@@ -10,6 +9,7 @@ Match observations arrive out of order. Scores are corrected, fixtures move and
 providers deliver the same event more than once. Arena Lakehouse preserves those
 observations, maintains consistent match history and team aggregates, and publishes
 immutable datasets for the companion research application.
+The active development checkpoint is private; automatic deployment is disabled.
 
 Version **0.7.0** publishes the canonical match dataset and its source calendar
 as one recoverable evidence unit. Unresolved teams, source-only dates and conflicting
@@ -23,6 +23,7 @@ pipeline and original football/VALORANT showcase remain independently reproducib
 | Original sports showcase | 600 synthetic matches, 16 teams, six fictional competitions | Engineering and model demonstrations on original data |
 | OpenFootball research v2 | 2,831 matches, 261 derived teams, ten competition editions | Community source observations; incomplete results remain explicit |
 | World Cup 2026 within research v2 | 104 matches, 48 national teams, 104 numeric-offset kickoff clocks | Pinned source facts with separate FT, extra-time and shootout score stages |
+| Historical editions v2 | 1,941 native-ID matches across five 2017/18 club leagues, Euro 2016 and World Cup 2018 | Separately licensed retrospective records; no inferred pre-match availability |
 | Private authenticated football collection | 2,132 matches across the five major European leagues and Brazilian Serie A | Free-account fixtures and delayed scores; selected current seasons |
 | Private authenticated VALORANT collection | 106 canonical matches; 124 announcements retained separately | Match-level fixtures/results; unresolved teams and times remain explicit |
 
@@ -64,6 +65,11 @@ publication intent binds archives, revision cursors and package checksums before
 the selected evidence changes; interrupted publication resumes that same intent
 before another provider request. These measured source polls
 are separate from the earlier Spark/Delta streaming measurements.
+
+The [historical forecast boundary](docs/historical-forecast-source-boundary-2026-10-13.md)
+connects verified club editions to the companion application's chronological
+calibration study. Source clocks and native identities remain intact; retrospective
+model measurements cannot rewrite actual Current decisions.
 
 ## Engineering decisions
 
