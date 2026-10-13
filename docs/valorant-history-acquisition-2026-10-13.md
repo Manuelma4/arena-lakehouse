@@ -50,3 +50,18 @@ changing the restored application's Current path. Provider response bodies stay
 out of source history. A later deeper acquisition needs a separate historical
 contract for bounded page windows and overlap/conflict accounting; changing the
 Current calendar's phase/page contract is not required for this capture.
+
+## Subsequent consumer experiment
+
+The consumer froze a separate protocol and fitted a retrospective calibration
+pilot on this capture: 252 calibration targets and 63 held-out targets. Its
+independent source and numerical audit passed 79,408 comparisons. All 66 files
+in this producer workspace remained byte-identical after fitting and auditing;
+no additional provider requests were made for those steps.
+
+The fitted temperature is at the declared grid boundary, and six nonempty time
+blocks cannot support the planned uncertainty interval. This experiment is
+exploratory and does not activate Current forecasts or demonstrate prospective
+accuracy. Full results and the frozen protocol are in the consumer repository's
+`docs/valorant-calibration-2026-10-13.md`. The private state export carries both
+this source workspace and the distinct fitted artifact.

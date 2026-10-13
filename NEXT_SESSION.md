@@ -3,6 +3,13 @@
 The owner resumed work today; the objective remains unfinished. Read
 [pinned World Cup detail](docs/worldcup-detail-and-ledger-2026-10-13.md)
 and the consumer's `docs/CONTINUATION_2026-10-13.md` first.
+
+The later consumer VALORANT pilot uses the unchanged isolated capture: 252
+calibration/63 held-out targets, with 79,408 independent numerical comparisons.
+Its grid-boundary optimum and insufficient time blocks prevent a strong accuracy
+claim. See [the acquisition's later study note](docs/valorant-history-acquisition-2026-10-13.md)
+and the consumer study. Current ingestion remains unchanged.
+
 Both repositories remain private on `checkpoint/2026-10-08-reprise`.
 
 New atomic CC0 detail acquisition/publication preserves 104 records: 102 verified
