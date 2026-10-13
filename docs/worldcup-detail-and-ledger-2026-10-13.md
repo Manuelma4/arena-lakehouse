@@ -60,10 +60,12 @@ checkpoint branch; no Actions were dispatched or public deployment performed.
 ## Private transfer
 
 The consumer's `scripts/private-state.json` selects draft
-`private-state-20261013-worldcup-ledger`: 1,318 files, 48 SQLite online backups,
-58,818,231 bytes, SHA-256
-`0d3c5dbced0546acab84a25874b7a5ee32d2116c05e490909e78108ace96d3b3`.
+`private-state-20261013-research-detail`: 1,404 files, 49 SQLite online backups,
+64,319,256 bytes, SHA-256
+`759df6c651011f4e7a635a3e3595710807cf2f670286707b0a9ca2c7deda33ac`.
 Its normal VerifyOnly download passed; actual clean-clone recovery of this new
 source/snapshot remains pending. Pull both checkpoint branch tips and follow the
 consumer's current continuation before restoring. Credentials stay separate,
 and the new approved detail data path is rebased on restore.
+The consumer's later `docs/research-detail-evidence-2026-10-13.md` records typed
+detail investigation and saved replay. Earlier draft snapshots remain available.
