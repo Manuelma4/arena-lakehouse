@@ -10,6 +10,11 @@ joins and two withheld conflicts. The independent consumer reader, API and
 desktop/mobile drawer are checked. No current roster, complete bench or historical
 forecast availability is inferred. The consumer normalizes repeated outcome
 evidence and excludes contradictory completed facts from team aggregates.
+The consumer now connects this detail to typed research tools and readable
+saved investigations, with independent corpus/detail pins and durable checksum
+verification. Its `docs/research-detail-evidence-2026-10-13.md` records the later
+integration: 61 integrated Python tests, 67 frontend contracts and 52 actual
+browser scenes passed, without application model activity or human labels.
 
 Successful bounded free polls retained 2,132 football rows/seven changes and
 509 VALORANT rows/one change/nine unsupported. A later football candidate failed
