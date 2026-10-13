@@ -56,3 +56,14 @@ publication and cursors were preserved. No continuous worker was left running.
 Docker Linux/Spark/Delta, authenticated Databricks, real model evaluation and
 release acceptance remain unverified. Both repositories stay private on the
 checkpoint branch; no Actions were dispatched or public deployment performed.
+
+## Private transfer
+
+The consumer's `scripts/private-state.json` selects draft
+`private-state-20261013-worldcup-ledger`: 1,318 files, 48 SQLite online backups,
+58,818,231 bytes, SHA-256
+`0d3c5dbced0546acab84a25874b7a5ee32d2116c05e490909e78108ace96d3b3`.
+Its normal VerifyOnly download passed; actual clean-clone recovery of this new
+source/snapshot remains pending. Pull both checkpoint branch tips and follow the
+consumer's current continuation before restoring. Credentials stay separate,
+and the new approved detail data path is rebased on restore.
