@@ -49,7 +49,7 @@ def score_details(raw):
         _invalid()
     duration = score.get("duration")
     if duration is not None and (not isinstance(duration, str) or not 1 <= len(duration) <= 40
-                                 or duration != duration.strip() or any(ord(c) < 32 for c in duration)):
+                                 or duration != duration.strip() or any(ord(c) < 32 or ord(c) == 127 for c in duration)):
         _invalid()
     native = {}
     for stage in STAGES:

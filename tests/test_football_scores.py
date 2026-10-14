@@ -97,7 +97,7 @@ def test_bad_stage_arithmetic_is_ineligible(value):
     dict(fullTime=pair(True, 1)), dict(fullTime=pair(-1, 1)), dict(fullTime=pair(51, 1)),
     dict(fullTime=pair("1", 1)), dict(fullTime=pair(1.0, 1)), dict(fullTime={"home": 1}),
     dict(fullTime={"home": 1, "away": 1, "extra": 0}), dict(fullTime=[]),
-    dict(duration=[]), dict(duration=""), dict(winner="UNKNOWN"), dict(unexpected=None),
+    dict(duration=[]), dict(duration=""), dict(duration="REGULAR\x7f"), dict(winner="UNKNOWN"), dict(unexpected=None),
 ])
 def test_invalid_native_keys_types_and_bounds_reject_record(score):
     with pytest.raises(FootballScoreError):
