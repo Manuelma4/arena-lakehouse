@@ -1,4 +1,14 @@
-# Current continuation — 13 October 2026
+# Current continuation — 14 October 2026
+
+**Latest local integration:** the separate `data/national-enrichment-20261014`
+capture retains 104 World Cup 2026 and 51 Euro 2024 provider matches from two
+bounded requests. It is not selected as Current or used for forecasting. Fourteen
+non-regular-time results have provider full-time scores different from regulation
+scores; keep that distinction explicit. The consumer has reviewed 55 Archive
+source identities for 54 provider images, with five rejected images retaining
+initials. See its `docs/archive-team-media-2026-10-14.md` and latest private-state
+pointer for evidence and recovery. This is decoration, not a match-history merge.
+The objective remains active and unfinished.
 
 **Latest coverage update, 14 October:** [Copa América 2024](docs/copa-america-2026-10-14.md)
 adds the reviewed Football.TXT adapter and a separate twelve-edition package.
