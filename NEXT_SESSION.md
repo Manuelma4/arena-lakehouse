@@ -1,5 +1,10 @@
 # Current continuation — 13 October 2026
 
+**Latest coverage update, 14 October:** [Copa América 2024](docs/copa-america-2026-10-14.md)
+adds the reviewed Football.TXT adapter and a separate twelve-edition package.
+The previous 2,882 records remain identical; only the Copa source was collected.
+Use the consumer's latest private-state pointer for the matching data transfer.
+
 **Latest update, 14 October:** read [Euro 2024 acquisition](docs/euro-coverage-2026-10-14.md)
 first. The separate CC0 workspace adds 51 Euro matches without changing the
 original fixtures or Current forecast state. The objective remains active.

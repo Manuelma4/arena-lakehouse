@@ -34,7 +34,7 @@ def read_state(collector, table="current"):
 
 def test_catalogue_has_exactly_verified_no_token_sources():
     sources = load_sources(CATALOGUE)
-    assert len(sources) == 11
+    assert len(sources) == 12
     assert {s.region for s in sources.values()} == {"Europe", "South America", "International"}
     assert sum(s.region == "Europe" for s in sources.values()) == 5
     assert all(s.url.startswith("https://raw.githubusercontent.com/openfootball/football.json/master/")

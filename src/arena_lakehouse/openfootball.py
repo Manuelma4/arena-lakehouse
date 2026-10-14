@@ -24,6 +24,8 @@ import httpx
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from .copa_2024 import COPA_REF, COPA_SHA256, decode_copa_2024
+
 
 STAGING_VERSION = "openfootball-staging-1.0"
 STAGING_VERSION_V2 = "openfootball-staging-2.0"
@@ -36,6 +38,7 @@ EURO_SHA256 = "fdb4b858cc88603e69fe3b1ce34923fc6b69a774d4c8416f2d166ea57c556609"
 PINNED_NATIONAL_SOURCES = {
     "worldcup.json": (WORLD_CUP_REF, "2026/worldcup.json", WORLD_CUP_SHA256, "worldcup_2026.json", 104),
     "euro.json": (EURO_REF, "2024/euro.json", EURO_SHA256, "euro_2024.json", 51),
+    "copa-america": (COPA_REF, "2024--usa/copa.txt", COPA_SHA256, "copa_2024.txt", 32),
 }
 MAX_BYTES = 10_000_000
 MAX_ROWS = 10_000
@@ -96,8 +99,9 @@ class Source:
                 raise ValueError(f"Invalid {field}")
         if not re.fullmatch(r"\d{4}(?:-\d{2})?", self.season):
             raise ValueError("Invalid season")
-        if not re.fullmatch(re.escape(self.season) + r"/[a-z0-9.-]+\.json", self.path):
-            raise ValueError("Source must be a season JSON file in the fixed OpenFootball repository")
+        reviewed_txt = self.repository == "copa-america" and self.season == "2024" and self.path == "2024--usa/copa.txt"
+        if not reviewed_txt and not re.fullmatch(re.escape(self.season) + r"/[a-z0-9.-]+\.json", self.path):
+            raise ValueError("Source must be a season JSON file or the reviewed Copa TXT file")
         _name(self.name, "source name")
         _name(self.region, "region")
         if not re.fullmatch(r"master|[0-9a-f]{40}", self.source_ref):
@@ -106,7 +110,7 @@ class Source:
             raise ValueError("Unsupported repository/team_type")
         pinned = PINNED_NATIONAL_SOURCES.get(self.repository)
         if pinned and (self.source_ref != pinned[0] or self.path != pinned[1] or self.team_type != "national"):
-            raise ValueError("National source must use its reviewed pinned JSON edition")
+            raise ValueError("National source must use its reviewed pinned edition")
         if self.repository == "football.json" and self.team_type != "club":
             raise ValueError("Club repository cannot declare national teams")
         if self.team_aliases is not None:
@@ -205,8 +209,9 @@ def parse_payload(body: bytes, source: Source, observed_at: datetime, *, staging
         raise ValueError("Payload must be bytes within the 10 MB staging bound")
     checksum = _hash(body)
     try:
-        payload = json.loads(body.decode("utf-8-sig"), object_pairs_hook=_object,
-                             parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)))
+        payload = decode_copa_2024(body) if source.repository == "copa-america" else json.loads(
+            body.decode("utf-8-sig"), object_pairs_hook=_object,
+            parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)))
         if not isinstance(payload, dict) or payload.get("name") != source.name:
             raise ValueError("Unexpected competition name or top-level schema")
         matches = payload.get("matches")
@@ -228,7 +233,7 @@ def parse_payload(body: bytes, source: Source, observed_at: datetime, *, staging
                 raise ValueError("date must use YYYY-MM-DD")
             date.fromisoformat(source_date)
             local_time, offset, start, precision = _kickoff(raw.get("time"), source_date,
-                allow_offset=staging_version == STAGING_VERSION_V2 and source.repository == "worldcup.json")
+                allow_offset=staging_version == STAGING_VERSION_V2 and source.repository in {"worldcup.json", "copa-america"})
             sf, sa, details = _score(raw.get("score"))
             aliases = source.team_aliases or {}
             a_identity = _name(aliases.get(a, a), "canonical team1")
@@ -368,7 +373,7 @@ class OpenFootballCollector:
                                      [source.source_id]).fetchone()
         cache = dict(zip(("sha256", "etag", "last_modified", "archive_path"), row)) if row else None
         if cache and (not re.fullmatch(r"[0-9a-f]{64}", cache["sha256"]) or
-                      cache["archive_path"] != f"raw/{source.source_id}/{cache['sha256']}.json"):
+                      cache["archive_path"] != f"raw/{source.source_id}/{cache['sha256']}{Path(source.path).suffix}"):
             raise AcquisitionError("Invalid content-addressed archive metadata")
         pinned = PINNED_NATIONAL_SOURCES.get(source.repository)
         if cache and pinned and cache["sha256"] != pinned[2]:
@@ -413,7 +418,8 @@ class OpenFootballCollector:
         """Fetch a fixed-repository source. dry_run performs validation without writes."""
         started = self.monotonic()
         cache = self._read_cache(source)
-        headers = {"User-Agent": "Arena-Lakehouse-OpenFootball/0.1", "Accept": "application/json"}
+        headers = {"User-Agent": "Arena-Lakehouse-OpenFootball/0.1",
+                   "Accept": "text/plain" if source.repository == "copa-america" else "application/json"}
         if cache and cache["etag"]:
             headers["If-None-Match"] = cache["etag"]
         elif cache and cache["last_modified"]:
@@ -450,7 +456,7 @@ class OpenFootballCollector:
         pinned = PINNED_NATIONAL_SOURCES.get(source.repository)
         if pinned and checksum != pinned[2]:
             raise AcquisitionError("Pinned national body checksum differs from the reviewed immutable source")
-        archive_path = f"raw/{source.source_id}/{checksum}.json"
+        archive_path = f"raw/{source.source_id}/{checksum}{Path(source.path).suffix}"
         if not dry_run:
             archive = self.workspace / archive_path
             archive.parent.mkdir(parents=True, exist_ok=True)

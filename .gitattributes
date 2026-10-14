@@ -4,3 +4,5 @@ src/arena_lakehouse/resources/worldcup_2026.json -text -diff
 tests/fixtures/worldcup-2026-pinned.json -text -diff
 src/arena_lakehouse/resources/euro_2024.json -text -diff
 tests/fixtures/euro-2024-pinned.json -text -diff
+src/arena_lakehouse/resources/copa_2024.txt -text -diff
+tests/fixtures/copa-2024-pinned.txt -text -diff

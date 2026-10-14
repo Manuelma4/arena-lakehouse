@@ -145,13 +145,15 @@ def test_resealed_plausible_business_fields_are_bound_to_reviewed_source(tmp_pat
     assert not (tmp_path / "not-created").exists()
 
 
-def test_full_catalogue_can_publish_eleven_editions_without_changing_v1_bounds(tmp_path):
+def test_full_catalogue_can_publish_twelve_editions_without_changing_v1_bounds(tmp_path):
     collector = OpenFootballCollector(tmp_path / "state", staging_version=STAGING_VERSION_V2)
     for source in SOURCES.values():
         if source.repository == "worldcup.json":
             body = files("arena_lakehouse").joinpath("resources/worldcup_2026.json").read_bytes()
         elif source.repository == "euro.json":
             body = BODY
+        elif source.repository == "copa-america":
+            body = files("arena_lakehouse").joinpath("resources/copa_2024.txt").read_bytes()
         else:
             body = json.dumps({"name": source.name, "matches": [dict(round="Fixture round", date="2026-10-01",
                                                                    team1="Fixture One", team2="Fixture Two")]}).encode()
@@ -159,4 +161,4 @@ def test_full_catalogue_can_publish_eleven_editions_without_changing_v1_bounds(t
     stage, output = tmp_path / "stage", tmp_path / "research"
     collector.export(stage)
     manifest = publish_research(stage, output, generated_at=NOW + timedelta(minutes=1))
-    assert manifest["sources"] == 11 and manifest["matches"] == 164
+    assert manifest["sources"] == 12 and manifest["matches"] == 196

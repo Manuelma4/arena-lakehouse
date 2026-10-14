@@ -107,6 +107,18 @@
       "source_ref": "7bbf6309bdda6896d6bb9ca218c1e15eaf418ce3",
       "repository": "euro.json",
       "team_type": "national"
+    },
+    {
+      "source_id": "copa-america-2024",
+      "competition_id": "copa-america",
+      "season": "2024",
+      "path": "2024--usa/copa.txt",
+      "name": "Copa Am\u00e9rica 2024",
+      "region": "International",
+      "team_namespace": "openfootball-national-men",
+      "source_ref": "902e4c51c282244ab924676b3bc471b4040de39a",
+      "repository": "copa-america",
+      "team_type": "national"
     }
   ]
 }

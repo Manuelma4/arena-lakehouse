@@ -159,7 +159,7 @@ def _validate_row(row, sources, staging_version=STAGING_VERSION, trusted_nationa
     offset = row["utc_offset_minutes"] if v2 else None
     if offset is not None:
         _integer(offset, "UTC offset minutes", -840, 840)
-        _require(local is not None and source.repository == "worldcup.json", "Offset lacks a supported source clock")
+        _require(local is not None and source.repository in {"worldcup.json", "copa-america"}, "Offset lacks a supported source clock")
         expected_start = _utc(datetime.fromisoformat(row["source_date"] + "T" + local).replace(
             tzinfo=timezone(timedelta(minutes=offset))))
         _require(row["start_time"] == expected_start, "UTC kickoff differs from explicit source offset")
@@ -265,7 +265,7 @@ def validate_staging(staging: Path) -> ValidatedStaging:
     _require(sum(len(body) for body in verified_bytes.values()) <= MAX_PACKAGE_BYTES, "Staging byte bounds changed")
     values = {name: _decode(verified_bytes[f"{name}.json"]) for name in
               ("matches", "history", "sources", "quarantine", "polls")}
-    bounds = dict(BOUNDS, sources=11) if staging_version == STAGING_VERSION_V2 else BOUNDS
+    bounds = dict(BOUNDS, sources=12) if staging_version == STAGING_VERSION_V2 else BOUNDS
     for name, rows in values.items():
         _require(isinstance(rows, list), f"{name} must be an array")
         bound = bounds[{"history": "revisions", "quarantine": "quarantine_rows"}.get(name, name)]
