@@ -1,5 +1,15 @@
 # Current continuation — 14 October 2026
 
+**Latest activation:** domestic Current now selects the audited forecast-context
+v2 artifact `2d50960e5cb1602d75b28760c8aefcb37bd4525a68aa8559d21109147fc09504`.
+Only the context pointer and one immutable artifact changed under the existing
+writer lock; 2,132 anchors, 596 regulation scores, canonical data and all database
+logical hashes were verified. The original morning source collection remains
+stale. No new provider calls or forecast ledger writes occurred. The consumer's
+`docs/regulation-forecast-ui-2026-10-14.md` records the interface, actual browser
+checks, rollback evidence and next gates. National Current activation remains
+unfinished. Use its newest private-state pointer for compatible recovery.
+
 **Latest score-contract work:** [Football score evidence](docs/football-score-evidence.md)
 introduces optional forecast-context v2 without rewriting canonical matches.
 An isolated national copy has 155 validated records; 14 regulation draws differ
