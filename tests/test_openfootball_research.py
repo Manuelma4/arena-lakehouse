@@ -491,7 +491,7 @@ def test_v2_pinned_source_poll_cannot_claim_other_body(staging_v2):
     next(p for p in polls if p['source_id'] == 'worldcup-2026')['sha256'] = 'f' * 64
     _write(staging_v2 / 'polls.json', polls)
     _rehash(staging_v2)
-    with pytest.raises(ResearchValidationError, match='Pinned World Cup poll checksum'):
+    with pytest.raises(ResearchValidationError, match='Pinned national poll checksum'):
         validate_staging(staging_v2)
 
 

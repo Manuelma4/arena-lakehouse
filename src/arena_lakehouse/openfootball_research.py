@@ -16,7 +16,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from .openfootball import (
-    LICENSE_URL, STAGING_VERSION, STAGING_VERSION_V2, WORLD_CUP_SHA256, Source, _name,
+    LICENSE_URL, STAGING_VERSION, STAGING_VERSION_V2, PINNED_NATIONAL_SOURCES, Source, _name,
     _PARQUET_FIELDS, _PARQUET_FIELDS_V2, load_sources, parquet_schema, parse_payload,
 )
 
@@ -107,21 +107,21 @@ class ValidatedStaging:
     as_of: str
 
 
-def _trusted_worldcup_rows(sources, staging_version):
-    pinned = [source for source in sources.values() if source.repository == "worldcup.json"]
-    if not pinned:
-        return {}
-    body = resource_files("arena_lakehouse").joinpath("resources/worldcup_2026.json").read_bytes()
-    _require(_sha(body) == WORLD_CUP_SHA256, "Bundled trusted World Cup source checksum differs")
+def _trusted_national_rows(sources, staging_version):
     trusted = {}
-    for source in pinned:
+    for source in sources.values():
+        pinned = PINNED_NATIONAL_SOURCES.get(source.repository)
+        if pinned is None:
+            continue
+        body = resource_files("arena_lakehouse").joinpath("resources", pinned[3]).read_bytes()
+        _require(_sha(body) == pinned[2], "Bundled trusted national source checksum differs")
         parsed = parse_payload(body, source, datetime(1970, 1, 1, tzinfo=timezone.utc), staging_version=staging_version)
-        _require(not parsed.quarantine and len(parsed.rows) == 104, "Trusted World Cup parser coverage differs")
+        _require(not parsed.quarantine and len(parsed.rows) == pinned[4], "Trusted national parser coverage differs")
         trusted.update({row["match_id"]: row for row in parsed.rows})
     return trusted
 
 
-def _validate_row(row, sources, staging_version=STAGING_VERSION, trusted_worldcup=None):
+def _validate_row(row, sources, staging_version=STAGING_VERSION, trusted_national=None):
     v2 = staging_version == STAGING_VERSION_V2
     fields = _PARQUET_FIELDS_V2 if v2 else _PARQUET_FIELDS
     _require(isinstance(row, dict) and set(row) == set(fields), "Staging row fields differ from contract")
@@ -143,8 +143,9 @@ def _validate_row(row, sources, staging_version=STAGING_VERSION, trusted_worldcu
     _require(row["source_ref"] == source.source_ref and row["source_url"] == source.url,
              "Row URL/ref is outside the fixed source allowlist")
     _require(re.fullmatch(r"[0-9a-f]{64}", row["source_sha256"]) is not None, "Invalid raw source checksum")
-    _require(source.repository != "worldcup.json" or row["source_sha256"] == WORLD_CUP_SHA256,
-             "Pinned World Cup row checksum differs from reviewed source")
+    pinned = PINNED_NATIONAL_SOURCES.get(source.repository)
+    _require(pinned is None or row["source_sha256"] == pinned[2],
+             "Pinned national row checksum differs from reviewed source")
     _require(row["timezone"] is row["completed_at"] is None,
              "Staging must not infer UTC timezone/completion")
     _require(re.fullmatch(r"\d{4}-\d{2}-\d{2}", row["source_date"]) is not None, "Invalid source calendar date")
@@ -222,12 +223,12 @@ def _validate_row(row, sources, staging_version=STAGING_VERSION, trusted_worldcu
     excluded = {"observed_at", "source_sha256", "source_url", "license", "license_url", "revision", "event_id"}
     content_hash = _sha({k: v for k, v in row.items() if k not in excluded})
     _require(row["event_id"] == f"{row['match_id']}:{row['revision']}:{content_hash[:16]}", "Invalid event content identity")
-    if source.repository == "worldcup.json":
-        trusted = (trusted_worldcup or {}).get(row["match_id"])
+    if source.repository in PINNED_NATIONAL_SOURCES:
+        trusted = (trusted_national or {}).get(row["match_id"])
         _require(trusted is not None and
                  {k: v for k, v in row.items() if k not in {"observed_at", "revision", "event_id"}} ==
                  {k: v for k, v in trusted.items() if k != "observed_at"},
-                 "World Cup business fields differ from bundled trusted source")
+                 "Pinned national business fields differ from bundled trusted source")
     return observed, content_hash
 
 
@@ -264,7 +265,7 @@ def validate_staging(staging: Path) -> ValidatedStaging:
     _require(sum(len(body) for body in verified_bytes.values()) <= MAX_PACKAGE_BYTES, "Staging byte bounds changed")
     values = {name: _decode(verified_bytes[f"{name}.json"]) for name in
               ("matches", "history", "sources", "quarantine", "polls")}
-    bounds = dict(BOUNDS, sources=10) if staging_version == STAGING_VERSION_V2 else BOUNDS
+    bounds = dict(BOUNDS, sources=11) if staging_version == STAGING_VERSION_V2 else BOUNDS
     for name, rows in values.items():
         _require(isinstance(rows, list), f"{name} must be an array")
         bound = bounds[{"history": "revisions", "quarantine": "quarantine_rows"}.get(name, name)]
@@ -292,18 +293,18 @@ def validate_staging(staging: Path) -> ValidatedStaging:
                  ("competition_id", "season", "path", "name", "region", "team_namespace", "repository", "team_type")),
                  "Source is outside the fixed OpenFootball catalogue allowlist")
         _require(staging_version != STAGING_VERSION or source.repository == "football.json",
-                 "V1 cannot contain the World Cup repository")
+                 "V1 cannot contain national tournament repositories")
         if staging_version == STAGING_VERSION_V2:
             _require("repository" in raw and "team_type" in raw, "V2 source catalogue lacks explicit repository/team type")
-        if source.repository == "worldcup.json":
+        if source.repository in PINNED_NATIONAL_SOURCES:
             _require(source.source_ref == expected.source_ref and source.team_aliases == expected.team_aliases,
-                     "Pinned World Cup source ref/aliases differ from reviewed catalogue")
+                     "Pinned national source ref/aliases differ from reviewed catalogue")
         scope = (source.competition_id, source.season)
         _require(source.source_id not in sources and scope not in scopes, "Duplicate source/scope")
         sources[source.source_id] = source
         scopes.add(scope)
     _require(bool(sources) and bool(values["polls"]), "Research requires a source and a successful observed poll")
-    trusted_worldcup = _trusted_worldcup_rows(sources, staging_version)
+    trusted_national = _trusted_national_rows(sources, staging_version)
     poll_ids, observations, poll_sources, changes, times = set(), Counter(), set(), 0, []
     quarantine_polls, quarantine_counts, known_archives, last_observed = set(), Counter(), set(), {}
     _require(all(isinstance(p, dict) and type(p.get("poll_id")) is int for p in values["polls"]), "Invalid poll IDs")
@@ -320,8 +321,9 @@ def validate_staging(staging: Path) -> ValidatedStaging:
                  "Invalid successful poll status")
         _require(isinstance(poll["sha256"], str) and re.fullmatch(r"[0-9a-f]{64}", poll["sha256"]) is not None,
                  "Invalid poll source checksum")
-        _require(sources[poll["source_id"]].repository != "worldcup.json" or poll["sha256"] == WORLD_CUP_SHA256,
-                 "Pinned World Cup poll checksum differs from reviewed source")
+        pinned = PINNED_NATIONAL_SOURCES.get(sources[poll["source_id"]].repository)
+        _require(pinned is None or poll["sha256"] == pinned[2],
+                 "Pinned national poll checksum differs from reviewed source")
         instant = _timestamp(poll["observed_at"], "poll observation")
         _require(poll["source_id"] not in last_observed or last_observed[poll["source_id"]] <= instant,
                  "Source poll availability moves backwards")
@@ -347,7 +349,7 @@ def validate_staging(staging: Path) -> ValidatedStaging:
     as_of = max(times)
     history, event_ids, actual_observations = defaultdict(list), set(), Counter()
     for row in values["history"]:
-        observed, content_hash = _validate_row(row, sources, staging_version, trusted_worldcup)
+        observed, content_hash = _validate_row(row, sources, staging_version, trusted_national)
         _require(observed <= as_of and row["event_id"] not in event_ids, "Duplicate event or future observation")
         event_ids.add(row["event_id"])
         history[row["match_id"]].append((row, observed, content_hash))
@@ -363,12 +365,12 @@ def validate_staging(staging: Path) -> ValidatedStaging:
         latest[ident] = records[-1][0]
     current = {}
     for row in values["matches"]:
-        _validate_row(row, sources, staging_version, trusted_worldcup)
+        _validate_row(row, sources, staging_version, trusted_national)
         _require(row["match_id"] not in current, "Duplicate current match ID")
         current[row["match_id"]] = row
     _require(current == latest, "Current rows differ from latest revision history")
-    _require({ident for ident, row in current.items() if sources[row["source_id"]].repository == "worldcup.json"}
-             == set(trusted_worldcup), "World Cup coverage differs from bundled trusted source")
+    _require({ident for ident, row in current.items() if sources[row["source_id"]].repository in PINNED_NATIONAL_SOURCES}
+             == set(trusted_national), "Pinned national coverage differs from bundled trusted source")
     quarantine_ids, quarantine_observations = set(), Counter()
     for problem in values["quarantine"]:
         _require(isinstance(problem, dict) and set(problem) ==

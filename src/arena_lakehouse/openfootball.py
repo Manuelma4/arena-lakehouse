@@ -31,6 +31,12 @@ RAW_BASE = "https://raw.githubusercontent.com/openfootball/football.json/master/
 LICENSE_URL = "https://github.com/openfootball/football.json/blob/master/LICENSE.md"
 WORLD_CUP_REF = "516d3825c3bd23fdc298c4014e84bde78f2d4965"
 WORLD_CUP_SHA256 = "0ae2c18109b5aa86bc11928b43586ca430c234804d5bbf808d2c3bf2051ecfca"
+EURO_REF = "7bbf6309bdda6896d6bb9ca218c1e15eaf418ce3"
+EURO_SHA256 = "fdb4b858cc88603e69fe3b1ce34923fc6b69a774d4c8416f2d166ea57c556609"
+PINNED_NATIONAL_SOURCES = {
+    "worldcup.json": (WORLD_CUP_REF, "2026/worldcup.json", WORLD_CUP_SHA256, "worldcup_2026.json", 104),
+    "euro.json": (EURO_REF, "2024/euro.json", EURO_SHA256, "euro_2024.json", 51),
+}
 MAX_BYTES = 10_000_000
 MAX_ROWS = 10_000
 
@@ -96,11 +102,11 @@ class Source:
         _name(self.region, "region")
         if not re.fullmatch(r"master|[0-9a-f]{40}", self.source_ref):
             raise ValueError("source_ref must be master or a pinned commit SHA")
-        if self.repository not in {"football.json", "worldcup.json"} or self.team_type not in {"club", "national"}:
+        if self.repository not in {"football.json", *PINNED_NATIONAL_SOURCES} or self.team_type not in {"club", "national"}:
             raise ValueError("Unsupported repository/team_type")
-        if self.repository == "worldcup.json" and (self.source_ref != WORLD_CUP_REF or
-                self.path != "2026/worldcup.json" or self.team_type != "national"):
-            raise ValueError("World Cup source must use the reviewed pinned 2026 JSON edition")
+        pinned = PINNED_NATIONAL_SOURCES.get(self.repository)
+        if pinned and (self.source_ref != pinned[0] or self.path != pinned[1] or self.team_type != "national"):
+            raise ValueError("National source must use its reviewed pinned JSON edition")
         if self.repository == "football.json" and self.team_type != "club":
             raise ValueError("Club repository cannot declare national teams")
         if self.team_aliases is not None:
@@ -194,7 +200,7 @@ def parse_payload(body: bytes, source: Source, observed_at: datetime, *, staging
     if staging_version not in {STAGING_VERSION, STAGING_VERSION_V2}:
         raise ValueError("Unsupported staging version")
     if staging_version == STAGING_VERSION and source.repository != "football.json":
-        raise ValueError("World Cup acquisition requires an explicit v2 staging workspace")
+        raise ValueError("National tournament acquisition requires an explicit v2 staging workspace")
     if not isinstance(body, bytes) or len(body) > MAX_BYTES:
         raise ValueError("Payload must be bytes within the 10 MB staging bound")
     checksum = _hash(body)
@@ -350,7 +356,7 @@ class OpenFootballCollector:
 
     def _read_cache(self, source):
         if self.staging_version == STAGING_VERSION and source.repository != "football.json":
-            raise ValueError("World Cup acquisition requires an explicit v2 staging workspace")
+            raise ValueError("National tournament acquisition requires an explicit v2 staging workspace")
         if not self.state_path.exists():
             return None
         with closing(sqlite3.connect(self.state_path.resolve().as_uri() + "?mode=ro", uri=True)) as connection:
@@ -364,8 +370,9 @@ class OpenFootballCollector:
         if cache and (not re.fullmatch(r"[0-9a-f]{64}", cache["sha256"]) or
                       cache["archive_path"] != f"raw/{source.source_id}/{cache['sha256']}.json"):
             raise AcquisitionError("Invalid content-addressed archive metadata")
-        if cache and source.repository == "worldcup.json" and cache["sha256"] != WORLD_CUP_SHA256:
-            raise AcquisitionError("Pinned World Cup cache checksum differs from the reviewed immutable source")
+        pinned = PINNED_NATIONAL_SOURCES.get(source.repository)
+        if cache and pinned and cache["sha256"] != pinned[2]:
+            raise AcquisitionError("Pinned national cache checksum differs from the reviewed immutable source")
         return cache
 
     def _request(self, client, source, headers):
@@ -440,8 +447,9 @@ class OpenFootballCollector:
         if not isinstance(body, bytes) or len(body) > MAX_BYTES:
             raise ValueError("Payload must be bytes within the 10 MB staging bound")
         checksum = _hash(body)
-        if source.repository == "worldcup.json" and checksum != WORLD_CUP_SHA256:
-            raise AcquisitionError("Pinned World Cup body checksum differs from the reviewed immutable source")
+        pinned = PINNED_NATIONAL_SOURCES.get(source.repository)
+        if pinned and checksum != pinned[2]:
+            raise AcquisitionError("Pinned national body checksum differs from the reviewed immutable source")
         archive_path = f"raw/{source.source_id}/{checksum}.json"
         if not dry_run:
             archive = self.workspace / archive_path

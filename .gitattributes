@@ -2,3 +2,5 @@
 *.parquet binary
 src/arena_lakehouse/resources/worldcup_2026.json -text -diff
 tests/fixtures/worldcup-2026-pinned.json -text -diff
+src/arena_lakehouse/resources/euro_2024.json -text -diff
+tests/fixtures/euro-2024-pinned.json -text -diff

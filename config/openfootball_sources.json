@@ -1,6 +1,6 @@
 {
   "catalogue_version": "2.0",
-  "verified_on": "2026-10-06",
+  "verified_on": "2026-10-14",
   "license": "CC0-1.0",
   "sources": [
     {
@@ -94,6 +94,18 @@
       "team_namespace": "openfootball-national-men",
       "source_ref": "516d3825c3bd23fdc298c4014e84bde78f2d4965",
       "repository": "worldcup.json",
+      "team_type": "national"
+    },
+    {
+      "source_id": "euro-2024",
+      "competition_id": "euro",
+      "season": "2024",
+      "path": "2024/euro.json",
+      "name": "Euro 2024",
+      "region": "International",
+      "team_namespace": "openfootball-national-men",
+      "source_ref": "7bbf6309bdda6896d6bb9ca218c1e15eaf418ce3",
+      "repository": "euro.json",
       "team_type": "national"
     }
   ]

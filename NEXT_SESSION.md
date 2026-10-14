@@ -1,5 +1,9 @@
 # Current continuation — 13 October 2026
 
+**Latest update, 14 October:** read [Euro 2024 acquisition](docs/euro-coverage-2026-10-14.md)
+first. The separate CC0 workspace adds 51 Euro matches without changing the
+original fixtures or Current forecast state. The objective remains active.
+
 The owner resumed work today; the objective remains unfinished. Read
 [pinned World Cup detail](docs/worldcup-detail-and-ledger-2026-10-13.md)
 and the consumer's `docs/CONTINUATION_2026-10-13.md` first.
