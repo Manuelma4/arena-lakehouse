@@ -10,8 +10,10 @@ from .connectors import normalize_football
 from .match_insights import selected_archives
 from .provider_publication import PublicationError, archive_references, atomic_json, canonical, read_bytes, sha256, stamp
 from .schema import MatchEvent
+from .football_scores import score_details
 
-SCHEMA = "arena-football-forecast-context-1.0"
+LEGACY_SCHEMA = "arena-football-forecast-context-1.0"
+SCHEMA = "arena-football-forecast-context-2.0"
 MAX_BYTES = 16 * 1024 * 1024
 MAX_RECORDS = 10_000
 
@@ -29,7 +31,10 @@ def day(value):
         return None
 
 
-def normalize(raw, source_sha256, observed_at):
+def normalize(raw, source_sha256, observed_at, *, schema_version=SCHEMA):
+    if schema_version not in (LEGACY_SCHEMA, SCHEMA):
+        raise ValueError("Unsupported football context version")
+    details = score_details(raw) if schema_version == SCHEMA else None
     match = normalize_football(raw, observed_at)
     if match is None:
         return None
@@ -42,7 +47,7 @@ def normalize(raw, source_sha256, observed_at):
     end = day(season.get("endDate")) if isinstance(season, dict) else None
     if start and end and start > end:
         season_id, start, end = None, None, None
-    return dict(
+    result = dict(
         match_id=match["match_id"], source_sha256=source_sha256, observed_at=stamp(observed_at),
         competition=match["competition"], competition_id=competition_id,
         season_id=season_id, season_start=start, season_end=end,
@@ -50,9 +55,14 @@ def normalize(raw, source_sha256, observed_at):
         start_time=stamp(validated.start_time), status=validated.status,
         score_home=validated.score_a, score_away=validated.score_b,
     )
+    if details is not None:
+        result["score_details"] = details
+    return result
 
 
-def publish(root, selection, archives, *, started_at, generated_at):
+def publish(root, selection, archives, *, started_at, generated_at, schema_version=SCHEMA):
+    if schema_version not in (LEGACY_SCHEMA, SCHEMA):
+        raise ValueError("Unsupported football context version")
     root = Path(root)
     if selection["provider"] != "football-data":
         raise PublicationError("Football context requires the football provider")
@@ -62,7 +72,8 @@ def publish(root, selection, archives, *, started_at, generated_at):
     for ref, source in zip(refs, sources, strict=True):
         for raw in source["payload"]["matches"]:
             try:
-                record = normalize(raw, ref["sha256"], datetime.fromisoformat(source["observed_at"].replace("Z", "+00:00")))
+                record = normalize(raw, ref["sha256"], datetime.fromisoformat(source["observed_at"].replace("Z", "+00:00")),
+                                   schema_version=schema_version)
             except (ValueError, KeyError, TypeError, AttributeError):
                 continue
             if record is None:
@@ -78,7 +89,7 @@ def publish(root, selection, archives, *, started_at, generated_at):
             if len(records) > MAX_RECORDS:
                 raise PublicationError("Football context record bound exceeded")
     package = dict(
-        schema_version=SCHEMA, provider="football-data", publication_fingerprint=selection["fingerprint"],
+        schema_version=schema_version, provider="football-data", publication_fingerprint=selection["fingerprint"],
         collected_at=selection["collected_at"], generated_at=stamp(generated_at),
         sources=[dict(sha256=ref["sha256"], endpoint=source["endpoint"], observed_at=stamp(source["observed_at"]))
             for ref, source in zip(refs, sources, strict=True)],
@@ -96,25 +107,27 @@ def publish(root, selection, archives, *, started_at, generated_at):
     else:
         atomic_json(path, package)
     atomic_json(root / "snapshots/CURRENT_FORECAST_CONTEXT.json", dict(
-        schema_version=SCHEMA, provider="football-data", publication_fingerprint=selection["fingerprint"],
+        schema_version=schema_version, provider="football-data", publication_fingerprint=selection["fingerprint"],
         basename=basename, sha256=checksum))
-    return dict(schema_version=SCHEMA, provider="football-data", records=len(package["records"]),
+    return dict(schema_version=schema_version, provider="football-data", records=len(package["records"]),
         known_season_records=sum(bool(row["competition_id"] and row["season_id"]) for row in package["records"]),
         conflicting_records_omitted=len(conflicts), sha256=checksum, provider_requests=0)
 
 
-def build_selected(root, *, now=None):
+def build_selected(root, *, now=None, schema_version=SCHEMA):
     now = now or datetime.now(timezone.utc)
     selection, paths, started = selected_archives(root, now=now)
-    return publish(root, selection, paths, started_at=started, generated_at=now)
+    return publish(root, selection, paths, started_at=started, generated_at=now, schema_version=schema_version)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", type=Path, required=True)
+    parser.add_argument("--schema-version", choices=(LEGACY_SCHEMA, SCHEMA), default=SCHEMA,
+                        help="New builds use v2; v1 is available for explicit legacy reproduction")
     args = parser.parse_args()
     try:
-        print(json.dumps(build_selected(args.workspace / "football-data"), indent=2))
+        print(json.dumps(build_selected(args.workspace / "football-data", schema_version=args.schema_version), indent=2))
     except (PublicationError, OSError, sqlite3.Error, ValueError, KeyError, TypeError):
         parser.exit(1, "Football context unavailable; selected originals failed verification.\n")
 

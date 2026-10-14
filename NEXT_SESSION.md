@@ -1,5 +1,12 @@
 # Current continuation — 14 October 2026
 
+**Latest score-contract work:** [Football score evidence](docs/football-score-evidence.md)
+introduces optional forecast-context v2 without rewriting canonical matches.
+An isolated national copy has 155 validated records; 14 regulation draws differ
+from the provider aggregate result. Consumer method/ledger/display integration
+is still required before national Current activation. Do not treat this contract
+change as completion of that integration.
+
 **Latest local integration:** the separate `data/national-enrichment-20261014`
 capture retains 104 World Cup 2026 and 51 Euro 2024 provider matches from two
 bounded requests. It is not selected as Current or used for forecasting. Fourteen
