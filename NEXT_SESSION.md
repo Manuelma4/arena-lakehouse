@@ -1,11 +1,19 @@
 # Current continuation — 14 October 2026
 
+**Owner-requested handoff:** pull `checkpoint/2026-10-08-reprise` in both clones,
+then read `lakehouse-copilot/docs/HANDOFF_2026-10-14.md`. The consumer commit
+`777b275` finishes both match-list score projections and compact match details.
+The existing private-state asset remains compatible; no provider data or saved
+state changed afterward. Regulation-based team statistics/chat are design-only
+and still pending. Development is stopping here for the move to another PC;
+older entries below retain their historical session status.
+
 **Newest consumer checkpoint:** football match details now render verified
 90-minute/extra-time/shootout stages; VALORANT forecasts include exact captured
 competition context and provider images. See the consumer's
 `docs/result-stages-and-event-context-2026-10-14.md`. The active producer dataset,
 v2 context and canonical scores remain unchanged. National Current activation
-still requires explicit score semantics in match lists, team statistics and chat,
+still requires explicit score semantics in team statistics and chat,
 plus a reviewed composition/evaluation protocol. The goal remains active.
 
 **Latest activation:** domestic Current now selects the audited forecast-context
