@@ -1,5 +1,13 @@
 # Current continuation — 14 October 2026
 
+**Newest consumer checkpoint:** football match details now render verified
+90-minute/extra-time/shootout stages; VALORANT forecasts include exact captured
+competition context and provider images. See the consumer's
+`docs/result-stages-and-event-context-2026-10-14.md`. The active producer dataset,
+v2 context and canonical scores remain unchanged. National Current activation
+still requires explicit score semantics in match lists, team statistics and chat,
+plus a reviewed composition/evaluation protocol. The goal remains active.
+
 **Latest activation:** domestic Current now selects the audited forecast-context
 v2 artifact `2d50960e5cb1602d75b28760c8aefcb37bd4525a68aa8559d21109147fc09504`.
 Only the context pointer and one immutable artifact changed under the existing
