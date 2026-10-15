@@ -1,4 +1,17 @@
-# Current continuation — 15 October 2026
+# Current priority — frontend only, 15 October 2026
+
+The owner's latest instruction is frontend work only, without ingestion.
+Read [the consumer frontend handoff](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/FRONTEND_2026-10-15.md).
+Responsive profiles, mobile navigation, pagination and Archive/Saved layouts
+are implemented and checked. This producer increment changes documentation only.
+The 536 active Current files, 21 consumer trace databases and original
+215 forecast/372 outcome payloads were verified unchanged. No collection,
+ingestion, model activity or national activation occurred. The private-state
+pointer remains compatible. Continue frontend review in lakehouse-copilot;
+the earlier team-regulation UI/chat priority is deferred. Only free sources;
+no Ollama install, start, probe, test, download or inference.
+
+## Earlier continuation — 15 October 2026
 
 Both clones were pulled and the consumer recovered the verified 14 October
 private state, preserving local credentials and backing up differing files.
