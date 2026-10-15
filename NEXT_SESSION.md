@@ -1,4 +1,17 @@
-# Current continuation — 14 October 2026
+# Current continuation — 15 October 2026
+
+Both clones were pulled and the consumer recovered the verified 14 October
+private state, preserving local credentials and backing up differing files.
+Read [the current consumer continuation](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/CONTINUATION_2026-10-15.md).
+Its pure 90-minute team projection and bounded pinned companion API now pass
+53 new tests, 170 regressions and 1,575 actual-data arithmetic/form checks.
+The active 2,132-match capture, isolated 155-match national capture and original
+215 forecast/372 outcome payloads remain unchanged. This producer increment
+only records the continuation; no new acquisition or producer code changed.
+Team interface/chat migration and national Current activation remain pending.
+Only free sources; no Ollama install, start, probe, test, download or inference.
+
+## Earlier handoff — 14 October 2026
 
 **Owner-requested handoff:** pull `checkpoint/2026-10-08-reprise` in both clones,
 then read `lakehouse-copilot/docs/HANDOFF_2026-10-14.md`. The consumer commit
