@@ -1,4 +1,18 @@
-# Approved source-evidence delivery ? 19 October 2026
+# Current handoff — 19 October 2026
+
+Read [Resume Arena on another computer](docs/RESUME_2026-10-19.md).
+Pull the latest `checkpoint/2026-10-08-reprise` in both private repositories.
+The owner approved both calendar years 2026 and 2027 for football and VALORANT.
+The consumer now integrates Calendar in its main application and includes a
+separate frozen documentation retrieval study. This producer increment contains
+handoff/documentation only; no source acquisition or transformation was run.
+Private captures, media, metadata companions, databases and `.env` are not restored
+by a code pull. Main, Pages, visibility and Actions remain unchanged.
+The portfolio goal remains incomplete. Earlier entries below are historical.
+
+---
+
+# Approved source-evidence delivery — 19 October 2026
 
 The owner approved incorporating the reviewed source inspector and saving/pushing
 the two private repositories. Continue on `checkpoint/2026-10-08-reprise` and read
