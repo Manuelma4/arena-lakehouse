@@ -1,4 +1,28 @@
-# Approved logo and navigation checkpoint — 19 October 2026
+# Regulation team/chat continuation — 19 October 2026
+
+The owner reopened the consumer's 90-minute football team statistics and chat.
+Local implementation and measured evidence are in
+`C:\Works\lakehouse-copilot\docs\team-regulation-integration.md` and its linked
+19 October retained-data audit. It covers 116 current teams and 1,624 arithmetic
+or identity checks, plus isolated chat/replay/feedback. Original sources and
+state files were unchanged. No producer transformations or captures changed.
+No new provider acquisition, national Current activation, model operation,
+Actions dispatch or deployment occurred. The owner approved saving and pushing
+the reviewed increment to both private repositories. Consumer commit
+[`a9b6899`](https://github.com/Manuelma4/lakehouse-copilot/commit/a9b6899f4a6c6c13785fd261417b3286fb6787f2)
+is now pushed. Read its
+[approved checkpoint](https://github.com/Manuelma4/lakehouse-copilot/blob/a9b6899f4a6c6c13785fd261417b3286fb6787f2/docs/REGULATION_TEAM_CHECKPOINT_2026-10-19.md).
+This producer checkpoint contains continuation documentation only.
+The separate local `feature/source-evidence` worktrees, including the subsequent
+metadata inspector, are excluded from this approval and have not been committed,
+pushed or merged into the original preview.
+The consumer preview is running on port 8000; read its
+`docs/evidence/team-regulation-local-2026-10-19.json` for the scoped acceptance
+and preserved initial failure/correction. Original browser fixture bytes remain
+unchanged; a new current-only fixture holds the corrected calendar-conflict case.
+Continue on `checkpoint/2026-10-08-reprise` in both clones. The goal remains open.
+
+## Earlier approved logo and navigation checkpoint
 
 The consumer's nonvisual verification increment is
 [`119d73d`](https://github.com/Manuelma4/lakehouse-copilot/commit/119d73d06bb3691d547122ac2a3ecf932c58ba08).
