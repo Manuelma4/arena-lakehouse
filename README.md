@@ -33,6 +33,12 @@ An optional metadata companion preserves catalogue, metrics, declared lineage,
 quality and incidents, bound to the exact published snapshot for independent
 inspection in Arena Copilot.
 
+The consumer also provides a read-only SOAP data adapter over these verified
+publications: source discovery, pinned match details and team statistics through
+a WSDL 1.1/SOAP 1.1 contract. It can run independently without invoking this
+producer or collecting data. See the
+[service contract and deployment boundary](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/soap-data-service.md).
+
 ## Processing and publication
 
 **Bronze** retains observations. **Silver** maintains current matches and revision

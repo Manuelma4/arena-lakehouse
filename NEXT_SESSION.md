@@ -1,4 +1,18 @@
-# Current handoff — 19 October 2026
+# Current priority — SOAP/WSDL service, 19 October 2026
+
+The owner requested a SOAP service with WSDL to demonstrate API/service architecture.
+Read [the consumer checkpoint](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/SOAP_CHECKPOINT_2026-10-19.md)
+and [service contract](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/soap-data-service.md).
+The independent consumer adapter reads immutable publications without installing
+this producer, invoking collectors or creating investigations. Three operations
+cover source discovery, pinned matches and team statistics with explicit score
+bases. The main application also serves the contract. This producer increment
+changes documentation only; its 536 active source files remained unchanged.
+Keep sources free and services local; no new ingestion, model operation, national
+activation, deployment or Actions dispatch. Authentication and measured scaling
+remain next architecture gates. Earlier priorities below are historical.
+
+## Earlier handoff — 19 October 2026
 
 Read [Resume Arena on another computer](docs/RESUME_2026-10-19.md).
 Pull the latest `checkpoint/2026-10-08-reprise` in both private repositories.
