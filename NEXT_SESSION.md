@@ -1,4 +1,65 @@
-# Approved Arena frontend checkpoint — 19 October 2026
+# Approved logo and navigation checkpoint — 19 October 2026
+
+The owner approved saving and pushing the reviewed follow-up to both private
+repositories. Consumer commit
+[`3e72d61`](https://github.com/Manuelma4/lakehouse-copilot/commit/3e72d61e3ed1d0660ff5bbe586690e56a993bd61)
+contains exact-ID media recovery/retry, Archive refresh recovery, preserved
+forecast-to-match-to-team navigation, the reference comparison and scoped tests.
+Read its [checkpoint and continuation gates](https://github.com/Manuelma4/lakehouse-copilot/blob/3e72d61e3ed1d0660ff5bbe586690e56a993bd61/docs/LOGO_NAVIGATION_CHECKPOINT_2026-10-19.md)
+after pulling `checkpoint/2026-10-08-reprise` in both existing clones.
+
+This producer checkpoint changes continuation documentation only. Main, Pages,
+release tags, fresh acquisition, model work and deferred team/chat migration are
+separate gates. The Current media registry remains a private 256-entry file;
+Git does not include it or credentials. The older private recovery archive lacks
+the 73 recovered Current associations, so preserve the local media/provenance
+and replay inputs described in the consumer handoff when moving private state.
+
+The entries below retain their pre-delivery status. References to pending visual
+approval or local-only code in those entries are historical.
+
+## Pre-delivery local frontend follow-up
+
+The newest consumer fix also repairs Archive image recovery on explicit refresh.
+It keeps the existing 55 Archive associations and private media hashes unchanged.
+See the sibling consumer's `docs/archive-media-recovery-2026-10-19.md`: pre-fix
+reproduction, 21 new browser cases, 18 contracts, a 72-case overlapping regression
+run and two actual retained desktop/mobile scenes are recorded. The earlier
+203-pass consumer run below predates that fix. Everything remains local pending
+visual approval; no producer data, model, workflow or publication changed.
+Two subsequent static Archive-refresh cases passed on a fresh isolated build at
+1440 and 320x568 with no API/external requests and unchanged source results. The
+bounded 86-file artifact audit passed. Its temporary server was stopped; the
+owner's port 8000 preview remains available. See the same consumer evidence.
+
+The consumer has additional uncommitted frontend work awaiting owner visual
+review: stable forecast-to-match-to-team navigation, comparison with the stored
+competition reference, and recovery/retry of exact team logos. The current local
+decorative registry has 256 associations (116 football, 140 VALORANT), including
+73 recovered from 135 retained PandaScore archives. Fourteen VALORANT directory
+identities have no supplied image. Current match facts still date from 14 October.
+
+The maintained consumer offline media preparer can reproduce the 183-to-256
+update with exact team selections and a conflict-rejecting merge into separate
+outputs. Actual replay and an idempotent repeat matched the active associations;
+archive and registry input hashes were preserved. The focused Python modules
+passed 110 tests. This is decoration work, with no producer acquisition, model,
+forecast or ledger changes.
+
+The final consumer private browser harness reports 203 passed and four expected
+skips at desktop/390/320 widths, with 289 code/test/build/registry inputs unchanged.
+Its completed report is separate from a PowerShell color-warning wrapper exit;
+see consumer evidence for the precise scope. No GitHub Actions job was launched.
+
+Read the sibling consumer's `NEXT_SESSION.md` and
+`docs/team-logo-recovery-2026-10-19.md` locally. These follow-up files have not
+been pushed yet; the approved remote checkpoint below remains the Git baseline.
+The older private recovery archive lacks the 73 recovered associations. A code
+pull alone cannot restore the updated ignored registry or private replay inputs
+under `lakehouse-copilot/data/resume-20261019/team-logo-review/`. Preserve those
+separately when moving machines; keep credentials local.
+
+## Approved Arena frontend checkpoint — 19 October 2026
 
 The owner approved the research interface and retained the original Arena /
 Open Ground identity. Consumer commit
