@@ -1,5 +1,23 @@
 # Arena engineering roadmap
 
+## Prioridad vigente — 19 de octubre de 2026
+
+[Arquitectura de Arena](ARCHITECTURE.md) define el objetivo conjunto del producto:
+frontend, APIs REST y SOAP/WSDL, gateway autenticado, réplicas de lectura,
+investigación remota con evidencia, estado SQLite con un único escritor y
+trazas entre procesos. La implementación y los resultados del runtime local
+se mantienen en la
+[arquitectura de servicios del consumidor](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/service-architecture.md).
+La validación local está registrada en el checkpoint del consumidor; sus
+mediciones no establecen escalabilidad distribuida o aceptación en producción.
+
+Este incremento del productor contiene documentación, conserva datos y mantiene
+fuentes gratuitas, sin nueva ingestión ni pruebas de Ollama. El estado y los
+companions privados ignorados requieren recuperación local aparte de Git.
+Los hitos históricos siguientes conservan su alcance y sus pendientes.
+
+## Hitos de ingeniería anteriores
+
 The current ordered continuation and second-computer setup are in
 [RETOMAR_MANANA](docs/RETOMAR_MANANA.md). Native 10k acceptance passed; a later
 host Docker idle failure is a separate unresolved operational issue.

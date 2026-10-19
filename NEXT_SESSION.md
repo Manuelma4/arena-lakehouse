@@ -1,4 +1,25 @@
-# Current priority — SOAP/WSDL service, 19 October 2026
+# Prioridad actual — arquitectura completa, 19 de octubre de 2026
+
+El objetivo vigente abarca frontend, gateway, Data API REST/SOAP, dos réplicas
+de lectura, Copilot con un único escritor SQLite, autenticación local, trazas y
+una comparación reproducible de capacidad. Leer primero
+[Arquitectura de Arena](ARCHITECTURE.md) y la
+[arquitectura de servicios del consumidor](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/service-architecture.md).
+La implementación y la validación local del runtime están registradas en el
+[checkpoint del consumidor](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/SERVICE_ARCHITECTURE_2026-10-19.md).
+Incluyen navegación autenticada, trazas, caída de réplicas y medición local;
+este incremento del productor cambia documentación solamente.
+
+Conservar las publicaciones e investigaciones existentes, usar fuentes gratuitas
+y mantener la restricción de no ingerir datos ni probar Ollama. No iniciar
+proveedores, despliegues o Actions como parte de esta retoma. Un pull no recupera
+los companions, tokens, media ni el estado privado ignorado. La rama de ambos
+repositorios sigue siendo `checkpoint/2026-10-08-reprise`.
+
+Los puntos siguientes conservan el contexto de hitos anteriores. Sus propuestas
+de adquisición o modelos no sustituyen la prioridad actual.
+
+## Checkpoint anterior — SOAP/WSDL, 19 October 2026
 
 The owner requested a SOAP service with WSDL to demonstrate API/service architecture.
 Read [the consumer checkpoint](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/SOAP_CHECKPOINT_2026-10-19.md)

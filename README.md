@@ -3,7 +3,7 @@
 A data platform for football and competitive VALORANT research.
 
 [Companion application](https://github.com/Manuelma4/lakehouse-copilot) ·
-[Measured evidence](docs/evidence/README.md) · [Engineering roadmap](ROADMAP.md)
+[Architecture](ARCHITECTURE.md) · [Measured evidence](docs/evidence/README.md) · [Engineering roadmap](ROADMAP.md)
 
 Fixtures move, scores are corrected and the same match can arrive through several
 source responses. Arena Lakehouse preserves those observations, reconstructs
@@ -14,6 +14,13 @@ in the application.
 The project connects a Spark/Delta pipeline for incremental data engineering
 with a SQLite/Arrow reference for acquisition, independent correctness checks
 and publication. Their measurements are reported separately.
+
+The current [service architecture](ARCHITECTURE.md) connects these existing
+publications to two read-only Data API replicas, an authenticated frontend
+gateway and a single-writer Copilot service. REST, SOAP/WSDL, source-pinned
+research and process traces form one local demonstration. Runtime verification
+and its measured limits are recorded in the companion repository; this producer
+increment changes documentation and retains its existing data.
 
 ## Data and coverage
 
