@@ -1,0 +1,122 @@
+{
+  "schema_version": "arena-offline-baseline-verification-1.0",
+  "generated_at": "2026-10-19T15:10:27.885223+00:00",
+  "python": "3.11.9",
+  "platform": "win32",
+  "dependency_versions": {
+    "pytest": "9.1.1",
+    "httpx": "0.28.1",
+    "duckdb": "1.5.6",
+    "pyarrow": "23.0.1",
+    "numpy": "2.4.6",
+    "pydantic": "2.13.5",
+    "langgraph": "1.2.13",
+    "scikit-learn": "1.9.1"
+  },
+  "reports": {
+    "consumer": {
+      "base_commit": "a9b6899f4a6c6c13785fd261417b3286fb6787f2",
+      "tracked_source_tree_git_oid": "9300334bd2aee849637a93a33111062e398e611a",
+      "totals": {
+        "tests": 2185,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 9,
+        "passed": 2176
+      },
+      "junit_seconds": 1840.658,
+      "skipped_cases": [
+        {
+          "name": "test_redirected_review_store_is_rejected",
+          "reason": "Windows symbolic-link privilege unavailable"
+        },
+        {
+          "name": "test_cannot_escape_state_with_symlink_or_parent_component",
+          "reason": "This machine does not permit unprivileged symlinks"
+        },
+        {
+          "name": "test_calendar_package_and_file_links_are_rejected",
+          "reason": "Platform does not permit test symlinks: 22"
+        },
+        {
+          "name": "test_symlinked_package_is_unavailable_or_privilege_documented",
+          "reason": "This Windows host does not grant test symlink creation"
+        },
+        {
+          "name": "test_symlink_publications_are_never_followed",
+          "reason": "This Windows account cannot create symbolic links"
+        },
+        {
+          "name": "test_links_are_rejected",
+          "reason": "Windows symlink creation requires developer mode or privilege"
+        },
+        {
+          "name": "test_symlink_stores_are_rejected_without_following_target[source_directory]",
+          "reason": "This Windows account cannot create test symlinks"
+        },
+        {
+          "name": "test_symlink_stores_are_rejected_without_following_target[capture_directory]",
+          "reason": "This Windows account cannot create test symlinks"
+        },
+        {
+          "name": "test_symlink_stores_are_rejected_without_following_target[ledger_file]",
+          "reason": "This Windows account cannot create test symlinks"
+        }
+      ],
+      "boundary": {
+        "exit_status": 0,
+        "schema_version": "arena-pytest-offline-boundary-1.0",
+        "total_blocked_operations": 10,
+        "unexpected_blocked_operations": 0
+      },
+      "scope": "Default software suite at the stated regulation checkpoint, explicit metadata fixtures and initial offline boundary; additive source-evidence feature excluded",
+      "initial_harness_patch": "offline-baseline-consumer-harness.patch",
+      "initial_harness_patch_sha256": "2c4963ef0a9e1bd88217fa861b2b73efb9f7af9727b9a2b56723416027ca70ad",
+      "raw_reports": {
+        "full-suite.log": "4f3113c3af02db3f349608c659d6c0d4d20fa844e2b11f58f8610de510426fa4",
+        "full-suite.xml": "b606dbe41da6f01b8b949faef155b2b3347000c0e3eb5a476c66b38ad7411146",
+        "full-suite-boundary.json": "a12f8f9c4664ff6a3b34e0b0bc98de87c368acb22a681cb69057847694d40f8d"
+      }
+    },
+    "producer": {
+      "base_commit": "fae77900aac1e7eb52a05e8e2b3f85dda96a0b41",
+      "tracked_source_tree_git_oid": "73e15a405421843a6ea9def4ca64221f5161fcd2",
+      "totals": {
+        "tests": 775,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1,
+        "passed": 774
+      },
+      "junit_seconds": 1425.01,
+      "skipped_cases": [
+        {
+          "name": "test_recovery_rejects_tampered_exact_evidence_without_new_requests[linked_manifest]",
+          "reason": "Creating symlinks requires local Windows privilege"
+        }
+      ],
+      "boundary": {
+        "exit_status": 0,
+        "schema_version": "arena-pytest-offline-boundary-1.0",
+        "total_blocked_operations": 10,
+        "unexpected_blocked_operations": 0
+      },
+      "scope": "Default software suite at the stated regulation checkpoint, explicit metadata fixtures and initial offline boundary; additive source-evidence feature excluded",
+      "initial_harness_patch": "offline-baseline-producer-harness.patch",
+      "initial_harness_patch_sha256": "97b36e9b1ce03fdcf683529f4d45dae58ebd46f2e2d9194c151690725ac99b51",
+      "raw_reports": {
+        "full-suite.log": "de7ad16ee178cea52949c8ab6336e7e4093861870140a2a81a855b7e903aabb6",
+        "full-suite.xml": "c64f42ebaa8c741ba8152c521e00afb2a7afb99edbd4ccbcb43194b87670da4a",
+        "full-suite-boundary.json": "13ea0de025b76209e30cff4b47e37c995b0b18bce08cba0698b808677502fa53"
+      }
+    }
+  },
+  "accounting_limit": "Initial harness reports runtime-attributed rejections. Collection and late/unattributed accounting were subsequently strengthened and tested separately in source-evidence-delivery-2026-10-19.json; no broader initial-harness zero-attempt claim is made.",
+  "overlap": "Baseline, source-feature affected and final-harness scopes overlap; no unique aggregate or final-source-checkpoint full-suite rerun is claimed.",
+  "limits": [
+    "Windows software/fixture evidence, not native Spark, Docker, Databricks, provider acquisition or real-model evaluation",
+    "All listed omissions require Windows symlink privileges; no permission changes were attempted",
+    "Local concurrent-run elapsed times are not application SLOs or GitHub runner/cost estimates"
+  ],
+  "replay_patch_checks": "Both initial patches passed git apply --cached --check against isolated indexes at the declared bases; original indexes untouched"
+}

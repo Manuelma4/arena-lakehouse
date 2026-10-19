@@ -1,5 +1,10 @@
 # Local verification evidence
 
+[Completed offline baseline suites](offline-baseline-suites-2026-10-19.json) record
+2,176 consumer and 774 producer passes, with nine and one Windows symlink omissions.
+Their initial harness, later phase-accounting checks and additive source-feature
+scopes remain separate; see [the verification note](../OFFLINE_TEST_VERIFICATION_2026-10-19.md).
+
 [Approved source-evidence delivery](source-evidence-delivery-2026-10-19.json)
 records the optional checked metadata exporter and its full-application consumer
 integration. Its 76 exporter cases and final harness checks are separate from

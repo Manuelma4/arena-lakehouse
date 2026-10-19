@@ -1,0 +1,397 @@
+--- /dev/null
++++ b/tests/conftest.py
+@@ -0,0 +1,76 @@
++"""Default pytest execution is offline, before application test modules are imported."""
++
++from collections import Counter
++import json
++from pathlib import Path
++
++import pytest
++
++from offline_guard import OfflineBoundary
++
++
++OFFLINE_BOUNDARY = OfflineBoundary()
++OFFLINE_BOUNDARY.install()
++BOUNDARY_TEST_FILE = Path(__file__).with_name("test_offline_test_boundary.py").resolve()
++
++
++def pytest_addoption(parser):
++    parser.addoption("--offline-boundary-report", metavar="PATH", default=None,
++                     help="Write operation counts to an explicitly test-owned JSON report path")
++
++
++def pytest_configure(config):
++    config._arena_offline_rows = []
++    config._arena_offline_collection_start = len(OfflineBoundary.blocked_operations)
++
++
++def pytest_collection_finish(session):
++    events = OfflineBoundary.blocked_operations[session.config._arena_offline_collection_start:]
++    if events:
++        raise pytest.UsageError("Offline pytest boundary detected blocked operations during collection")
++
++
++@pytest.hookimpl(tryfirst=True)
++def pytest_runtest_setup(item):
++    item._arena_offline_start = len(OfflineBoundary.blocked_operations)
++
++
++@pytest.hookimpl(wrapper=True, tryfirst=True)
++def pytest_runtest_teardown(item, nextitem):
++    try:
++        yield
++    finally:
++        events = OfflineBoundary.blocked_operations[getattr(item, "_arena_offline_start", 0):]
++        counts = dict(sorted(Counter(events).items()))
++        expected = Path(item.path).resolve() == BOUNDARY_TEST_FILE
++        item.user_properties.extend([
++            ("offline_boundary_expected_test", expected),
++            ("offline_boundary_blocked_operations", len(events)),
++            ("offline_boundary_operation_counts", json.dumps(counts, sort_keys=True)),
++        ])
++        item.config._arena_offline_rows.append(dict(
++            file=item.location[0], test=getattr(item, "originalname", None) or item.name.split("[")[0],
++            expected_boundary_test=expected, blocked_operations=len(events), operation_counts=counts,
++        ))
++        if events and not expected:
++            pytest.fail("Offline pytest boundary observed blocked operations, including caught exceptions: "
++                        + ", ".join(counts), pytrace=False)
++
++
++def pytest_sessionfinish(session, exitstatus):
++    target = session.config.getoption("--offline-boundary-report")
++    if target is not None:
++        rows = session.config._arena_offline_rows
++        report = dict(
++            schema_version="arena-pytest-offline-boundary-1.0", exit_status=int(exitstatus),
++            tests=rows, total_blocked_operations=sum(row["blocked_operations"] for row in rows),
++            unexpected_blocked_operations=sum(row["blocked_operations"] for row in rows
++                                              if not row["expected_boundary_test"]),
++        )
++        path = Path(target)
++        path.parent.mkdir(parents=True, exist_ok=True)
++        path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
++
++
++def pytest_unconfigure(config):
++    OFFLINE_BOUNDARY.close()
+--- /dev/null
++++ b/tests/offline_guard.py
+@@ -0,0 +1,134 @@
++"""Process-local pytest boundary; production and evaluation commands do not import this module."""
++
++from __future__ import annotations
++
++import os
++from pathlib import Path
++import socket
++import sys
++import tempfile
++import threading
++from unittest.mock import patch
++
++
++class OfflineBoundaryViolation(AssertionError):
++    """A missing fixture double attempted a real service or socket operation."""
++
++
++class OfflineBoundary:
++    # Shared across nested guards so a deliberately caught exception is still
++    # visible to the pytest teardown check. Contains operation names only.
++    blocked_operations = []
++    PREFIXES = ("ARENA_", "MLFLOW_", "OLLAMA_", "LANGCHAIN_", "LANGSMITH_")
++    CREDENTIALS = {"PANDASCORE_TOKEN", "FOOTBALL_DATA_TOKEN", "FOOTBALL_DATA_API_KEY"}
++    NETWORK_EVENTS = {
++        "socket.connect", "socket.bind", "socket.getaddrinfo", "socket.gethostbyname",
++        "socket.gethostbyaddr", "socket.sendto", "socket.sendmsg",
++    }
++
++    def __init__(self):
++        self.active = False
++        self.local = threading.local()
++        self.patches = []
++        self.environment = {}
++        self.temporary = None
++        self.blocked_events = []
++
++    def reject(self, operation):
++        # Never include request URLs, addresses, environment values or bodies.
++        self.blocked_events.append(operation)
++        self.blocked_operations.append(operation)
++        raise OfflineBoundaryViolation(
++            f"Offline pytest boundary blocked {operation}; provide an explicit fixture double or mock transport"
++        )
++
++    def audit(self, event, _arguments):
++        if self.active and event in self.NETWORK_EVENTS and not getattr(self.local, "socketpair_depth", 0):
++            self.reject(event)
++
++    def _patch(self, owner, attribute, replacement):
++        replacement_patch = patch.object(owner, attribute, replacement)
++        replacement_patch.start()
++        self.patches.append(replacement_patch)
++
++    def install(self):
++        if self.active:
++            return
++        names = {key for key in os.environ if key.upper().startswith(self.PREFIXES)
++                 or key.upper() in self.CREDENTIALS}
++        names.add("PYTHON_DOTENV_DISABLED")
++        self.environment = {key: os.environ.get(key) for key in names}
++        for key in names:
++            os.environ.pop(key, None)
++        self.temporary = tempfile.TemporaryDirectory(prefix="arena-offline-pytest-")
++        root = Path(self.temporary.name)
++        self.set_environment("ARENA_STATE", str(root / "state"))
++        self.set_environment("ARENA_LIVE_WORKSPACE", str(root / "live"))
++        self.set_environment("PYTHON_DOTENV_DISABLED", "1")
++        self.active = True
++        # CPython audit hooks cannot be removed. This hook becomes inert on close().
++        sys.addaudithook(self.audit)
++
++        original_socketpair = socket.socketpair
++
++        def internal_socketpair(*args, **kwargs):
++            depth = getattr(self.local, "socketpair_depth", 0)
++            self.local.socketpair_depth = depth + 1
++            try:
++                return original_socketpair(*args, **kwargs)
++            finally:
++                self.local.socketpair_depth = depth
++
++        self._patch(socket, "socketpair", internal_socketpair)
++        for name in ("connect", "connect_ex", "sendto"):
++            original = getattr(socket.socket, name)
++
++            def guarded_socket(candidate, *args, _original=original, _name=name, **kwargs):
++                if getattr(self.local, "socketpair_depth", 0):
++                    return _original(candidate, *args, **kwargs)
++                self.reject("socket." + _name)
++
++            self._patch(socket.socket, name, guarded_socket)
++
++        def no_connection(*args, **kwargs):
++            self.reject("socket.create_connection")
++
++        self._patch(socket, "create_connection", no_connection)
++
++        import dotenv
++        import dotenv.main
++        import httpx
++
++        def no_dotenv(*args, **kwargs):
++            return False
++
++        def no_http(*args, **kwargs):
++            self.reject("httpx.HTTPTransport")
++
++        async def no_async_http(*args, **kwargs):
++            self.reject("httpx.AsyncHTTPTransport")
++
++        self._patch(dotenv, "load_dotenv", no_dotenv)
++        self._patch(dotenv.main, "load_dotenv", no_dotenv)
++        self._patch(httpx.HTTPTransport, "handle_request", no_http)
++        self._patch(httpx.AsyncHTTPTransport, "handle_async_request", no_async_http)
++
++    def set_environment(self, name, value):
++        if name not in self.environment:
++            self.environment[name] = os.environ.get(name)
++        os.environ[name] = value
++
++    def close(self):
++        self.active = False
++        for replacement_patch in reversed(self.patches):
++            replacement_patch.stop()
++        self.patches.clear()
++        for key, original in self.environment.items():
++            if original is None:
++                os.environ.pop(key, None)
++            else:
++                os.environ[key] = original
++        self.environment.clear()
++        if self.temporary is not None:
++            self.temporary.cleanup()
++            self.temporary = None
+--- /dev/null
++++ b/tests/test_offline_test_boundary.py
+@@ -0,0 +1,178 @@
++"""The pytest boundary fails before real transports while allowing owned in-process fixtures."""
++
++import asyncio
++import json
++import os
++from pathlib import Path
++import shutil
++import socket
++import subprocess
++import sys
++
++import dotenv
++import httpx
++import pytest
++
++from offline_guard import OfflineBoundary, OfflineBoundaryViolation
++
++
++@pytest.mark.parametrize("method", ["connect", "connect_ex"])
++@pytest.mark.parametrize("host", ["127.0.0.1", "192.0.2.1"])
++def test_socket_connections_fail_before_native_transport(method, host):
++    with socket.socket() as candidate, pytest.raises(OfflineBoundaryViolation, match="Offline pytest boundary"):
++        getattr(candidate, method)((host, 11434))
++
++
++def test_connection_helper_and_dns_are_blocked():
++    with pytest.raises(OfflineBoundaryViolation, match="socket.create_connection"):
++        socket.create_connection(("127.0.0.1", 11434))
++    with pytest.raises(OfflineBoundaryViolation, match="socket.getaddrinfo"):
++        socket.getaddrinfo("provider.invalid", 443)
++
++
++def test_native_connection_double_is_not_called(monkeypatch):
++    # Install a nested boundary over a native-method spy; rejection precedes the spy.
++    called = []
++    monkeypatch.setattr(socket.socket, "connect", lambda *args: called.append(True))
++    guard = OfflineBoundary()
++    guard.install()
++    try:
++        with socket.socket() as candidate, pytest.raises(OfflineBoundaryViolation):
++            candidate.connect(("127.0.0.1", 11434))
++        assert called == []
++    finally:
++        guard.close()
++
++
++def test_socketpair_remains_functional_without_loopback_exception():
++    first, second = socket.socketpair()
++    try:
++        first.sendall(b"owned fixture")
++        assert second.recv(32) == b"owned fixture"
++    finally:
++        first.close()
++        second.close()
++    with socket.socket() as candidate, pytest.raises(OfflineBoundaryViolation):
++        candidate.connect(("127.0.0.1", 11434))
++
++
++def test_sync_real_http_is_rejected_before_httpcore(monkeypatch):
++    import httpcore
++
++    monkeypatch.setattr(httpcore.ConnectionPool, "handle_request",
++                        lambda *args: pytest.fail("Native HTTP pool must not be reached"))
++    with httpx.Client() as client, pytest.raises(OfflineBoundaryViolation, match="httpx.HTTPTransport"):
++        client.get("http://127.0.0.1:11434/api/tags")
++
++
++def test_async_real_http_is_rejected_before_httpcore(monkeypatch):
++    import httpcore
++
++    async def native_pool(*args, **kwargs):
++        pytest.fail("Native asynchronous HTTP pool must not be reached")
++
++    monkeypatch.setattr(httpcore.AsyncConnectionPool, "handle_async_request", native_pool)
++
++    async def run():
++        async with httpx.AsyncClient() as client:
++            with pytest.raises(OfflineBoundaryViolation, match="httpx.AsyncHTTPTransport"):
++                await client.get("http://127.0.0.1:11434/api/tags")
++
++    asyncio.run(run())
++
++
++def test_owned_mock_transports_are_available_sync_and_async():
++    calls = []
++
++    def respond(request):
++        calls.append(request.url.path)
++        return httpx.Response(200, json={"source": "test double"})
++
++    with httpx.Client(transport=httpx.MockTransport(respond)) as client:
++        assert client.get("https://fixture.invalid/sync").json() == {"source": "test double"}
++
++    async def run():
++        async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as client:
++            assert (await client.get("https://fixture.invalid/async")).json() == {"source": "test double"}
++
++    asyncio.run(run())
++    assert calls == ["/sync", "/async"]
++
++
++def test_bare_async_asgi_transport_needs_no_network():
++    # The producer does not depend on a web framework. An owned ASGI fixture
++    # proves that denying real HTTP transports does not deny in-process I/O.
++    async def app(scope, receive, send):
++        assert scope["type"] == "http" and scope["path"] == "/fixture"
++        await send({"type": "http.response.start", "status": 200,
++                    "headers": [(b"content-type", b"application/json")]})
++        await send({"type": "http.response.body", "body": b'{"fixture":true}'})
++
++    async def run():
++        async with httpx.AsyncClient(transport=httpx.ASGITransport(app), base_url="http://fixture") as client:
++            assert (await client.get("/fixture")).json() == {"fixture": True}
++
++    asyncio.run(run())
++
++
++def test_dotenv_does_not_read_files_even_if_disabled_flag_removed(tmp_path, monkeypatch):
++    path = tmp_path / ".env"
++    path.write_text("ARENA_PRIVATE_TEST_SENTINEL=must-not-load\n", encoding="utf-8")
++    monkeypatch.delenv("PYTHON_DOTENV_DISABLED")
++    assert dotenv.load_dotenv(path, override=True) is False
++    assert "ARENA_PRIVATE_TEST_SENTINEL" not in os.environ
++
++
++def test_inherited_configuration_is_removed_and_subprocess_receives_only_test_defaults(monkeypatch):
++    names = ["ARENA_SNAPSHOT", "ARENA_STATE", "MLFLOW_TRACKING_URI", "OLLAMA_URL", "LANGSMITH_API_KEY"]
++    original = {name: "private-sentinel-value" for name in names}
++    for name, value in original.items():
++        monkeypatch.setenv(name, value)
++    previous_connect = socket.socket.connect
++    previous_dotenv = dotenv.load_dotenv
++    guard = OfflineBoundary()
++    guard.install()
++    try:
++        child = subprocess.run(
++            [sys.executable, "-c", "import os,json; print(json.dumps({k:v for k,v in os.environ.items() "
++             "if k.startswith(('ARENA_', 'MLFLOW_', 'OLLAMA_', 'LANGSMITH_'))}))"],
++            capture_output=True, text=True, check=True, timeout=15,
++        )
++        values = json.loads(child.stdout)
++        assert set(values) == {"ARENA_STATE", "ARENA_LIVE_WORKSPACE"}
++        assert all(value != "private-sentinel-value" for value in values.values())
++        assert Path(values["ARENA_STATE"]).parent == Path(guard.temporary.name)
++    finally:
++        guard.close()
++    assert {name: os.environ[name] for name in names} == original
++    assert socket.socket.connect is previous_connect
++    assert dotenv.load_dotenv is previous_dotenv
++
++
++def test_caught_boundary_violation_still_fails_teardown_and_is_reported(tmp_path):
++    # Exercise the actual pytest hooks in a child process, using only generated
++    # fixture code. The deliberately swallowed exception never reaches a socket.
++    tests = tmp_path / "tests"
++    tests.mkdir()
++    source = Path(__file__).parent
++    for name in ("conftest.py", "offline_guard.py"):
++        shutil.copyfile(source / name, tests / name)
++    (tests / "test_caught_boundary.py").write_text(
++        "import socket\n"
++        "def test_caught_violation():\n"
++        "    try:\n"
++        "        socket.create_connection(('127.0.0.1', 11434))\n"
++        "    except AssertionError:\n"
++        "        pass\n", encoding="utf-8",
++    )
++    report = tmp_path / "boundary-report.json"
++    result = subprocess.run(
++        [sys.executable, "-m", "pytest", "-q", "tests", "--offline-boundary-report", str(report)],
++        cwd=tmp_path, capture_output=True, text=True, timeout=30,
++    )
++    assert result.returncode == 1
++    assert "including caught exceptions" in result.stdout
++    measured = json.loads(report.read_text(encoding="utf-8"))
++    assert measured["unexpected_blocked_operations"] == measured["total_blocked_operations"] == 1
++    assert measured["tests"][0]["operation_counts"] == {"socket.create_connection": 1}
++    assert measured["tests"][0]["expected_boundary_test"] is False

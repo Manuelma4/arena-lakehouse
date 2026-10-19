@@ -38,9 +38,10 @@ are counted separately from data acquisition.
 
 All 536 source files retained identical hashes. Restarting the application rebuilt
 its existing derived `retrieval.db` index; its documents match the selected
-snapshot. The other 98 persistent files retained identical hashes, including saved
+snapshot. The other 98 inventoried database/state files retained identical hashes, including saved
 research and feedback. Subsequent delivery read checks preserved all 99 state
-files. The first byte-for-byte assertion across restart was too broad and is
+files. This inventory covers SQLite databases and journal/WAL/SHM sidecars,
+not every private file in the state directory. The first byte-for-byte assertion across restart was too broad and is
 retained as an initial failed verification, not reported as a passing check.
 
 The [integration review](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/SOURCE_EVIDENCE_INTEGRATION_2026-10-19.md) and

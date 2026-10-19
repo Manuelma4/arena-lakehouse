@@ -12,9 +12,15 @@ raw captures and saved investigations remain outside Git and need their own
 local availability on another computer.
 
 Default pytest service isolation now prevents ambient dotenv/provider settings
-and actual network transports from leaking into fixture tests. Full regression
-and affected source-exporter scopes are being measured separately; preserve
-live test handles in the offline worktrees. Spark/Docker, real Linux atomic
+and actual network transports from leaking into fixture tests. The separate
+baseline suites completed: 774 producer passes with one Windows symlink skip,
+and 2,176 consumer passes with nine Windows symlink skips. Their initial harness
+and source checkpoints differ from the additive source-exporter and later
+phase-accounting checks. Read
+[the scoped verification](docs/OFFLINE_TEST_VERIFICATION_2026-10-19.md).
+No baseline test process remains running. The consumer's requested 2026/2027
+monthly agenda is separate work in `feature/month-agenda`, using retained
+captures without new acquisition. Spark/Docker, real Linux atomic
 publication, managed Databricks and release acceptance remain incomplete.
 Main, Pages, visibility and release tags were not changed. The overall goal is
 active and incomplete; earlier handoff entries below retain their original context.
