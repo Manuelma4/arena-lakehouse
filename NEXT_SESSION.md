@@ -1,5 +1,16 @@
 # Approved logo and navigation checkpoint — 19 October 2026
 
+The consumer's nonvisual verification increment is
+[`119d73d`](https://github.com/Manuelma4/lakehouse-copilot/commit/119d73d06bb3691d547122ac2a3ecf932c58ba08).
+Its [cross-browser review](https://github.com/Manuelma4/lakehouse-copilot/blob/119d73d06bb3691d547122ac2a3ecf932c58ba08/docs/cross-browser-2026-10-19.md)
+records 56 selected Firefox headless cases, 24 Chromium media cases and six
+actual retained team-profile scenes. Only two checksum bytes in an original
+PNG test fixture changed; product code, captures, forecasts and the reviewed
+interface remain unchanged. Pull the same private checkpoint branch for the
+new test configuration and handoff. The roadmap now reports the retained
+12-edition, 279-profile Archive. The next scope choice remains pending;
+no acquisition, model operation or public deployment is part of this increment.
+
 The owner approved saving and pushing the reviewed follow-up to both private
 repositories. Consumer commit
 [`3e72d61`](https://github.com/Manuelma4/lakehouse-copilot/commit/3e72d61e3ed1d0660ff5bbe586690e56a993bd61)
