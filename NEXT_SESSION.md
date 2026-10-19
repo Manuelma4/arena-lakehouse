@@ -1,4 +1,15 @@
-# Current priority — frontend only, 15 October 2026
+# Current handoff — 19 October 2026
+
+The owner requested a committed checkpoint for continuing on another computer.
+Pull `checkpoint/2026-10-08-reprise` in both repositories, then read
+[the consumer handoff](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/HANDOFF_2026-10-19.md).
+Both clones include the 15 October remote commits. This handoff changes only
+documentation. Frontend review is the immediate priority; team UI/chat migration
+and national activation remain unfinished. Preserve local credentials and newer
+investigations; use the existing private recovery pointer only if needed.
+Earlier entries below describe their own session state.
+
+## Previous priority — frontend only, 15 October 2026
 
 The owner's latest instruction is frontend work only, without ingestion.
 Read [the consumer frontend handoff](https://github.com/Manuelma4/lakehouse-copilot/blob/checkpoint/2026-10-08-reprise/docs/FRONTEND_2026-10-15.md).
