@@ -1,0 +1,118 @@
+{
+  "schema_version": "arena-source-evidence-integration-audit/1.0.0",
+  "generated_at": "2026-10-19T13:43:17.378727+00:00",
+  "scope": "Independent feature worktrees; synthetic fault fixture and existing selected Current only",
+  "current": [
+    {
+      "provider": "football-data",
+      "status": "verified",
+      "matches": 2132,
+      "snapshot_fingerprint": "c3ab7d5ba9bc6bfb22d01b993666022bfaa4e7108730feac861746b5b6153644",
+      "publication_fingerprint": "dbf894c44e2e100b99d6f97f7816eb23d1bb7f1f320663a5a608c1f305765527",
+      "source_manifest_sha256": "a144ad6b906a0cbe61eff0ffce890a64f9ea50f2e2cda8986dc086cbbe0e4b81",
+      "package_fingerprint": "8993a415e9048cadc06b936f68f4d4ac7ffb4fe33cdfb72bf494c377e330d85b",
+      "quality": {
+        "valid_events": 2212,
+        "quarantined": 0,
+        "last_run_status": "succeeded"
+      },
+      "incident_groups": 0,
+      "api_checks": [
+        {
+          "prefix": "",
+          "get": 200,
+          "investigate": 200,
+          "changed_publication": 409,
+          "unknown_table": 422,
+          "model_mode": 422,
+          "missing_pins": 422,
+          "collection_still_stale": true,
+          "tool_calls": 5,
+          "citations": 6
+        },
+        {
+          "prefix": "/api",
+          "get": 200,
+          "investigate": 200,
+          "changed_publication": 409,
+          "unknown_table": 422,
+          "model_mode": 422,
+          "missing_pins": 422,
+          "collection_still_stale": true,
+          "tool_calls": 5,
+          "citations": 6
+        }
+      ]
+    },
+    {
+      "provider": "pandascore",
+      "status": "verified",
+      "matches": 510,
+      "snapshot_fingerprint": "53f425f67d8bb26ccf118b973b544666ede7196962d6c963d7ea6672ddca6c8e",
+      "publication_fingerprint": "62d4cb6d8f33a5f73ed3b5dd7100063212fd90ed1ff61c4ee02c4a94ebf25fdd",
+      "source_manifest_sha256": "6c50ed2d659e139981a5c66ed4a47bd6dcae3b7141c5773e32e0ed9eee9171ea",
+      "package_fingerprint": "7c131615e40680e23daf52f9df3aa915afed759534df7133e3587c87603a21a2",
+      "quality": {
+        "valid_events": 518,
+        "quarantined": 0,
+        "last_run_status": "succeeded"
+      },
+      "incident_groups": 0,
+      "api_checks": [
+        {
+          "prefix": "",
+          "get": 200,
+          "investigate": 200,
+          "changed_publication": 409,
+          "unknown_table": 422,
+          "model_mode": 422,
+          "missing_pins": 422,
+          "collection_still_stale": true,
+          "tool_calls": 5,
+          "citations": 6
+        },
+        {
+          "prefix": "/api",
+          "get": 200,
+          "investigate": 200,
+          "changed_publication": 409,
+          "unknown_table": 422,
+          "model_mode": 422,
+          "missing_pins": 422,
+          "collection_still_stale": true,
+          "tool_calls": 5,
+          "citations": 6
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Source metadata checksums detect modification; they do not authenticate the publisher.",
+    "Failure groups are retained cumulative aggregates, not exhaustive quality-rule coverage.",
+    "Lineage is declared metadata, not a runtime execution trace.",
+    "Stateless deterministic source summaries do not assess semantic model quality or forecasting skill.",
+    "Optional API configuration is tested locally; no frontend or managed integration is deployed."
+  ],
+  "synthetic": {
+    "valid_events": 71,
+    "quarantined": 3,
+    "incident_groups": 2,
+    "package_fingerprint": "4707b5e1ef67d81d98c5060a89c9b7e68e317ebc2a54c774a93a8c10b09cf2ff",
+    "tools_verified": 5,
+    "original_metadata_bytes_preserved": true,
+    "incorrect_pin_rejected": true,
+    "modified_member_rejected": true,
+    "declared_incident_prose_and_order_preserved": true
+  },
+  "source_files_unchanged": 536,
+  "original_state_files_unchanged": 99,
+  "source_inventory_sha256": "33a4a383e3e11b5b0dda9ccf56cc340391f4f005aaa484d5b2ce667ff8f03fdd",
+  "original_state_inventory_sha256": "b476ca722a1264b24db4bb2c7d51bfaa7a81a1b537bd215b4420d786cb0e241f",
+  "provider_requests": 0,
+  "model_calls": 0,
+  "original_state_writes": 0,
+  "national_current_activated": false,
+  "production_preview_changed": false,
+  "external_network_attempts": 0,
+  "allowed_local_runtime_socket_connections": 2
+}

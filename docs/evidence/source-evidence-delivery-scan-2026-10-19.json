@@ -1,0 +1,12 @@
+{
+  "schema_version": "arena-source-delivery-scan-1.0",
+  "candidate_files_before_this_report": 15,
+  "candidate_inventory_sha256": "3e8014c5633e2f1beee025a250c6c5791593670ff8676763d644080a04e11546",
+  "configured_credential_matches": 0,
+  "readme_images": false,
+  "readme_execution_instructions": false,
+  "workflow_changes": 0,
+  "private_data_staged": false,
+  "base_commit": "fae77900aac1e7eb52a05e8e2b3f85dda96a0b41",
+  "scope": "Bounded scan of delivery candidates against configured local credential values; not an account-wide secret audit"
+}

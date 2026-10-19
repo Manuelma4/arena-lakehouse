@@ -1,5 +1,12 @@
 # Local verification evidence
 
+[Approved source-evidence delivery](source-evidence-delivery-2026-10-19.json)
+records the optional checked metadata exporter and its full-application consumer
+integration. Its 76 exporter cases and final harness checks are separate from
+the earlier feature and baseline full-suite scopes. The report preserves the
+derived-index restart distinction and the limited role of declared lineage and
+quality metadata. Read [the delivery note](../SOURCE_EVIDENCE_DELIVERY_2026-10-19.md).
+
 [Historical acquisition and handoff](historical-acquisition-local-2026-10-08.json)
 records a real nine-request Figshare capture of the pinned CC BY 4.0 originals,
 successful World Cup detail normalization, independent consumer validation of all

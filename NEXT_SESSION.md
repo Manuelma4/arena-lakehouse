@@ -1,3 +1,26 @@
+# Approved source-evidence delivery ? 19 October 2026
+
+The owner approved incorporating the reviewed source inspector and saving/pushing
+the two private repositories. Continue on `checkpoint/2026-10-08-reprise` and read
+[the delivery record](docs/SOURCE_EVIDENCE_DELIVERY_2026-10-19.md).
+
+The producer now exports the checked seven-file metadata companion. The consumer
+binds it to the exact selected Current snapshot/publication and serves the approved
+inspector on http://127.0.0.1:8000. Local packets were prepared from existing
+captures; no provider acquisition was performed. Private packets, `.env`, media,
+raw captures and saved investigations remain outside Git and need their own
+local availability on another computer.
+
+Default pytest service isolation now prevents ambient dotenv/provider settings
+and actual network transports from leaking into fixture tests. Full regression
+and affected source-exporter scopes are being measured separately; preserve
+live test handles in the offline worktrees. Spark/Docker, real Linux atomic
+publication, managed Databricks and release acceptance remain incomplete.
+Main, Pages, visibility and release tags were not changed. The overall goal is
+active and incomplete; earlier handoff entries below retain their original context.
+
+---
+
 # Regulation team/chat continuation — 19 October 2026
 
 The owner reopened the consumer's 90-minute football team statistics and chat.

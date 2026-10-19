@@ -1,0 +1,80 @@
+{
+  "schema_version": "arena-source-evidence-local-review/1.0.0",
+  "generated_at": "2026-10-19T13:44:31.990492+00:00",
+  "status": "implemented_and_verified_in_isolated_worktrees_not_integrated_or_published",
+  "branch": "feature/source-evidence",
+  "committed": false,
+  "pushed": false,
+  "preview_changed": false,
+  "producer": {
+    "base_commit": "fa3d16bfe5f538616b51ac03d69555beced6009e",
+    "scopes": [
+      {
+        "passed": 60,
+        "scope": "Initial complete suite before final uniqueness/bound changes"
+      },
+      {
+        "passed": 1,
+        "scope": "Post-change duplicate optional-history columns guard"
+      },
+      {
+        "passed": 12,
+        "scope": "Post-change shared scalar/list bounds"
+      },
+      {
+        "passed": 3,
+        "scope": "Post-change actual Parquet 128/129-column and 129 quality-group boundaries"
+      }
+    ],
+    "final_complete_suite_repeated": false,
+    "note": "Separate runs; do not report one complete 76-case run on the final revision.",
+    "raw_artifacts": {
+      "producer-pytest-60.txt": "7e5f579fdcddc33d1def58a2786c31f763d463d946b3042f852d2c37aff1c4ed",
+      "producer-bounds-12.txt": "204a4a481dcf2a8f314b5fd79dbd5f74e55a47d904088c3ce5964d34c1e4fd85",
+      "producer-bounds-extra-3.txt": "e045ede643fd68cb8db2e072a5b7ddb162ab2ff01f2a7fec67e327e3a66d84ab"
+    }
+  },
+  "consumer": {
+    "base_commit": "119d73d06bb3691d547122ac2a3ecf932c58ba08",
+    "passed": 93,
+    "skipped": 1,
+    "skip_reason": "Windows symlink creation privilege unavailable; independent reparse simulation passed.",
+    "scope": "Final source-evidence + adjacent regulation-team API and web API suites",
+    "command": "python -m pytest tests/test_source_evidence.py tests/test_regulation_team_api.py tests/test_web_api.py -q",
+    "junit_sha256": "ef93d1f7b162338e8e35ee86be6f74987bc1ed471b8ded9e42840a724586babb"
+  },
+  "integration": {
+    "report": "docs/evidence/source-evidence-integration-2026-10-19.json",
+    "sha256": "3e38c11ce8c756ee7058ad4cbcfa2d6ba8601036a92fd98434add1b73b325c35",
+    "synthetic_valid_events": 71,
+    "synthetic_quarantined": 3,
+    "synthetic_incident_groups": 2,
+    "providers": [
+      "football-data",
+      "pandascore"
+    ],
+    "protected_source_files": 536,
+    "protected_state_files": 99,
+    "provider_requests": 0,
+    "model_calls": 0
+  },
+  "runtime_files": {
+    "producer": {
+      "src/arena_lakehouse/source_evidence.py": "60db92304eb51de61e47e3dbbbdd7ebeb8ec2ba360b4c241ea30f6294e01653a",
+      "tests/test_source_evidence.py": "611854461b5e287d17e3b8e96ea8f3602bf850428a2a481a6f7eb7b278d7319b"
+    },
+    "consumer": {
+      "src/arena_copilot/source_evidence.py": "d5e08e5feececb05382e270658f6197a654a1cdfa405908d3dd27a4d38693e6b",
+      "src/arena_copilot/source_evidence_api.py": "4e0136845da2520cd8a325a0fb3886618c174501b95b277b1cf312638653263a",
+      "src/arena_copilot/api.py": "ea65c7cd169ab1d9faed16ddead2d35eb0bde227f89f5defde42720ed59a0b73",
+      "tests/test_source_evidence.py": "0ded42a5d58172bc2afd1e194eb0ee7c16b5234071e82e57bb0314f165ffe1ea",
+      "scripts/audit_source_evidence_integration.py": "8c3f5772e8bed4cae987091efca980b2efc05ad4b8373274b8a1bf97b07fe726"
+    }
+  },
+  "limitations": [
+    "No frontend, saved-investigation or language-model integration in this increment.",
+    "Actual Linux atomic publication and Databricks execution remain unverified.",
+    "A clean checksum does not establish publisher authenticity or complete sports coverage.",
+    "The original regulation statistics/chat visual checkpoint is still awaiting its pending approval."
+  ]
+}

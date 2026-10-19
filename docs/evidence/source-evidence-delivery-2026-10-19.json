@@ -1,0 +1,202 @@
+{
+  "schema_version": "arena-source-evidence-delivery-1.0",
+  "generated_at": "2026-10-19T14:55:05.041749+00:00",
+  "status": "owner_approved_integrated_and_verified_locally",
+  "approval": {
+    "integrate_full_app": true,
+    "commit_and_push_both_private_checkpoints": true,
+    "public_release": false,
+    "main_merge": false
+  },
+  "branch": "checkpoint/2026-10-08-reprise",
+  "previous_consumer_commit": "a9b6899f4a6c6c13785fd261417b3286fb6787f2",
+  "previous_producer_commit": "fae77900aac1e7eb52a05e8e2b3f85dda96a0b41",
+  "original_preview": "http://127.0.0.1:8000",
+  "prior_readonly_preview": "stopped_after_approval",
+  "build": {
+    "files": 86,
+    "matching_review_files": 84,
+    "additional_local_fixture_exports": [
+      "open-football.json",
+      "snapshot.json"
+    ],
+    "main_javascript_sha256": "6edc27d173bc9443999a7ddd7169dd00f620c90d05c5afd5bf622e135aae2b4a",
+    "inventory_sha256": "ed9fe17fa9cbadd07fcaa8d5ed8ad9bc1bbf941a3ba9e92719d70853010b4eb8",
+    "public_deployment": false
+  },
+  "full_app_routes": {
+    "status": "passed",
+    "origin": "http://127.0.0.1:8000",
+    "checks": [
+      {
+        "provider": "football-data",
+        "prefix": "",
+        "tools": 5,
+        "stateless_summary_citations": 6,
+        "changed_pin_status": 409,
+        "unknown_table_status": 422,
+        "model_mode_status": 422
+      },
+      {
+        "provider": "football-data",
+        "prefix": "/api",
+        "tools": 5,
+        "stateless_summary_citations": 6,
+        "changed_pin_status": 409,
+        "unknown_table_status": 422,
+        "model_mode_status": 422
+      },
+      {
+        "provider": "pandascore",
+        "prefix": "",
+        "tools": 5,
+        "stateless_summary_citations": 6,
+        "changed_pin_status": 409,
+        "unknown_table_status": 422,
+        "model_mode_status": 422
+      },
+      {
+        "provider": "pandascore",
+        "prefix": "/api",
+        "tools": 5,
+        "stateless_summary_citations": 6,
+        "changed_pin_status": 409,
+        "unknown_table_status": 422,
+        "model_mode_status": 422
+      }
+    ],
+    "source_files": 536,
+    "state_files": 99,
+    "original_sources_unchanged": true,
+    "read_checks_state_unchanged": true,
+    "persistent_files_unchanged_across_restart": 98,
+    "startup_rebuilt_derived_files": [
+      "ed9242317b501386/retrieval.db"
+    ],
+    "derived_index_matches_snapshot_docs": true,
+    "scope": "Actual retained Current metadata and full-app routes; no provider collection or model inference",
+    "source_inventory_sha256": "33a4a383e3e11b5b0dda9ccf56cc340391f4f005aaa484d5b2ce667ff8f03fdd",
+    "state_inventory_sha256": "f28f75225baf1b1c3403aea4bf1b7f468995aa0589cc1096d1202f058b71e88a"
+  },
+  "selections": [
+    {
+      "provider": "football-data",
+      "snapshot_fingerprint": "c3ab7d5ba9bc6bfb22d01b993666022bfaa4e7108730feac861746b5b6153644",
+      "publication_fingerprint": "dbf894c44e2e100b99d6f97f7816eb23d1bb7f1f320663a5a608c1f305765527"
+    },
+    {
+      "provider": "pandascore",
+      "snapshot_fingerprint": "53f425f67d8bb26ccf118b973b544666ede7196962d6c963d7ea6672ddca6c8e",
+      "publication_fingerprint": "62d4cb6d8f33a5f73ed3b5dd7100063212fd90ed1ff61c4ee02c4a94ebf25fdd"
+    }
+  ],
+  "browser": {
+    "scenes": 4,
+    "providers": [
+      "football-data",
+      "pandascore"
+    ],
+    "widths": [
+      320,
+      1440
+    ],
+    "page_errors": 0,
+    "non_read_requests": 0,
+    "external_non_image_requests": 0,
+    "existing_decorative_image_requests": 149,
+    "overflow": false,
+    "report_sha256": "664c42e9775da8c2e0f829d2530321fe2445791528c0979c10f9e4d70d3e8682"
+  },
+  "affected_consumer": {
+    "tests": 116,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 115,
+    "junit_sha256": "79affaaa4a7e6304d46a3ea833d9c0e3528bb7cd3e630b8b915ac20df268cf9b",
+    "boundary_sha256": "f1471024c0b28f31bcd2d0f963a7b2af4be8525f55b8faacfabea074b3ae3a75",
+    "boundary": {
+      "exit_status": 0,
+      "schema_version": "arena-pytest-offline-boundary-1.0",
+      "total_blocked_operations": 0,
+      "unexpected_blocked_operations": 0
+    }
+  },
+  "affected_producer": {
+    "tests": 76,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 76,
+    "junit_sha256": "f5915391f543562c73a58ad0b2308039419d6c959c16681b04b39f4bbc3e183b",
+    "boundary_sha256": "a36af283ea2b78946d27bd2f35f6c408474bacdc5490bd153b409aa5c9315a49",
+    "boundary": {
+      "exit_status": 0,
+      "schema_version": "arena-pytest-offline-boundary-1.0",
+      "total_blocked_operations": 0,
+      "unexpected_blocked_operations": 0
+    }
+  },
+  "final_harness_consumer": {
+    "tests": 42,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 42,
+    "junit_sha256": "177973d1dd9ac30660078427be00b1725a651d39ad79caba2a6c38033d9868c8",
+    "boundary_sha256": "fa8fdcd94e3d4a4f58aec1b51f37f8024d164f9a693faaa88d1d03a40e8d29b9",
+    "boundary": {
+      "collection_blocked_operations": 0,
+      "collection_operation_counts": {},
+      "exit_status": 0,
+      "intentional_boundary_test_operations": 11,
+      "runtime_blocked_operations": 11,
+      "schema_version": "arena-pytest-offline-boundary-1.1",
+      "total_blocked_operations": 11,
+      "unattributed_blocked_operations": 0,
+      "unattributed_operation_counts": {},
+      "unexpected_blocked_operations": 0
+    }
+  },
+  "final_harness_producer": {
+    "tests": 19,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 19,
+    "junit_sha256": "95f0499eb8e20acf285495b4df1c21aac86e997a2bad86d68d38ac63784c1950",
+    "boundary_sha256": "95717b2faa7f4b602a64ab420a08f842343c5956891e86e4e855032a844e9b47",
+    "boundary": {
+      "collection_blocked_operations": 0,
+      "collection_operation_counts": {},
+      "exit_status": 0,
+      "intentional_boundary_test_operations": 11,
+      "runtime_blocked_operations": 11,
+      "schema_version": "arena-pytest-offline-boundary-1.1",
+      "total_blocked_operations": 11,
+      "unattributed_blocked_operations": 0,
+      "unattributed_operation_counts": {},
+      "unexpected_blocked_operations": 0
+    }
+  },
+  "overlap": "Final-harness scopes overlap affected scopes; counts are not a unique-case aggregate.",
+  "default_full_suites": {
+    "status": "still_running_in_isolated_baseline_worktrees_at_delivery_record_time",
+    "consumer_base": "a9b6899",
+    "producer_base": "fae7790",
+    "exclude_additive_source_feature": true,
+    "harness": "Earlier runtime-count harness; later collection/late-event accounting has separate focused checks",
+    "acceptance_claim": false
+  },
+  "initial_state_check": {
+    "status": "failed",
+    "reason": "Byte equality across app restart included derived retrieval.db",
+    "correction": "Verified rebuilt index documents against snapshot and protected the other98 state files; all99 stable during subsequent reads",
+    "original_traceback_retained_in": "Session tool output; this record preserves the failed-check disposition"
+  },
+  "limits": [
+    "No provider collection, national Current activation or model inference",
+    "Not actual Linux atomic publication, Spark scale or managed Databricks verification",
+    "Not a new public deployment or release; private data/settings remain ignored"
+  ]
+}

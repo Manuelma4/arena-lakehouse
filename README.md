@@ -29,6 +29,10 @@ changes between captures; the [evidence index](docs/evidence/README.md) retains
 the counts and conditions for each measured import. These collections do not
 constitute a complete live calendar or official standings.
 
+An optional metadata companion preserves catalogue, metrics, declared lineage,
+quality and incidents, bound to the exact published snapshot for independent
+inspection in Arena Copilot.
+
 ## Processing and publication
 
 **Bronze** retains observations. **Silver** maintains current matches and revision
