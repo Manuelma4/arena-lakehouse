@@ -1,157 +1,105 @@
 # Arena Lakehouse
 
-**A versioned data platform for football and competitive VALORANT research.**
+A data platform for football and competitive VALORANT research.
 
-[Arena Copilot](https://github.com/Manuelma4/lakehouse-copilot) |
-[Architecture and measured evidence](docs/evidence/README.md)
+[Companion application](https://github.com/Manuelma4/lakehouse-copilot) ·
+[Measured evidence](docs/evidence/README.md) · [Engineering roadmap](ROADMAP.md)
 
-Match observations arrive out of order. Scores are corrected, fixtures move and
-providers deliver the same event more than once. Arena Lakehouse preserves those
-observations, maintains consistent match history and team aggregates, and publishes
-immutable datasets for the companion research application.
-The active development checkpoint is private; automatic deployment is disabled.
+Fixtures move, scores are corrected and the same match can arrive through several
+source responses. Arena Lakehouse preserves those observations, reconstructs
+match history and publishes consistent datasets for Arena Copilot. A correction
+can be traced from its original response to the result and team statistics shown
+in the application.
 
-Version **0.7.0** publishes the canonical match dataset and its source calendar
-as one recoverable evidence unit. Unresolved teams, source-only dates and conflicting
-announcements remain visible without inventing match records. The World Cup research package, Spark/Delta
-pipeline and original football/VALORANT showcase remain independently reproducible.
+The project connects a Spark/Delta pipeline for incremental data engineering
+with a SQLite/Arrow reference for acquisition, independent correctness checks
+and publication. Their measurements are reported separately.
 
-## Published datasets
+## Data and coverage
 
-| Dataset | Recorded coverage | Research boundary |
+| Collection | Purpose | Boundary |
 | --- | --- | --- |
-| Original sports showcase | 600 synthetic matches, 16 teams, six fictional competitions | Engineering and model demonstrations on original data |
-| OpenFootball research v2 | 2,831 matches, 261 derived teams, ten competition editions | Community source observations; incomplete results remain explicit |
-| World Cup 2026 within research v2 | 104 matches, 48 national teams, 104 numeric-offset kickoff clocks | Pinned source facts with separate FT, extra-time and shootout score stages |
-| Historical editions v2 | 1,941 native-ID matches across five 2017/18 club leagues, Euro 2016 and World Cup 2018 | Separately licensed retrospective records; no inferred pre-match availability |
-| Private authenticated football collection | 2,132 matches across the five major European leagues and Brazilian Serie A | Free-account fixtures and delayed scores; selected current seasons |
-| Private authenticated VALORANT collection | 106 canonical matches; 124 announcements retained separately | Match-level fixtures/results; unresolved teams and times remain explicit |
+| Original synthetic fixtures | Replay, corrections, recovery and baseline experiments | Fictional teams and results, preserved independently of real sources |
+| OpenFootball research | Club competitions in Europe and Latin America, plus selected international editions | Community observations with explicit missing results and source-date precision |
+| Historical Archive | Selected club and national-team editions with reviewed identities | Retrospective research; acquisition does not establish pre-match availability |
+| Current provider captures | football-data.org fixtures/results and PandaScore VALORANT series/calendars | Documented free-account scopes, delayed or incomplete information, no in-game round feed |
 
-The real-data package contains 1,192 observed results and 1,639 unknown results.
-Its identity is `20d06e8e5af0886e`, with observation cutoff
-`2026-10-06T12:19:31.263499Z`. Coverage spans different source seasons; it does
-not represent a complete live feed or official standings.
+Each publication records its sources, observation cutoff and checksums. Coverage
+changes between captures; the [evidence index](docs/evidence/README.md) retains
+the counts and conditions for each measured import. These collections do not
+constitute a complete live calendar or official standings.
 
-Authenticated source data stays outside the repository. Three measured polling
-cycles checked all six football competitions and all three VALORANT match phases:
-27 successful HTTP requests, no new business revisions and unchanged canonical
-snapshots. A successful source check and a dataset's observation cutoff are
-recorded separately. Polling does not provide in-game VALORANT rounds or eliminate
-the football provider's free-tier score delay.
+## Processing and publication
 
-## Architecture
+**Bronze** retains observations. **Silver** maintains current matches and revision
+history. **Gold** exposes results and team aggregates through a
+[versioned snapshot contract](CONTRACT.md).
 
-Bronze retains source observations. Silver reconstructs current matches and their
-revision history. Gold serves match results and team aggregates through a
-versioned publication contract.
+The Spark path uses Python, Spark 4.1.3 and Delta Lake 4.4.0, with AvailableNow file
+streaming, persistent checkpoints, MERGE and Change Data Feed. Late observations
+update affected matches and aggregates. A stage ledger records attempts and
+recovery; incomplete runs cannot publish snapshots. An independent reconstruction
+checks state, history intervals and Gold results.
 
-The canonical execution layer uses Python, Spark 4.1.3 and Delta Lake 4.4.0.
-AvailableNow file streaming, persistent checkpoints, MERGE and Change Data Feed
-handle incremental observations. Late changes update affected matches and team
-aggregates. A persistent stage ledger records attempts and supports recovery;
-incomplete runs cannot publish snapshots. An independent Python reconstruction
-checks current state, revision intervals and aggregates.
+Source collection uses bounded requests, quota accounting, checksum-addressed
+archives and sanitized failures. Failed checks preserve the last verified
+publication. A successful provider check, a source observation and a publication
+change have separate clocks. API polling and downstream Delta CDF are distinct
+from transaction-log CDC.
 
-The open-data path uses bounded HTTP acquisition, checksum-addressed archives,
-SQLite revision state and typed Parquet/JSON publication. It publishes a separate
-research contract, preserving source precision rather than forcing incomplete
-records into the canonical timestamp contract.
-
-Authenticated periodic collections currently use the SQLite/Arrow correctness
-reference. A durable request ledger counts retries against the free-plan quota;
-failed checks preserve the last successful publication. The companion API reloads
-validated immutable datasets and calendars as new versions arrive. A prepared
-publication intent binds archives, revision cursors and package checksums before
-the selected evidence changes; interrupted publication resumes that same intent
-before another provider request. These measured source polls
-are separate from the earlier Spark/Delta streaming measurements.
-
-The [historical forecast boundary](docs/historical-forecast-source-boundary-2026-10-13.md)
-connects verified club editions to the companion application's chronological
-calibration study. Source clocks and native identities remain intact; retrospective
-model measurements cannot rewrite actual Current decisions.
+The [paired publication contract](docs/provider-publication.md) binds canonical
+matches and their nullable source calendar in one recoverable capture. Unknown
+opponents or unconfirmed kickoff times remain calendar evidence. Conflicting
+announcements cannot silently become confirmed scores.
 
 ## Engineering decisions
 
-| Concern | Implemented behavior |
-| --- | --- |
-| Identity | Provider-scoped canonical IDs; reviewed source namespaces distinguish clubs from national teams |
-| Source precision | Preserve original calendar date and local clock; derive UTC kickoff only from an explicit supported numeric offset |
-| Replay and correction | Repeated inputs preserve match/history state; numbered source identities survive schedule or opponent corrections |
-| Audit and recovery | Immutable observations, persistent attempts, measured poll history and preserved quarantine evidence |
-| Publication integrity | Versioned schemas, typed Parquet/JSON parity, checksums and deterministic logical dataset identity |
-| Pinned-source authenticity | Published World Cup business fields must match the bundled checksum-verified source, including scores, opponents, dates and grounds |
-| Compatibility | Genuine v1 packages and stores remain supported without automatic migration or fixture rewriting |
-
-Football scores represent goals; VALORANT scores represent maps won in a series.
-The synthetic prediction baseline uses chronological splits and results completed
-and observed before each cutoff. Its measurements do not establish predictive
-accuracy on real teams.
-
-Real research records retain unknown completion times and disabled forecasting.
-An exact kickoff offset does not establish historical availability. World Cup
-FT, extra-time and shootout source stages remain separate; the documented
-JSON/TXT clock disagreement is preserved as a source limitation.
+- Provider-scoped identities keep clubs, national teams and unrelated same-name
+  events separate. Source corrections retain their original evidence.
+- Dates and local clocks stay at their supplied precision. UTC kickoff is derived
+  only from a supported explicit offset; completion times are not invented.
+- Football goals, extra time and shootout kicks remain distinct. VALORANT series
+  scores represent maps won, rather than rounds or individual performance.
+- Exports bind schema versions, JSON/Parquet contents and checksums. Pinned-source
+  validation rejects altered facts even when modified package hashes agree.
+- Replay preserves accepted state. Quarantine, cancellation, backfill and recovery
+  are checked against the independent reference, with original fixtures retained.
 
 ## Measured verification
 
-The [authenticated polling report](docs/evidence/authenticated-provider-verification-v0.6.json)
-records actual source access, exact polling scope, request budgets and stable
-publication on repeated responses. A separate nullable calendar preserves the
-18 VALORANT announcements excluded by the strict match contract. Its
-[contract](docs/provider-calendar.md) retains source occurrences and unresolved
-fields. The [paired publication design](docs/provider-publication.md) connects
-that calendar to the worker and companion event directory. Its offline failure
-and recovery checks are recorded separately from authenticated source measurements.
+The [native Spark report](docs/evidence/spark-native-local-2026-10-07.json) records
+a synthetic 10,000-observation correctness run under one CPU and a 1.5 GiB
+container limit, including replay and reference comparisons. It establishes that
+specific configuration; million-observation Spark execution remains pending.
 
-The [v0.5 acquisition report](docs/evidence/openfootball-acquisition-v0.5.json)
-records nine verified club archives replayed into a new workspace and one actual
-pinned World Cup HTTP collection. Replaying all ten inputs produced zero new
-revisions and identical current/history content, with zero quarantine.
+The [incremental scenario](docs/evidence/incremental-report.json) covers late
+corrections, cancellation, backfill and failure recovery. The
+[layout experiment](docs/evidence/layout-benchmark-report.json) records plans,
+file counts and query times while checking identical results.
 
-The [v0.5 software report](docs/evidence/openfootball-software-verification-v0.5.json)
-records the final offline suite, independent hostile-source mutation tests, code
-checks and an isolated installed-wheel smoke. The actual v1 nine-source package
-still reproduces its original manifest and every payload checksum; a dry replay
-left the original SQLite bytes unchanged.
+Separate reports cover [actual provider access](docs/evidence/authenticated-provider-verification-v0.6.json),
+[open-data replay](docs/evidence/openfootball-acquisition-v0.5.json) and
+[publication recovery](docs/evidence/paired-publication-v0.7.json). Offline
+fixtures, intercepted responses and authenticated measurements are identified
+within those reports.
 
-The earlier [incremental scenario](docs/evidence/incremental-report.json) verifies
-late corrections, cancellation, backfill and failure recovery against the full
-reference. The [layout experiment](docs/evidence/layout-benchmark-report.json)
-records file counts, executed plans and query timings with identical results.
-These retain their original measured configurations; v0.5 introduces no new
-Spark throughput or production-scale claim.
+## Development status
 
-The [v0.6 software report](docs/evidence/source-operations-software-v0.6.json)
-records 331 passing offline tests and unchanged published source inputs. The
-larger-workload generator and independent bounded oracle are implemented;
-10,000-event and million-event Spark measurements remain pending.
+The active checkpoint is private. Automatic deployment is disabled during
+development. The [roadmap](ROADMAP.md) maps the implementation to ingestion,
+streaming, workflows, optimization, privacy and deployment learning objectives.
 
-The [v0.7 publication report](docs/evidence/paired-publication-v0.7.json) records
-the offline recovery, eligibility and cross-repository integration checks. The
-[packaged runtime report](docs/evidence/installed-wheel-v0.7.json) verifies the
-distributed code independently of the shared development installation. These
-checks use original fixtures and intercepted responses; they do not extend the
-authenticated collection or Spark measurements above.
+The optional [Databricks profile](docs/databricks-profile.md) supplies Auto Loader,
+Spark Declarative Pipelines, AUTO CDC and Lakeflow Job configuration. It has
+offline configuration evidence; managed workspace execution is still unverified.
+Further gates include million-observation Spark execution, sustained operational
+measurements, roster history and fuller retention/access-policy evidence.
 
-GitHub Actions checks the software and provides a separately triggered Linux
-Spark workflow. The [Databricks profile](docs/databricks-profile.md) includes Auto
-Loader, Spark Declarative Pipelines, AUTO CDC and a Lakeflow Job configuration;
-managed workspace execution remains pending verification.
+The companion application's calibration studies use separately reviewed sources
+through the [forecast boundary](docs/historical-forecast-source-boundary-2026-10-13.md).
+Retrospective experiments cannot rewrite recorded Current forecasts.
 
-## Project documentation
-
-[World Cup source and v2 contract](docs/worldcup-research.md) |
-[OpenFootball v1 research contract](docs/openfootball-research.md) |
-[Canonical snapshot interface](CONTRACT.md) |
-[Development guide](docs/development.md) |
-[Engineering roadmap](ROADMAP.md)
-
-Optional football-data.org and PandaScore adapters keep authenticated provider
-data separate from the public showcase. The no-token OpenFootball path is usable
-independently. Both free-account adapters have passed actual source checks;
-coverage outside the recorded scopes remains unverified.
-
-Original code and fictional data use the MIT license. OpenFootball records retain
-[CC0-1.0](https://github.com/openfootball/worldcup.json/blob/516d3825c3bd23fdc298c4014e84bde78f2d4965/LICENSE.md).
-Other provider data remains subject to its provider's terms.
+Original code and fictional data use the MIT license. OpenFootball collections
+retain their source license references. Authenticated provider data and imagery
+remain subject to their respective terms; credentials and private captures stay
+outside source control.

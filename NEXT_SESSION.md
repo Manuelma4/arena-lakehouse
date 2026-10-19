@@ -1,4 +1,31 @@
-# Current handoff — 19 October 2026
+# Approved Arena frontend checkpoint — 19 October 2026
+
+The owner approved the research interface and retained the original Arena /
+Open Ground identity. Consumer commit
+[`cdef7c7`](https://github.com/Manuelma4/lakehouse-copilot/commit/cdef7c7cbeacb067186586a650dc77c6f9414f7a)
+contains the interface, reusable brand kit, professional English README and final
+local evidence: 189 browser cases passed with four intentional skips. Read the
+[approved checkpoint](https://github.com/Manuelma4/lakehouse-copilot/blob/cdef7c7cbeacb067186586a650dc77c6f9414f7a/docs/CHECKPOINT_2026-10-19.md)
+and consumer `NEXT_SESSION.md` after pulling `checkpoint/2026-10-08-reprise` in
+both existing clones. Both repositories remain private; main and public Pages
+deployment remain separate gates.
+
+This producer increment changes only README and continuation documentation.
+No producer code, ingestion, forecasts, ledgers, model operation or managed
+Databricks execution changed. The immediate scope stays frontend-only. The
+90-minute team UI/public/chat migration and national activation remain deferred;
+native v1 provider scores retain their explicit qualifications. Full portfolio
+acceptance and remaining scale, retention and managed-runtime evidence remain
+open.
+
+Keep each machine's credentials, private captures and saved investigations
+local. A code pull does not restore them. The older private recovery archive
+does not contain the reviewed Team Envy media-registry addition recorded in the
+consumer frontend review; preserve that exact local evidence when moving state.
+Source captures still date from 14 October. No Ollama install, start, probe,
+download, test or inference is part of this checkpoint.
+
+## Earlier handoff — 19 October 2026
 
 The owner requested a committed checkpoint for continuing on another computer.
 Pull `checkpoint/2026-10-08-reprise` in both repositories, then read
