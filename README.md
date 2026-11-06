@@ -16,7 +16,27 @@ as one recoverable evidence unit. Unresolved teams, source-only dates and confli
 announcements remain visible without inventing match records. The World Cup research package, Spark/Delta
 pipeline and original football/VALORANT showcase remain independently reproducible.
 
-## Published datasets
+## Run the synthetic showcase locally
+
+On macOS or Linux, run these commands from the repository root with Python 3.11.
+The demo and tests use local fixtures and need no provider credentials.
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev]'
+arena-lakehouse --workspace data/showcase demo --matches 600 --seed 42 --showcase
+python -m ruff check src tests scripts databricks
+python -m pytest -q
+```
+
+The command prints the immutable snapshot directory. `data/showcase/snapshots/LATEST`
+selects the completed export, which includes the manifest, match and team tables,
+quality metrics and model evidence. Rerunning the same command exercises replay
+without creating duplicate revisions. See the [development guide](docs/development.md)
+for the Windows setup and the separate Linux Spark/Delta checks.
+
+## Dataset coverage
 
 | Dataset | Recorded coverage | Research boundary |
 | --- | --- | --- |
@@ -141,11 +161,18 @@ managed workspace execution remains pending verification.
 [Development guide](docs/development.md) |
 [Engineering roadmap](ROADMAP.md)
 
-Optional football-data.org and PandaScore adapters keep authenticated provider
-data separate from the public showcase. The no-token OpenFootball path is usable
-independently. Both free-account adapters have passed actual source checks;
-coverage outside the recorded scopes remains unverified.
+## Credentials and data reuse
 
 Original code and fictional data use the MIT license. OpenFootball records retain
-[CC0-1.0](https://github.com/openfootball/worldcup.json/blob/516d3825c3bd23fdc298c4014e84bde78f2d4965/LICENSE.md).
-Other provider data remains subject to its provider's terms.
+[CC0-1.0](https://github.com/openfootball/worldcup.json/blob/516d3825c3bd23fdc298c4014e84bde78f2d4965/LICENSE.md)
+with source revisions recorded in the [research documentation](docs/worldcup-research.md).
+Football-data.org and PandaScore each govern reuse of their own data. Treat their
+raw responses, normalized extracts, logs and generated snapshots as private
+runtime artifacts. Keep them under the ignored `data/` directory or outside the
+checkout. Review files staged for Git and release attachments before publishing.
+
+For optional authenticated polling, supply `FOOTBALL_DATA_TOKEN` and
+`PANDASCORE_TOKEN` through the process environment or an ignored local `.env`
+copied from [`.env.example`](.env.example). The [worker guide](docs/live-data.md)
+documents bounded polling and the [provider notes](docs/providers.md) describe
+coverage and redistribution boundaries.

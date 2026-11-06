@@ -25,10 +25,14 @@ copying it into a workspace or printing its values. Without the option, only the
 current directory's `.env` is loaded, preserving existing process values.
 Do not put credentials in command arguments, public artifacts or screenshots.
 
-```powershell
-$env:PYTHONPATH = (Resolve-Path .\src).Path
-& C:\Works\.arena-venv\Scripts\python.exe -m arena_lakehouse.live --workspace data/live-local --provider football-data --competitions PL,PD,BL1,SA,FL1,BSA --cycles 3 --interval 60 --env-file C:/Works/commerce-lakehouse/.env
-& C:\Works\.arena-venv\Scripts\python.exe -m arena_lakehouse.live --workspace data/live-local --provider pandascore --pages 1 --cycles 3 --interval 60 --env-file C:/Works/commerce-lakehouse/.env
+After installing the package in a local virtual environment, run from the
+repository root with a local `.env` as described above.
+
+```bash
+arena-live --workspace data/live-local --provider football-data \
+  --competitions PL,PD,BL1,SA,FL1,BSA --cycles 3 --interval 60 --env-file .env
+arena-live --workspace data/live-local --provider pandascore \
+  --pages 1 --cycles 3 --interval 60 --env-file .env
 ```
 
 Use 1..100 cycles, an interval of 30..86,400 seconds, and 1..10 PandaScore pages.
