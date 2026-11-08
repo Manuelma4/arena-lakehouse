@@ -129,6 +129,11 @@ class StageLedger:
             row = db.execute("SELECT run_id FROM jobs WHERE status != 'succeeded' ORDER BY rowid LIMIT 1").fetchone()
         return row[0] if row else None
 
+    def latest_success(self):
+        with self.connect() as db:
+            row = db.execute("SELECT run_id FROM jobs WHERE status='succeeded' ORDER BY rowid DESC LIMIT 1").fetchone()
+        return self.job(row[0]) if row else None
+
     def create(self, payload):
         if self.pending():
             raise ValueError("Resume the unfinished run before submitting another batch")

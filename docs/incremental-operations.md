@@ -78,6 +78,12 @@ MERGEs protect a commit that succeeded before its attempt record was written.
 Timeout/connection failures retry at most twice; validation and correctness
 errors surface immediately. Attempt history is kept in `control/stages.db`.
 
+If the ledger recorded success before `last-success.json` could be written,
+resume that run explicitly with `resume --run-id <run_id>`. The runner rebuilds a
+missing, malformed or stale marker from the latest verified job without
+re-executing successful stages. Marker replacement is atomic, and resuming an
+older successful run preserves the latest job's publication metadata.
+
 The reference CLI also implements the same bounded selection:
 
 ```powershell

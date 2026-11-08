@@ -100,15 +100,25 @@ class IncrementalPipeline:
             return self._execute(run_id)
 
     def _execute(self, run_id, fail_after=None):
-        already_succeeded = self.ledger.job(run_id)["status"] == "succeeded"
         result = self.ledger.execute(run_id, {stage: getattr(self, f"_{stage}") for stage in STAGES}, fail_after)
         result["attempts"] = self.ledger.attempts(run_id)
-        if already_succeeded:
+        success = self.ledger.latest_success()
+        marker = self.root / "last-success.json"
+        try:
+            selected = json.loads(marker.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            selected = None
+        if isinstance(selected, dict) and selected.get("run_id") == success["run_id"]:
             return result
-        (self.root / "last-success.json").write_text(json.dumps(dict(
-            run_id=run_id, succeeded_at=utc_now(), accepted=result["payload"]["accepted"],
-            changed_matches=len(result["payload"]["matches"]),
-            affected_teams=len(result["payload"]["teams"])), indent=2), encoding="utf-8")
+        # The ledger can commit success just before this marker is interrupted.
+        # Rebuild from its latest verified job, even when resuming an older ID.
+        completed = self.ledger.attempts(success["run_id"])[-1]["finished_at"]
+        temporary = marker.with_suffix(".tmp")
+        temporary.write_text(json.dumps(dict(
+            run_id=success["run_id"], succeeded_at=completed, accepted=success["payload"]["accepted"],
+            changed_matches=len(success["payload"]["matches"]),
+            affected_teams=len(success["payload"]["teams"])), indent=2), encoding="utf-8")
+        temporary.replace(marker)
         return result
 
     def _bronze(self, payload):
