@@ -1,5 +1,6 @@
 import random
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import pytest
 
@@ -8,6 +9,47 @@ from arena_lakehouse.prediction import features, train_and_predict
 from arena_lakehouse.schema import MatchEvent
 from arena_lakehouse.snapshot import export_snapshot
 from arena_lakehouse.synthetic import generate
+
+
+def test_export_does_not_follow_a_stale_pointer_symlink(tmp_path):
+    pipeline = Pipeline(tmp_path / "lake")
+    pipeline.ingest(generate(20, faults=False))
+    output = tmp_path / "snapshots"
+    output.mkdir()
+    sentinel = tmp_path / "sentinel"
+    sentinel.write_text("keep", encoding="utf-8")
+    (output / ".LATEST.tmp").symlink_to(sentinel)
+
+    snapshot = export_snapshot(pipeline, output, with_predictions=False)
+
+    assert sentinel.read_text(encoding="utf-8") == "keep"
+    assert not (output / "LATEST").is_symlink()
+    assert (output / "LATEST").read_text(encoding="utf-8") == snapshot.name
+
+
+def test_interleaved_exports_publish_independent_pointers(tmp_path, monkeypatch):
+    pipeline = Pipeline(tmp_path / "lake")
+    pipeline.ingest(generate(20, faults=False))
+    output = tmp_path / "snapshots"
+    replace = Path.replace
+    other_snapshot = None
+    interleaved = False
+
+    def interleave(pointer, target):
+        nonlocal other_snapshot, interleaved
+        if target.name == "LATEST" and not interleaved:
+            interleaved = True
+            other_snapshot = export_snapshot(pipeline, output, with_predictions=False)
+        return replace(pointer, target)
+
+    monkeypatch.setattr(Path, "replace", interleave)
+    snapshot = export_snapshot(pipeline, output, with_predictions=False)
+
+    assert other_snapshot is not None and other_snapshot != snapshot
+    assert (other_snapshot / "manifest.json").is_file()
+    assert (snapshot / "manifest.json").is_file()
+    assert (output / "LATEST").read_text(encoding="utf-8") == snapshot.name
+    assert not list(output.glob(".LATEST*.tmp"))
 
 
 def test_replay_is_idempotent_and_quarantine_is_stable(tmp_path):

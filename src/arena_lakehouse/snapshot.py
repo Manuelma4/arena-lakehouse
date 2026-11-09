@@ -143,7 +143,12 @@ def export_snapshot(pipeline, output: Path, with_predictions=True, *, select_lat
     destination = output / f"snapshot-{manifest['dataset_version']}-{uuid.uuid4().hex[:8]}"
     stage.replace(destination)
     if select_latest:
-        pointer = output / ".LATEST.tmp"
-        pointer.write_text(destination.name, encoding="utf-8")
-        pointer.replace(output / "LATEST")
+        pointer = output / f".LATEST-{uuid.uuid4().hex}.tmp"
+        staged_pointer = pointer.open("x", encoding="utf-8")
+        try:
+            with staged_pointer:
+                staged_pointer.write(destination.name)
+            pointer.replace(output / "LATEST")
+        finally:
+            pointer.unlink(missing_ok=True)
     return destination
