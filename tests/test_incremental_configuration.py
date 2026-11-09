@@ -2,11 +2,14 @@
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 
 from arena_lakehouse.incremental import IncrementalPipeline
 from arena_lakehouse.operations import STAGES
+from arena_lakehouse.synthetic import generate
 
 
 def test_independent_verification_receives_actual_paths_and_propagates_failure(tmp_path):
@@ -111,3 +114,36 @@ def test_failed_marker_replacement_preserves_previous_success_and_can_resume(tmp
     pipeline.resume(second)
     assert json.loads(marker.read_text(encoding="utf-8"))["run_id"] == second
     assert not marker.with_suffix(".tmp").exists()
+
+
+def test_export_requires_publication_marker_for_latest_verified_run(tmp_path, monkeypatch):
+    # The table and Spark verification are stubs. The ledger, recovery and
+    # snapshot serializer run normally against synthetic observations.
+    pipeline = IncrementalPipeline(None, tmp_path / "workspace", verification=lambda *_: None)
+    for stage in STAGES:
+        monkeypatch.setattr(pipeline, f"_{stage}", lambda _: None)
+    payload = {"accepted": 20, "matches": [], "teams": []}
+    old_run = pipeline.ledger.create(payload)
+    pipeline.resume(old_run)
+    verified = pipeline.ledger.create(payload)
+    pipeline.ledger.execute(verified, {stage: getattr(pipeline, f"_{stage}") for stage in STAGES})
+
+    events = sorted(generate(20, faults=False), key=lambda row: (row["match_id"], row["revision"]))
+    table = Mock()
+    table.select.return_value.orderBy.return_value.collect.return_value = [
+        SimpleNamespace(asDict=lambda row=row: row) for row in events
+    ]
+    table.count.return_value = len(events)
+    monkeypatch.setattr(pipeline, "_read", lambda _: table)
+
+    output = tmp_path / "published"
+    with pytest.raises(ValueError, match=f"resume --run-id {verified}"):
+        pipeline.export(output)
+    assert not output.exists()
+
+    pipeline.resume(verified)
+    package = pipeline.export(output)
+    quality = json.loads((package / "quality.json").read_text(encoding="utf-8"))
+    assert quality["run_id"] == verified
+    assert quality["summary"]["valid_events"] == len(events)
+    assert (output / "LATEST").read_text(encoding="utf-8").strip() == package.name

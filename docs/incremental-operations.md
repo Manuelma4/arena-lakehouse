@@ -83,6 +83,9 @@ resume that run explicitly with `resume --run-id <run_id>`. The runner rebuilds 
 missing, malformed or stale marker from the latest verified job without
 re-executing successful stages. Marker replacement is atomic, and resuming an
 older successful run preserves the latest job's publication metadata.
+Export checks the marker against the latest successful ledger entry before
+writing a snapshot. If the marker is missing, unreadable or points to an older
+run, use the run ID printed by the error to repair it before exporting.
 
 The reference CLI also implements the same bounded selection:
 

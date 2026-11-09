@@ -99,20 +99,24 @@ class IncrementalPipeline:
                 raise ValueError("No unfinished run to resume")
             return self._execute(run_id)
 
+    def _publication_marker(self):
+        try:
+            selected = json.loads((self.root / "last-success.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return None
+        return selected if isinstance(selected, dict) else None
+
     def _execute(self, run_id, fail_after=None):
         result = self.ledger.execute(run_id, {stage: getattr(self, f"_{stage}") for stage in STAGES}, fail_after)
         result["attempts"] = self.ledger.attempts(run_id)
         success = self.ledger.latest_success()
-        marker = self.root / "last-success.json"
-        try:
-            selected = json.loads(marker.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            selected = None
-        if isinstance(selected, dict) and selected.get("run_id") == success["run_id"]:
+        selected = self._publication_marker()
+        if selected and selected.get("run_id") == success["run_id"]:
             return result
         # The ledger can commit success just before this marker is interrupted.
         # Rebuild from its latest verified job, even when resuming an older ID.
         completed = self.ledger.attempts(success["run_id"])[-1]["finished_at"]
+        marker = self.root / "last-success.json"
         temporary = marker.with_suffix(".tmp")
         temporary.write_text(json.dumps(dict(
             run_id=success["run_id"], succeeded_at=completed, accepted=success["payload"]["accepted"],
@@ -230,8 +234,15 @@ class IncrementalPipeline:
 
     def _export_locked(self, output: Path):
         from .snapshot import export_snapshot
-        if self.ledger.pending() or not (self.root / "last-success.json").exists():
+        success = self.ledger.latest_success()
+        if self.ledger.pending() or success is None:
             raise ValueError("Publish only after a complete verified stage graph")
+        marker = self._publication_marker()
+        run_id = success["run_id"]
+        if marker is None or marker.get("run_id") != run_id:
+            raise ValueError(
+                f"Publication marker does not match the latest verified run. Run resume --run-id {run_id} before export"
+            )
         self._verify({})
         pipeline = self
         class VerifiedSnapshot:
@@ -240,8 +251,7 @@ class IncrementalPipeline:
                         .orderBy("match_id", "revision").collect()]
 
             def quality(self):
-                success = json.loads((pipeline.root / "last-success.json").read_text(encoding="utf-8"))
-                return dict(run_id=success["run_id"], checks=[], summary=dict(
+                return dict(run_id=run_id, checks=[], summary=dict(
                     valid_events=pipeline._read("bronze_observations").count(), quarantined=0,
                     rejected_candidates=len(list((pipeline.root / "quarantine").glob("*.json"))),
                     last_run_status="succeeded", execution_backend="spark_delta_verified"))
