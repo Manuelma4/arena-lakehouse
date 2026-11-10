@@ -93,6 +93,40 @@ The reference CLI also implements the same bounded selection:
 .\.venv\Scripts\arena-lakehouse.exe --workspace data/reference backfill data/input/events.jsonl --from 2025-01-01T00:00:00Z --to 2025-01-08T00:00:00Z
 ```
 
+## Verify recovery with Arena Copilot
+
+The regression test creates two successful runs and leaves the publication
+marker pointing to the older one. It verifies that export refuses the stale
+marker. The test then resumes the newer run and publishes a package. The
+quality report names the recovered run, and `LATEST` selects that package.
+
+Use a Lakehouse checkout containing the
+[export provenance regression](https://github.com/Manuelma4/arena-lakehouse/commit/d6471f58a3fda598295c2524448933030a67204e)
+and an [Arena Copilot checkout at 59ee6a3](https://github.com/Manuelma4/lakehouse-copilot/commit/59ee6a39a675e0157cc14d461c6ecf0cc3120a20).
+Install each checkout in its own `.venv`, including the Lakehouse `dev` extra.
+From the Lakehouse root, run the following in a POSIX shell. Set `copilot` to
+the absolute path of the consumer checkout.
+
+```sh
+copilot=/absolute/path/to/lakehouse-copilot
+run=$(mktemp -d)
+.venv/bin/python -m pytest -q --basetemp "$run/pytest" \
+  tests/test_incremental_configuration.py::test_export_requires_publication_marker_for_latest_verified_run
+pointer=$(find "$run/pytest" -type f -path '*/published/LATEST' -print)
+if [ -f "$pointer" ]; then
+  package="$(dirname "$pointer")/$(cat "$pointer")"
+  "$copilot/.venv/bin/python" -m arena_copilot.cli --snapshot "$package" validate
+else
+  printf 'Expected one exported LATEST pointer under %s\n' "$run/pytest" >&2
+fi
+```
+
+Expect one passing producer test and a consumer manifest with
+`"schema_version": "2.0"` and `"data_kind": "synthetic"`. The test substitutes
+Spark stages and table reads while exercising the real ledger, exporter and
+consumer validator. This check covers the exported package contract. Use the
+Docker scenario above to test the Spark stages.
+
 ## Measured layout experiment
 
 ```powershell
