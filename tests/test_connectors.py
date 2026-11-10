@@ -85,17 +85,34 @@ def test_unnormalized_provider_response_is_preserved_before_schema_failure(tmp_p
     assert not (tmp_path / "cursor.json").exists()
 
 
-def test_network_failure_retries_within_budget_and_never_exposes_headers(monkeypatch):
+@pytest.mark.parametrize("failure", [httpx.ConnectError, httpx.RemoteProtocolError])
+def test_network_failure_retries_within_budget_and_never_exposes_headers(monkeypatch, failure):
     calls = []
     def unavailable(request):
         calls.append(request)
-        raise httpx.ConnectError("temporary outage", request=request)
+        raise failure("temporary outage", request=request)
     monkeypatch.setattr("arena_lakehouse.connectors.time.sleep", lambda _: None)
     with httpx.Client(transport=httpx.MockTransport(unavailable)) as client:
         with pytest.raises(ProviderError, match="network outage") as error:
             request_json(client, "https://example.test", {"Authorization": "test-secret"}, {})
     assert len(calls) == 3
     assert "test-secret" not in str(error.value)
+
+
+def test_remote_disconnect_can_recover_on_the_next_attempt(monkeypatch):
+    calls, delays = [], []
+
+    def respond(request):
+        calls.append(request)
+        if len(calls) == 1:
+            raise httpx.RemoteProtocolError("Server disconnected without sending a response", request=request)
+        return httpx.Response(200, json={"matches": []})
+
+    monkeypatch.setattr("arena_lakehouse.connectors.time.sleep", delays.append)
+    with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+        assert request_json(client, "https://example.test", {}, {}) == {"matches": []}
+    assert len(calls) == 2
+    assert delays == [1]
 
 
 def test_valorant_polls_running_as_well_as_past_and_upcoming(tmp_path, monkeypatch):

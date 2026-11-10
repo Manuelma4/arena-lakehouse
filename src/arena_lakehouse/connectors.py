@@ -24,7 +24,7 @@ def request_json(client, url, headers, params, attempts=3):
     for attempt in range(attempts):
         try:
             response = client.get(url, headers=headers, params=params, timeout=30)
-        except (httpx.TimeoutException, httpx.NetworkError):
+        except (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError):
             if attempt + 1 == attempts:
                 raise ProviderError("Provider network outage; retry on the next poll") from None
             time.sleep(min(2 ** attempt, 30))
