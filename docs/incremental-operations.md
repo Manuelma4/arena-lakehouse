@@ -122,10 +122,43 @@ fi
 ```
 
 Expect one passing producer test and a consumer manifest with
-`"schema_version": "2.0"` and `"data_kind": "synthetic"`. The test substitutes
-Spark stages and table reads while exercising the real ledger, exporter and
-consumer validator. This check covers the exported package contract. Use the
-Docker scenario above to test the Spark stages.
+`"schema_version": "2.0"` and `"data_kind": "synthetic"`.
+
+To verify the recovered run through Copilot's HTTP interface, reuse `copilot`,
+`package` and `run` from above. This runs the API in process with FastAPI's
+test client.
+
+```sh
+ARENA_OPEN_FOOTBALL="$run/no-research" \
+  "$copilot/.venv/bin/python" - "$package" "$run" <<'PYTHON'
+import json
+from pathlib import Path
+import sys
+
+from fastapi.testclient import TestClient
+
+from arena_copilot.agent import Copilot
+from arena_copilot.api import create_app
+from arena_copilot.live import LiveRegistry
+
+package, work = map(Path, sys.argv[1:])
+manifest = json.loads((package / "manifest.json").read_text())
+quality = json.loads((package / "quality.json").read_text())
+agent = Copilot(package, work / "copilot-state")
+with TestClient(create_app(agent, live=LiveRegistry(work / "live"))) as client:
+    response = client.get("/quality")
+    response.raise_for_status()
+    result = response.json()
+    assert result["dataset_version"] == manifest["dataset_version"]
+    assert result["data_kind"] == "synthetic"
+    assert result["rows"][0]["run_id"] == quality["run_id"]
+    print(f"Copilot served recovered run {quality['run_id']}")
+PYTHON
+```
+
+This procedure substitutes Spark stages and table reads while exercising the
+ledger, exporter and consumer API. Use the Docker scenario above to test the
+Spark stages.
 
 ## Measured layout experiment
 
