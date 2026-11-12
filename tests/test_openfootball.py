@@ -230,6 +230,28 @@ def test_retry_and_rate_budgets_are_bounded(tmp_path):
     assert len(calls) == 3 and all(0 <= delay <= 10 for delay in sleeps) and sum(sleeps) == 20
 
 
+@pytest.mark.parametrize(("header", "delay"), [
+    ("Wed, 01 Jan 2098 00:00:00 GMT", 10),
+    ("Sat, 01 Jan 2000 00:00:00 GMT", 0),
+])
+def test_dated_retry_after_uses_the_openfootball_delay_bound(tmp_path, header, delay):
+    calls, sleeps = [], []
+
+    def respond(request):
+        calls.append(request)
+        if len(calls) == 1:
+            return httpx.Response(429, headers={"Retry-After": header})
+        return httpx.Response(200, content=body(MATCH))
+
+    with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+        collector = OpenFootballCollector(
+            tmp_path, client, attempts=2, min_interval=0, sleep=sleeps.append,
+        )
+        assert collector.collect(SOURCE, observed_at=NOW).changed == 1
+    assert len(calls) == 2
+    assert sleeps == [delay, 0]
+
+
 @pytest.mark.parametrize("status,expected_calls", [(503, 2), (403, 1), (302, 1)])
 def test_http_failure_never_commits_state(tmp_path, status, expected_calls):
     calls = []

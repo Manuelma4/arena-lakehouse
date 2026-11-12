@@ -123,7 +123,7 @@ def test_retry_after_header_preserves_the_bounded_retry(monkeypatch, header, del
             return httpx.Response(429, headers={"Retry-After": header})
         return httpx.Response(200, json={"matches": []})
 
-    monkeypatch.setattr("arena_lakehouse.connectors.datetime", Clock)
+    monkeypatch.setattr("arena_lakehouse.http_retry.datetime", Clock)
     monkeypatch.setattr("arena_lakehouse.connectors.time.sleep", delays.append)
     with httpx.Client(transport=httpx.MockTransport(respond)) as client:
         assert request_json(client, "https://example.test", {}, {}) == {"matches": []}

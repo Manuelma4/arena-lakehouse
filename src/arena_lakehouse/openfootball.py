@@ -24,6 +24,8 @@ import httpx
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from .http_retry import retry_after_delay
+
 
 STAGING_VERSION = "openfootball-staging-1.0"
 STAGING_VERSION_V2 = "openfootball-staging-2.0"
@@ -379,12 +381,7 @@ class OpenFootballCollector:
                     if response.status_code == 304:
                         return 304, b"", dict(response.headers)
                     if response.status_code == 429 or 500 <= response.status_code < 600:
-                        try:
-                            delay = min(max(float(response.headers.get("Retry-After", delay)), 0), 10)
-                        except ValueError:
-                            pass
-                        if not math.isfinite(delay):
-                            delay = min(2 ** attempt, 10)
+                        delay = retry_after_delay(response.headers.get("Retry-After"), delay, limit=10)
                     else:
                         if response.status_code != 200:
                             raise AcquisitionError(f"OpenFootball returned HTTP {response.status_code}; no retry")
