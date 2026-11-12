@@ -1,10 +1,12 @@
 """Quota-aware free fixtures/results API adapters. Credentials never enter landing files."""
 
 import json
+import math
 import os
 import time
 import uuid
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 import httpx
@@ -16,6 +18,22 @@ from .schema import MatchEvent, digest
 
 class ProviderError(RuntimeError):
     pass
+
+
+def _retry_delay(header: str | None, fallback: float) -> float:
+    if header is None:
+        return fallback
+    try:
+        delay = float(header)
+    except ValueError:
+        try:
+            retry_at = parsedate_to_datetime(header)
+        except (ValueError, OverflowError):
+            return fallback
+        if retry_at.tzinfo is None:
+            retry_at = retry_at.replace(tzinfo=timezone.utc)
+        delay = (retry_at - datetime.now(timezone.utc)).total_seconds()
+    return min(max(delay, 0), 30) if math.isfinite(delay) else fallback
 
 
 def request_json(client, url, headers, params, attempts=3):
@@ -34,11 +52,7 @@ def request_json(client, url, headers, params, attempts=3):
         if response.status_code == 429 or response.status_code >= 500:
             if attempt + 1 == attempts:
                 raise ProviderError("Provider rate limit or temporary outage; retry on the next poll")
-            try:
-                delay = min(max(float(response.headers.get("Retry-After", 2 ** attempt)), 0), 30)
-            except ValueError:
-                delay = 2 ** attempt
-            time.sleep(delay)
+            time.sleep(_retry_delay(response.headers.get("Retry-After"), 2 ** attempt))
             continue
         response.raise_for_status()
         return response.json()

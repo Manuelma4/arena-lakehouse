@@ -82,6 +82,14 @@ adapter, subject to actual account coverage. Fixtures/results are enough for
 event research, but do not establish round/player telemetry or exhaustive
 coverage of every community tournament listed by VLR.
 
+## Retry timing
+
+The football-data.org and PandaScore adapters retry rate limits and temporary
+server errors within the configured attempt limit. The delay accepts a numeric
+value or HTTP-date in `Retry-After` and is capped at 30 seconds. Missing,
+unparseable or non-finite values use the exponential backoff. A past date
+allows the next attempt immediately. [HTTP semantics](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3)
+
 ## Streaming and redistribution
 
 The free route polls observations and replays changes through file streaming.

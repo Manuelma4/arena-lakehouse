@@ -99,6 +99,38 @@ def test_network_failure_retries_within_budget_and_never_exposes_headers(monkeyp
     assert "test-secret" not in str(error.value)
 
 
+@pytest.mark.parametrize(("header", "delay"), [
+    ("0.5", 0.5),
+    ("NaN", 1),
+    ("-Infinity", 1),
+    ("unavailable", 1),
+    ("Thu, 12 Nov 2026 08:00:07 GMT", 7),
+    ("Thu, 12 Nov 2026 08:01:00 GMT", 30),
+    ("Thu, 12 Nov 2026 07:59:59 GMT", 0),
+    ("Thu Nov 12 08:00:07 2026", 7),
+])
+def test_retry_after_header_preserves_the_bounded_retry(monkeypatch, header, delay):
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime(2026, 11, 12, 8, tzinfo=timezone.utc).astimezone(tz)
+
+    calls, delays = [], []
+
+    def respond(request):
+        calls.append(request)
+        if len(calls) == 1:
+            return httpx.Response(429, headers={"Retry-After": header})
+        return httpx.Response(200, json={"matches": []})
+
+    monkeypatch.setattr("arena_lakehouse.connectors.datetime", Clock)
+    monkeypatch.setattr("arena_lakehouse.connectors.time.sleep", delays.append)
+    with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+        assert request_json(client, "https://example.test", {}, {}) == {"matches": []}
+    assert len(calls) == 2
+    assert delays == [delay]
+
+
 def test_remote_disconnect_can_recover_on_the_next_attempt(monkeypatch):
     calls, delays = [], []
 
