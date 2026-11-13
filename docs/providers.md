@@ -85,8 +85,9 @@ coverage of every community tournament listed by VLR.
 ## Retry timing
 
 The football-data.org and PandaScore adapters retry rate limits and temporary
-server errors within the configured attempt limit. The delay accepts a numeric
-value or HTTP-date in `Retry-After` and is capped at 30 seconds. Missing,
+server errors. The attempt limit must be an integer from one to five.
+The delay accepts a numeric value or HTTP-date in `Retry-After` and is capped
+at 30 seconds. Missing,
 unparseable or non-finite values use the exponential backoff. A past date
 allows the next attempt immediately. OpenFootball uses the same header parsing
 with a ten-second cap. [HTTP semantics](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3)

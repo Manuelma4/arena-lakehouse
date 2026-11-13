@@ -20,7 +20,7 @@ class ProviderError(RuntimeError):
 
 
 def request_json(client, url, headers, params, attempts=3):
-    if not 1 <= attempts <= 5:
+    if type(attempts) is not int or not 1 <= attempts <= 5:
         raise ValueError("Provider attempts must be 1..5")
     for attempt in range(attempts):
         try:

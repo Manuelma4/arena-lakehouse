@@ -31,6 +31,16 @@ def test_missing_token_is_actionable(tmp_path, monkeypatch):
         collect("football-data", tmp_path / "cursor.json")
 
 
+@pytest.mark.parametrize("attempts", [True, 1.5, "3", 0, 6])
+def test_retry_attempt_count_rejects_non_integer_or_out_of_range(attempts):
+    def response(_):
+        pytest.fail("invalid attempt budget reached the transport")
+
+    with httpx.Client(transport=httpx.MockTransport(response)) as client:
+        with pytest.raises(ValueError, match=r"attempts must be 1\.\.5"):
+            request_json(client, "https://example.test", {}, {}, attempts=attempts)
+
+
 def test_403_never_retries_or_exposes_token():
     attempts = []
     def response(request):
