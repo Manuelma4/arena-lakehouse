@@ -316,6 +316,8 @@ def test_redirects_never_forward_credentials_or_bypass_request_ledger(tmp_path):
     assert len(attempts) == status["last_poll"]["requests"] == 1
     assert attempts[0].url.host == "api.football-data.org"
     assert status["last_error_code"] == "provider_http_error"
+    assert not worker.cursor.exists()
+    assert not (worker.root / "provider_raw").exists()
 
 
 def test_config_interval_budget_and_scope_are_explicit(tmp_path):

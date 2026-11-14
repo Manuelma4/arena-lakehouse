@@ -309,8 +309,9 @@ class BudgetClient:
             raise LiveFailure("invalid_endpoint")
         request_id = self.ledger.reserve(self.poll_id, _utc(self.clock()))
         self.last_error_code = None
+        kwargs["follow_redirects"] = False
         try:
-            response = self.client.get(url, follow_redirects=False, **kwargs)
+            response = self.client.get(url, **kwargs)
         except httpx.TransportError as error:
             self.last_error_code = "network_timeout" if isinstance(error, httpx.TimeoutException) else "network_error"
             self.ledger.request_result(request_id, error=self.last_error_code)
@@ -326,7 +327,7 @@ class BudgetClient:
             self.last_error_code = "provider_rate_limited"
         elif code >= 500:
             self.last_error_code = "provider_unavailable"
-        elif code >= 400:
+        elif code >= 400 or response.is_redirect:
             self.last_error_code = "provider_http_error"
         self.ledger.request_result(request_id, status_code=code, error=self.last_error_code)
         return response

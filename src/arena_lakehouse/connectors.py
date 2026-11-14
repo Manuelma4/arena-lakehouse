@@ -23,12 +23,17 @@ def request_json(client, url, headers, params, attempts=3):
         raise ValueError("Provider attempts must be 1..5")
     for attempt in range(attempts):
         try:
-            response = client.get(url, headers=headers, params=params, timeout=30)
+            response = client.get(url, headers=headers, params=params, timeout=30, follow_redirects=False)
         except (httpx.TimeoutException, httpx.NetworkError):
             if attempt + 1 == attempts:
                 raise ProviderError("Provider network outage; retry on the next poll") from None
             time.sleep(min(2 ** attempt, 30))
             continue
+        except httpx.RemoteProtocolError:
+            # HTTPX can parse a malformed Location even with redirects disabled.
+            raise ProviderError("Provider protocol error") from None
+        if response.is_redirect:
+            raise ProviderError("Provider redirect refused")
         if response.status_code in (401, 403):
             raise ProviderError("Provider authentication or plan access denied; check your free account")
         if response.status_code == 429 or response.status_code >= 500:

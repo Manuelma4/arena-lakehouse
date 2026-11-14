@@ -42,6 +42,28 @@ def test_403_never_retries_or_exposes_token():
     assert len(attempts) == 1
 
 
+@pytest.mark.parametrize(("location", "error"), [
+    ("https://other.test/data", "redirect refused"),
+    ("https://other.test:private-location/data", "protocol error"),
+])
+def test_provider_redirect_never_forwards_custom_auth_header(location, error):
+    requests = []
+
+    def response(request):
+        requests.append(request)
+        if request.url.host == "provider.test":
+            return httpx.Response(302, headers={"Location": location})
+        return httpx.Response(200, json={"matches": []})
+
+    with httpx.Client(follow_redirects=True, transport=httpx.MockTransport(response)) as client:
+        with pytest.raises(ProviderError, match=error) as failure:
+            request_json(client, "https://provider.test/data", {"X-Auth-Token": "test-only"}, {})
+    assert [request.url.host for request in requests] == ["provider.test"]
+    assert requests[0].headers["X-Auth-Token"] == "test-only"
+    assert "private-location" not in str(failure.value)
+    assert "test-only" not in str(failure.value)
+
+
 def test_poll_emits_only_changed_observations_and_does_not_commit_cursor(tmp_path, monkeypatch):
     monkeypatch.setenv("FOOTBALL_DATA_TOKEN", "test-only-not-a-real-token")
     cursor = tmp_path / "cursor.json"

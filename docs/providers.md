@@ -84,6 +84,10 @@ coverage of every community tournament listed by VLR.
 
 ## Streaming and redistribution
 
+Authenticated requests disable redirect following, including when a caller
+passes in an HTTP client configured to follow them. Provider credentials stay
+on the configured endpoint. A redirect response is a failed poll.
+
 The free route polls observations and replays changes through file streaming.
 It does not manufacture play-by-play, kills, rounds, xG or player telemetry.
 Successful provider JSON bodies are archived before normalization under the
