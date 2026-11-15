@@ -20,7 +20,7 @@ import httpx
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
-from .connectors import ProviderError, collect, commit_state
+from .connectors import ProviderError, ProviderRedirect, collect, commit_state, provider_client
 from .calendar import publish_calendar
 from .engine import Pipeline
 from .schema import digest
@@ -309,15 +309,16 @@ class BudgetClient:
             raise LiveFailure("invalid_endpoint")
         request_id = self.ledger.reserve(self.poll_id, _utc(self.clock()))
         self.last_error_code = None
+        kwargs["follow_redirects"] = False
         try:
-            response = self.client.get(url, follow_redirects=False, **kwargs)
+            response = self.client.get(url, **kwargs)
+        except ProviderRedirect as error:
+            self.last_error_code = "provider_http_error"
+            self.ledger.request_result(request_id, status_code=error.status_code, error=self.last_error_code)
+            raise
         except httpx.TransportError as error:
             self.last_error_code = "network_timeout" if isinstance(error, httpx.TimeoutException) else "network_error"
             self.ledger.request_result(request_id, error=self.last_error_code)
-            # RemoteProtocolError is transient but is outside the existing
-            # connector's NetworkError hierarchy. Convert without exception text.
-            if isinstance(error, httpx.RemoteProtocolError):
-                raise httpx.NetworkError("Provider transport failure") from None
             raise
         code = response.status_code
         if code in (401, 403):
@@ -326,7 +327,7 @@ class BudgetClient:
             self.last_error_code = "provider_rate_limited"
         elif code >= 500:
             self.last_error_code = "provider_unavailable"
-        elif code >= 400:
+        elif code >= 400 or response.is_redirect:
             self.last_error_code = "provider_http_error"
         self.ledger.request_result(request_id, status_code=code, error=self.last_error_code)
         return response
@@ -483,7 +484,8 @@ class LiveWorker:
             if not os.environ.get(PROVIDERS[self.config.provider]["token"]):
                 self.ledger.finish(poll_id, _utc(self.clock()), "awaiting_credentials", "awaiting_credentials")
                 return self._publish_status(_utc(self.clock()))
-            owned, client = self.client is None, self.client or httpx.Client(follow_redirects=False)
+            owned = self.client is None
+            client = provider_client() if owned else self.client
             budget_client = BudgetClient(client, self.ledger, poll_id, self.clock)
             phase, meta, changed = "collect", {}, 0
             try:

@@ -316,6 +316,50 @@ def test_redirects_never_forward_credentials_or_bypass_request_ledger(tmp_path):
     assert len(attempts) == status["last_poll"]["requests"] == 1
     assert attempts[0].url.host == "api.football-data.org"
     assert status["last_error_code"] == "provider_http_error"
+    assert not worker.cursor.exists()
+    assert not (worker.root / "provider_raw").exists()
+
+
+@pytest.mark.parametrize(("mode", "results"), [
+    ("redirect", [(302, "provider_http_error")]),
+    ("malformed", [(302, "provider_http_error")]),
+    ("missing-location", [(302, "provider_http_error")]),
+    ("recovery", [(None, "network_error"), (200, None)]),
+    ("exhaustion", [(None, "network_error")] * 3),
+])
+def test_owned_provider_client_distinguishes_redirects_and_disconnects(tmp_path, monkeypatch, mode, results):
+    attempts = []
+
+    def respond(request):
+        attempts.append(request.url.host)
+        assert request.headers["X-Auth-Token"] == TOKEN
+        if mode == "missing-location":
+            return httpx.Response(302)
+        if mode in ("redirect", "malformed"):
+            target = "https://other.test/data" if mode == "redirect" else "https://other.test:marker/data"
+            return httpx.Response(302, headers={"Location": target})
+        if mode == "exhaustion" or len(attempts) == 1:
+            raise httpx.RemoteProtocolError("synthetic disconnect", request=request)
+        return httpx.Response(200, json={"matches": [FOOTBALL]})
+
+    httpx_client = httpx.Client
+    monkeypatch.setattr(httpx, "Client", lambda **kwargs: httpx_client(
+        transport=httpx.MockTransport(respond), **kwargs,
+    ))
+    worker = LiveWorker(tmp_path, LiveConfig("football-data"), clock=Clock())
+    status = worker.poll_once()
+    assert attempts == ["api.football-data.org"] * len(results)
+    assert status["request_budget"]["used"] == len(results)
+    with worker.ledger.connect() as db:
+        recorded = db.execute("SELECT status_code, error_code FROM requests ORDER BY id").fetchall()
+        assert [tuple(row) for row in recorded] == results
+    assert "marker" not in json.dumps(status) and TOKEN not in json.dumps(status)
+    if mode == "recovery":
+        assert worker.cursor.exists() and status["status"] == "ready"
+        assert len(list((worker.root / "provider_raw").rglob("*.json"))) == 1
+    else:
+        assert not worker.cursor.exists()
+        assert not (worker.root / "provider_raw").exists()
 
 
 def test_config_interval_budget_and_scope_are_explicit(tmp_path):

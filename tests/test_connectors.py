@@ -52,6 +52,34 @@ def test_403_never_retries_or_exposes_token():
     assert len(attempts) == 1
 
 
+@pytest.mark.parametrize(("location", "count", "error"), [
+    ("https://other.test/data", 1, "redirect refused"),
+    ("https://other.test:marker/data", 3, "network outage"),
+])
+def test_injected_client_keeps_hooks_and_does_not_follow_redirects(monkeypatch, location, count, error):
+    hosts, statuses = [], []
+
+    def respond(request):
+        hosts.append(request.url.host)
+        if request.url.host == "provider.test":
+            return httpx.Response(302, headers={"Location": location})
+        return httpx.Response(200, json={"matches": []})
+
+    def observe(response):
+        statuses.append(response.status_code)
+
+    monkeypatch.setattr("arena_lakehouse.connectors.time.sleep", lambda _: None)
+    with httpx.Client(transport=httpx.MockTransport(respond), follow_redirects=True,
+                      event_hooks={"response": [observe]}) as client:
+        with pytest.raises(ProviderError, match=error) as failure:
+            request_json(client, "https://provider.test/data", {"X-Auth-Token": "test-only"}, {})
+        assert client.event_hooks["response"] == [observe]
+        assert client.follow_redirects and not client.is_closed
+    assert hosts == ["provider.test"] * count
+    assert statuses == [302] * count
+    assert "marker" not in str(failure.value)
+
+
 def test_poll_emits_only_changed_observations_and_does_not_commit_cursor(tmp_path, monkeypatch):
     monkeypatch.setenv("FOOTBALL_DATA_TOKEN", "test-only-not-a-real-token")
     cursor = tmp_path / "cursor.json"

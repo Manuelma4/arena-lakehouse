@@ -19,17 +19,34 @@ class ProviderError(RuntimeError):
     pass
 
 
+class ProviderRedirect(ProviderError):
+    def __init__(self, status_code: int):
+        super().__init__("Provider redirect refused")
+        self.status_code = status_code
+
+
+def _reject_provider_redirect(response: httpx.Response):
+    if response.is_redirect:
+        raise ProviderRedirect(response.status_code)
+
+
+def provider_client() -> httpx.Client:
+    # HTTPX can parse Location even when follow_redirects is disabled.
+    return httpx.Client(follow_redirects=False, event_hooks={"response": [_reject_provider_redirect]})
+
+
 def request_json(client, url, headers, params, attempts=3):
     if type(attempts) is not int or not 1 <= attempts <= 5:
         raise ValueError("Provider attempts must be 1..5")
     for attempt in range(attempts):
         try:
-            response = client.get(url, headers=headers, params=params, timeout=30)
+            response = client.get(url, headers=headers, params=params, timeout=30, follow_redirects=False)
         except (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError):
             if attempt + 1 == attempts:
                 raise ProviderError("Provider network outage; retry on the next poll") from None
             time.sleep(min(2 ** attempt, 30))
             continue
+        _reject_provider_redirect(response)
         if response.status_code in (401, 403):
             raise ProviderError("Provider authentication or plan access denied; check your free account")
         if response.status_code == 429 or response.status_code >= 500:
@@ -114,7 +131,8 @@ def collect(provider: str, state_path: Path, competition="PL", pages=1, client=N
     if not token:
         raise ProviderError(f"Set {'FOOTBALL_DATA_TOKEN' if provider == 'football-data' else 'PANDASCORE_TOKEN'} in .env")
     owns_client = client is None
-    client = client or httpx.Client(follow_redirects=False)
+    if owns_client:
+        client = provider_client()
     now = clock or (lambda: datetime.now(timezone.utc))
     requested_at = now()
     state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
