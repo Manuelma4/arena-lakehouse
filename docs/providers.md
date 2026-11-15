@@ -99,7 +99,10 @@ collector or worker reject 3xx responses before HTTPX parses the Location
 header. The worker records one failed attempt with the HTTP status. With a
 caller-supplied client, HTTPX can raise a protocol error for a malformed
 Location before exposing the response. Such failures use the bounded network
-retry policy at the original provider endpoint.
+retry policy at the original provider endpoint. In a single-scope football
+poll, a rejected redirect leaves the last successful snapshot selection, cursor
+and existing raw archive intact. The request ledger and live status record
+the failed attempts.
 
 The free route polls observations and replays changes through file streaming.
 It does not manufacture play-by-play, kills, rounds, xG or player telemetry.

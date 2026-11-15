@@ -1,11 +1,12 @@
 import json
+from contextlib import ExitStack
 from datetime import datetime, timedelta, timezone
 
 import httpx
 import pytest
 
 from arena_lakehouse.live import LiveConfig, LiveFailure, LiveWorker, _writer_lock
-from arena_lakehouse.provider_publication import current_publication
+from arena_lakehouse.provider_publication import SELECTOR, current_publication
 
 NOW = datetime(2026, 10, 6, 12, tzinfo=timezone.utc)
 TOKEN = "test-only-credential-never-real"
@@ -360,6 +361,74 @@ def test_owned_provider_client_distinguishes_redirects_and_disconnects(tmp_path,
     else:
         assert not worker.cursor.exists()
         assert not (worker.root / "provider_raw").exists()
+
+
+@pytest.mark.parametrize("injected", [False, True])
+def test_redirect_after_success_preserves_last_good_publication(tmp_path, monkeypatch, injected):
+    attempts, observed = [], []
+    clock = Clock()
+
+    def respond(request):
+        attempts.append(request.url.host)
+        assert request.headers["X-Auth-Token"] == TOKEN
+        if len(attempts) == 1:
+            return httpx.Response(200, json={"matches": [FOOTBALL]})
+        return httpx.Response(302, headers={"Location": "https://other.test:marker/data"})
+
+    def observe(response):
+        observed.append(response.status_code)
+
+    transport = httpx.MockTransport(respond)
+    with ExitStack() as stack:
+        client = None
+        if injected:
+            client = stack.enter_context(httpx.Client(
+                transport=transport, follow_redirects=True, event_hooks={"response": [observe]},
+            ))
+        else:
+            httpx_client = httpx.Client
+            monkeypatch.setattr(httpx, "Client", lambda **kwargs: httpx_client(transport=transport, **kwargs))
+        worker = LiveWorker(tmp_path, LiveConfig("football-data"), client=client, clock=clock)
+        first = worker.poll_once()
+        assert first["status"] == "ready"
+        publication = current_publication(worker.root, now=clock())
+        assert publication is not None
+        events = worker.pipeline.events()
+        archive_root = worker.root / "provider_raw"
+        snapshot = worker.snapshots / first["latest_snapshot"]
+        protected = [worker.snapshots / SELECTOR, worker.snapshots / "LATEST",
+                     worker.cursor, snapshot / "manifest.json"]
+        before = {path: path.read_bytes() for path in protected}
+        archive = {path: path.read_bytes() for path in archive_root.rglob("*.json")}
+        assert len(archive) == 1
+
+        clock.advance(60)
+        failed = worker.poll_once()
+
+        if injected:
+            assert client.follow_redirects and not client.is_closed
+            assert client.event_hooks["response"] == [observe]
+            assert observed == [200, 302, 302, 302]
+
+    rejected = [(None, "network_error")] * 3 if injected else [(302, "provider_http_error")]
+    with worker.ledger.connect() as db:
+        records = db.execute("SELECT status_code, error_code FROM requests ORDER BY id").fetchall()
+    assert [tuple(row) for row in records] == [(200, None), *rejected]
+    assert attempts == ["api.football-data.org"] * (1 + len(rejected))
+    assert failed["last_poll"]["requests"] == len(rejected)
+    assert first["request_budget"]["used"] == 1
+    assert failed["request_budget"]["used"] == len(rejected)
+    assert failed["status"] == "degraded"
+    assert failed["last_error_code"] == rejected[0][1]
+    assert status_file(worker) == failed
+    for field in ("last_success_at", "latest_snapshot", "last_change_at"):
+        assert failed[field] == first[field]
+    assert "marker" not in json.dumps(failed) and TOKEN not in json.dumps(failed)
+    assert current_publication(worker.root, now=clock()) == publication
+    assert worker.pipeline.events() == events
+    assert {path: path.read_bytes() for path in protected} == before
+    assert list(worker.snapshots.glob("snapshot-*")) == [snapshot]
+    assert {path: path.read_bytes() for path in archive_root.rglob("*.json")} == archive
 
 
 def test_config_interval_budget_and_scope_are_explicit(tmp_path):
