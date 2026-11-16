@@ -86,6 +86,9 @@ def export_snapshot(pipeline, output: Path, with_predictions=True, *, select_lat
     events = pipeline.events()
     if not events:
         raise ValueError("Cannot export an empty dataset")
+    as_of = max(event["observed_at"] for event in events)
+    if generated_at < datetime.fromisoformat(as_of):
+        raise ValueError("Snapshot generation time is before the latest observation")
     providers = sorted({e["provider"] for e in events})
     if "synthetic" in providers and len(providers) != 1:
         raise ValueError("Synthetic and API data require separate workspaces")
@@ -137,7 +140,7 @@ def export_snapshot(pipeline, output: Path, with_predictions=True, *, select_lat
              for p in sorted(stage.rglob("*")) if p.is_file()}
     manifest = dict(schema_version="2.0", dataset_version=digest({"events": events})[:16],
                     producer_version=__version__, generated_at=generated_at.astimezone(timezone.utc).isoformat(),
-                    as_of=max(e["observed_at"] for e in events),
+                    as_of=as_of,
                     data_kind="synthetic" if providers == ["synthetic"] else "api", providers=providers, files=files)
     write_json(stage / "manifest.json", manifest)
     destination = output / f"snapshot-{manifest['dataset_version']}-{uuid.uuid4().hex[:8]}"

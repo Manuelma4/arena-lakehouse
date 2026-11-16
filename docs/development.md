@@ -35,8 +35,9 @@ arena-lakehouse --workspace data/replay export
 ```
 
 Backfill bounds apply to observation availability time. Snapshot directories are
-immutable; `snapshots/LATEST` names the latest completed export. The complete
-interface is defined in [CONTRACT.md](../CONTRACT.md).
+immutable. `snapshots/LATEST` names the latest completed export.
+Export rejects a generation time earlier than the latest observation before
+writing a snapshot. The complete interface is defined in [CONTRACT.md](../CONTRACT.md).
 
 ## Spark container
 

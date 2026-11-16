@@ -112,6 +112,23 @@ def test_real_results_collected_today_cannot_supply_past_features():
     assert all(r["status"] == "insufficient_point_in_time_history" for r in report["sports"].values())
 
 
+def test_export_rejects_generation_before_observation_and_preserves_latest(tmp_path):
+    pipeline = Pipeline(tmp_path / "pipeline")
+    pipeline.ingest(generate(30, faults=False))
+    cutoff = datetime.fromisoformat(max(event["observed_at"] for event in pipeline.events()))
+    snapshots = tmp_path / "snapshots"
+    first = export_snapshot(pipeline, snapshots, with_predictions=False, generated_at=cutoff)
+    pointer = snapshots / "LATEST"
+    assert pointer.read_text().strip() == first.name
+    before = {path.name for path in snapshots.iterdir()}
+
+    with pytest.raises(ValueError, match="before the latest observation"):
+        export_snapshot(pipeline, snapshots, with_predictions=False, generated_at=cutoff - timedelta(microseconds=1))
+
+    assert pointer.read_text().strip() == first.name
+    assert {path.name for path in snapshots.iterdir()} == before
+
+
 def test_only_upcoming_matches_keep_empty_gold_schema(tmp_path):
     import pyarrow.parquet as pq
     records = [r for r in generate(30, faults=False) if r["status"] == "scheduled"]
