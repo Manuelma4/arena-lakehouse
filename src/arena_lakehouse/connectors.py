@@ -12,7 +12,7 @@ from pydantic import ValidationError
 
 from .calendar import _business, _payload
 from .http_retry import retry_after_delay
-from .schema import MatchEvent, digest
+from .schema import MatchEvent, digest, is_provider_identity
 
 
 class ProviderError(RuntimeError):
@@ -67,10 +67,15 @@ def normalize_football(raw: dict, observed_at: datetime) -> dict | None:
         return None
     score = raw.get("score", {}).get("fullTime", {})
     status = statuses[raw["status"]]
+    match_id = f"football-data:{raw['id']}"
+    team_a_id = f"football-data:{raw['homeTeam']['id']}"
+    team_b_id = f"football-data:{raw['awayTeam']['id']}"
+    if not all(is_provider_identity(value, "football-data") for value in (match_id, team_a_id, team_b_id)):
+        raise ValueError("Invalid canonical provider identity")
     # No historical availability is fabricated: results become known at collection time.
-    return dict(match_id=f"football-data:{raw['id']}", provider="football-data", sport="football",
-                competition=raw["competition"]["name"], team_a_id=f"football-data:{raw['homeTeam']['id']}",
-                team_a=raw["homeTeam"]["name"], team_b_id=f"football-data:{raw['awayTeam']['id']}",
+    return dict(match_id=match_id, provider="football-data", sport="football",
+                competition=raw["competition"]["name"], team_a_id=team_a_id,
+                team_a=raw["homeTeam"]["name"], team_b_id=team_b_id,
                 team_b=raw["awayTeam"]["name"], start_time=raw["utcDate"],
                 observed_at=observed_at, completed_at=observed_at if status == "finished" else None,
                 status=status, score_a=score.get("home"), score_b=score.get("away"), best_of=1)

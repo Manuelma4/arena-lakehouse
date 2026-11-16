@@ -255,6 +255,42 @@ def test_invalid_payload_is_archived_but_does_not_commit_cursor_or_publish(tmp_p
     assert len(list((worker.root / "provider_raw").rglob("*.json"))) == 1
 
 
+@pytest.mark.parametrize("invalid", [
+    dict(FOOTBALL, id=0),
+    dict(FOOTBALL, homeTeam={"id": True, "name": "Invalid club"}),
+])
+def test_invalid_football_identity_does_not_pollute_next_publication(tmp_path, invalid):
+    payloads = iter([FOOTBALL, invalid, dict(FOOTBALL, id=101)])
+    clock = Clock()
+    with httpx.Client(transport=httpx.MockTransport(
+        lambda _: httpx.Response(200, json={"matches": [next(payloads)]}),
+    )) as client:
+        worker = LiveWorker(tmp_path, LiveConfig("football-data"), client=client, clock=clock)
+        first = worker.poll_once()
+        assert first["status"] == "ready"
+        cursor = worker.cursor.read_bytes()
+        selector = (worker.snapshots / SELECTOR).read_bytes()
+        events = worker.pipeline.events()
+        clock.advance(60)
+
+        failed = worker.poll_once()
+
+        assert failed["status"] == "degraded"
+        assert failed["last_error_code"] == "invalid_provider_payload"
+        assert worker.cursor.read_bytes() == cursor
+        assert (worker.snapshots / SELECTOR).read_bytes() == selector
+        assert worker.pipeline.events() == events
+        assert len(list((worker.root / "provider_raw").rglob("*.json"))) == 2
+        clock.advance(60)
+
+        recovered = worker.poll_once()
+
+    assert recovered["status"] == "ready"
+    assert recovered["last_error_code"] is None
+    assert recovered["latest_snapshot"] != first["latest_snapshot"]
+    assert {row["match_id"] for row in worker.pipeline.events()} == {"football-data:100", "football-data:101"}
+
+
 def test_empty_and_unsupported_sources_have_explicit_success_counts(tmp_path):
     with client_for({"matches": [dict(FOOTBALL, status="UNKNOWN_STATUS")]}) as client:
         worker = LiveWorker(tmp_path, LiveConfig("football-data"), client=client, clock=Clock())

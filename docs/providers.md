@@ -102,7 +102,9 @@ Location before exposing the response. Such failures use the bounded network
 retry policy at the original provider endpoint. In a single-scope football
 poll, a rejected redirect leaves the last successful snapshot selection, cursor
 and existing raw archive intact. The request ledger and live status record
-the failed attempts.
+the failed attempts. A malformed match or team ID in an otherwise eligible
+football response fails collection before canonical ingest or cursor updates.
+The response remains in the private raw archive for diagnosis.
 
 The free route polls observations and replays changes through file streaming.
 It does not manufacture play-by-play, kills, rounds, xG or player telemetry.

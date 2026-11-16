@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import re
 from datetime import datetime, timezone
 from typing import Literal
 
@@ -62,6 +63,10 @@ class MatchEvent(BaseModel):
             value = getattr(self, name)
             row[name] = value.isoformat(timespec="microseconds").replace("+00:00", "Z") if value else None
         return row
+
+
+def is_provider_identity(value: str, provider: str) -> bool:
+    return re.fullmatch(re.escape(provider) + r":[1-9][0-9]{0,19}", value) is not None
 
 
 def canonical(value: dict) -> str:

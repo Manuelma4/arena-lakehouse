@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 
 from .calendar import CalendarError, _bounded_file, _no_symlink, _payload, validate_calendar
 from .engine import history, latest, team_stats
-from .schema import MatchEvent, digest
+from .schema import MatchEvent, digest, is_provider_identity
 from .snapshot import DOCUMENTS, TEAM_STATS_SCHEMA
 
 SCHEMA_VERSION = "arena-provider-publication-1.0"
@@ -275,7 +275,7 @@ def validate_canonical(path, provider, *, now):
             raise PublicationError("Invalid canonical match observation") from None
         if row != raw or row["provider"] != provider or row["sport"] != ("football" if provider == "football-data" else "valorant"):
             raise PublicationError("Canonical provider or type mismatch")
-        if any(not re.fullmatch(re.escape(provider) + r":[1-9][0-9]{0,19}", row[key])
+        if any(not is_provider_identity(row[key], provider)
                for key in ("match_id", "team_a_id", "team_b_id")):
             raise PublicationError("Invalid canonical provider identity")
         if row["event_id"] in ids or (row["match_id"], row["revision"]) in versions:
