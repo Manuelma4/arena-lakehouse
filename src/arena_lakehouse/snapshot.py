@@ -100,51 +100,52 @@ def export_snapshot(pipeline, output: Path, with_predictions=True, *, select_lat
     matches, stats = latest(events), team_stats(latest(events))
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
-    stage = Path(tempfile.mkdtemp(prefix=".staging-", dir=output))
-    (stage / "gold").mkdir()
-    (stage / "docs").mkdir()
-    (stage / "bronze").mkdir()
-    pq.write_table(pa.Table.from_pylist(matches), stage / "gold/matches.parquet")
-    pq.write_table(pa.Table.from_pylist(stats, schema=TEAM_STATS_SCHEMA), stage / "gold/team_stats.parquet")
-    pq.write_table(pa.Table.from_pylist(history(events)), stage / "gold/match_history.parquet")
-    (stage / "bronze/events.jsonl").write_text("\n".join(canonical(e) for e in events) + "\n", encoding="utf-8")
-    tables = []
-    for name, description in (("matches", "Current canonical match revisions"),
-                              ("team_stats", "Completed-match team aggregates"),
-                              ("match_history", "Observation-time match revision history")):
-        arrow_schema = pq.read_schema(stage / f"gold/{name}.parquet")
-        tables.append(dict(name=name, layer="gold", description=description,
-            columns=[dict(name=f.name, type=str(f.type), description=f.name.replace("_", " ")) for f in arrow_schema],
-            primary_key=["sport", "team_id"] if name == "team_stats" else ["match_id", "revision"] if name == "match_history" else ["match_id"]))
-    write_json(stage / "catalog.json", tables)
-    write_json(stage / "metrics.json", [
-        dict(name="win_rate", description="Wins / finished matches", unit="ratio", table="team_stats", formula="wins / matches"),
-        dict(name="score_for", description="Goals for football; maps won for VALORANT", unit="sport-specific", table="team_stats", formula="SUM(score_for)"),
-    ])
-    write_json(stage / "lineage.json", [
-        dict(source="provider_api_or_replay", target="bronze_events", transformation="validated observations"),
-        dict(source="bronze_events", target="matches", transformation="highest accepted source revision"),
-        dict(source="matches", target="team_stats", transformation="finished matches grouped by sport and team"),
-        dict(source="bronze_events", target="predictions", transformation="point-in-time features and baseline model"),
-    ])
-    write_json(stage / "quality.json", quality)
-    write_json(stage / "incidents.json", [dict(incident_id=digest(c)[:16], **{
-        k: c[k] for k in ("rule", "table", "severity")}, description=f"{c['failed']} quarantined observations",
-        status="open", event_count=c["failed"], remediation="Inspect quarantined source records, correct and replay")
-        for c in quality["checks"]])
-    write_json(stage / "predictions.json", predictions)
-    write_json(stage / "model_report.json", model_report)
-    for slug, (title, body) in DOCUMENTS.items():
-        (stage / f"docs/{slug}.md").write_text(f"# {title}\n\n{body}\n", encoding="utf-8")
-    files = {p.relative_to(stage).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
-             for p in sorted(stage.rglob("*")) if p.is_file()}
-    manifest = dict(schema_version="2.0", dataset_version=digest({"events": events})[:16],
-                    producer_version=__version__, generated_at=generated_at.astimezone(timezone.utc).isoformat(),
-                    as_of=as_of,
-                    data_kind="synthetic" if providers == ["synthetic"] else "api", providers=providers, files=files)
-    write_json(stage / "manifest.json", manifest)
-    destination = output / f"snapshot-{manifest['dataset_version']}-{uuid.uuid4().hex[:8]}"
-    stage.replace(destination)
+    with tempfile.TemporaryDirectory(prefix=".staging-", dir=output) as staging:
+        stage = Path(staging)
+        (stage / "gold").mkdir()
+        (stage / "docs").mkdir()
+        (stage / "bronze").mkdir()
+        pq.write_table(pa.Table.from_pylist(matches), stage / "gold/matches.parquet")
+        pq.write_table(pa.Table.from_pylist(stats, schema=TEAM_STATS_SCHEMA), stage / "gold/team_stats.parquet")
+        pq.write_table(pa.Table.from_pylist(history(events)), stage / "gold/match_history.parquet")
+        (stage / "bronze/events.jsonl").write_text("\n".join(canonical(e) for e in events) + "\n", encoding="utf-8")
+        tables = []
+        for name, description in (("matches", "Current canonical match revisions"),
+                                  ("team_stats", "Completed-match team aggregates"),
+                                  ("match_history", "Observation-time match revision history")):
+            arrow_schema = pq.read_schema(stage / f"gold/{name}.parquet")
+            tables.append(dict(name=name, layer="gold", description=description,
+                columns=[dict(name=f.name, type=str(f.type), description=f.name.replace("_", " ")) for f in arrow_schema],
+                primary_key=["sport", "team_id"] if name == "team_stats" else ["match_id", "revision"] if name == "match_history" else ["match_id"]))
+        write_json(stage / "catalog.json", tables)
+        write_json(stage / "metrics.json", [
+            dict(name="win_rate", description="Wins / finished matches", unit="ratio", table="team_stats", formula="wins / matches"),
+            dict(name="score_for", description="Goals for football; maps won for VALORANT", unit="sport-specific", table="team_stats", formula="SUM(score_for)"),
+        ])
+        write_json(stage / "lineage.json", [
+            dict(source="provider_api_or_replay", target="bronze_events", transformation="validated observations"),
+            dict(source="bronze_events", target="matches", transformation="highest accepted source revision"),
+            dict(source="matches", target="team_stats", transformation="finished matches grouped by sport and team"),
+            dict(source="bronze_events", target="predictions", transformation="point-in-time features and baseline model"),
+        ])
+        write_json(stage / "quality.json", quality)
+        write_json(stage / "incidents.json", [dict(incident_id=digest(c)[:16], **{
+            k: c[k] for k in ("rule", "table", "severity")}, description=f"{c['failed']} quarantined observations",
+            status="open", event_count=c["failed"], remediation="Inspect quarantined source records, correct and replay")
+            for c in quality["checks"]])
+        write_json(stage / "predictions.json", predictions)
+        write_json(stage / "model_report.json", model_report)
+        for slug, (title, body) in DOCUMENTS.items():
+            (stage / f"docs/{slug}.md").write_text(f"# {title}\n\n{body}\n", encoding="utf-8")
+        files = {p.relative_to(stage).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+                 for p in sorted(stage.rglob("*")) if p.is_file()}
+        manifest = dict(schema_version="2.0", dataset_version=digest({"events": events})[:16],
+                        producer_version=__version__, generated_at=generated_at.astimezone(timezone.utc).isoformat(),
+                        as_of=as_of,
+                        data_kind="synthetic" if providers == ["synthetic"] else "api", providers=providers, files=files)
+        write_json(stage / "manifest.json", manifest)
+        destination = output / f"snapshot-{manifest['dataset_version']}-{uuid.uuid4().hex[:8]}"
+        stage.replace(destination)
     if select_latest:
         pointer = output / ".LATEST.tmp"
         pointer.write_text(destination.name, encoding="utf-8")

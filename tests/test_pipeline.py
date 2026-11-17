@@ -129,6 +129,35 @@ def test_export_rejects_generation_before_observation_and_preserves_latest(tmp_p
     assert {path.name for path in snapshots.iterdir()} == before
 
 
+def test_failed_snapshot_write_cleans_staging_and_preserves_latest(tmp_path, monkeypatch):
+    import pyarrow.parquet as pq
+
+    pipeline = Pipeline(tmp_path / "pipeline")
+    pipeline.ingest(generate(30, faults=False))
+    snapshots = tmp_path / "snapshots"
+    first = export_snapshot(pipeline, snapshots, with_predictions=False)
+    pointer = snapshots / "LATEST"
+    before = {path.name for path in snapshots.iterdir()}
+    write_table = pq.write_table
+
+    def fail_after_first_table(table, path, *args, **kwargs):
+        if path.name == "team_stats.parquet":
+            assert path.with_name("matches.parquet").is_file()
+            raise OSError("injected snapshot write failure")
+        return write_table(table, path, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(pq, "write_table", fail_after_first_table)
+        with pytest.raises(OSError, match="injected snapshot write failure"):
+            export_snapshot(pipeline, snapshots, with_predictions=False)
+
+    assert pointer.read_text().strip() == first.name
+    assert {path.name for path in snapshots.iterdir()} == before
+    retried = export_snapshot(pipeline, snapshots, with_predictions=False)
+    assert retried != first
+    assert pointer.read_text().strip() == retried.name
+
+
 def test_only_upcoming_matches_keep_empty_gold_schema(tmp_path):
     import pyarrow.parquet as pq
     records = [r for r in generate(30, faults=False) if r["status"] == "scheduled"]
