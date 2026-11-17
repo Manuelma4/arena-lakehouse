@@ -38,8 +38,10 @@ Backfill bounds apply to observation availability time. Snapshot directories are
 immutable. `snapshots/LATEST` names the latest completed export.
 Export rejects a generation time earlier than the latest observation before
 writing a snapshot. If writing the payload fails, the exporter removes the
-staging directory and preserves the previous selection. See [CONTRACT.md](../CONTRACT.md)
-for the complete interface.
+staging directory and preserves the previous selection. Each export writes its
+own selector file before replacing `LATEST`. If the replacement fails, the
+exporter removes its selector file. The old selection and the new, complete but
+unselected snapshot remain. See [CONTRACT.md](../CONTRACT.md) for the interface.
 
 ## Spark container
 

@@ -1,5 +1,6 @@
 import random
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import pytest
 
@@ -8,6 +9,47 @@ from arena_lakehouse.prediction import features, train_and_predict
 from arena_lakehouse.schema import MatchEvent
 from arena_lakehouse.snapshot import export_snapshot
 from arena_lakehouse.synthetic import generate
+
+
+def test_export_does_not_follow_a_stale_pointer_symlink(tmp_path):
+    pipeline = Pipeline(tmp_path / "lake")
+    pipeline.ingest(generate(20, faults=False))
+    output = tmp_path / "snapshots"
+    output.mkdir()
+    sentinel = tmp_path / "sentinel"
+    sentinel.write_text("keep", encoding="utf-8")
+    (output / ".LATEST.tmp").symlink_to(sentinel)
+
+    snapshot = export_snapshot(pipeline, output, with_predictions=False)
+
+    assert sentinel.read_text(encoding="utf-8") == "keep"
+    assert not (output / "LATEST").is_symlink()
+    assert (output / "LATEST").read_text(encoding="utf-8") == snapshot.name
+
+
+def test_interleaved_exports_publish_independent_pointers(tmp_path, monkeypatch):
+    pipeline = Pipeline(tmp_path / "lake")
+    pipeline.ingest(generate(20, faults=False))
+    output = tmp_path / "snapshots"
+    replace = Path.replace
+    other_snapshot = None
+    interleaved = False
+
+    def interleave(pointer, target):
+        nonlocal other_snapshot, interleaved
+        if target.name == "LATEST" and not interleaved:
+            interleaved = True
+            other_snapshot = export_snapshot(pipeline, output, with_predictions=False)
+        return replace(pointer, target)
+
+    monkeypatch.setattr(Path, "replace", interleave)
+    snapshot = export_snapshot(pipeline, output, with_predictions=False)
+
+    assert other_snapshot is not None and other_snapshot != snapshot
+    assert (other_snapshot / "manifest.json").is_file()
+    assert (snapshot / "manifest.json").is_file()
+    assert (output / "LATEST").read_text(encoding="utf-8") == snapshot.name
+    assert not list(output.glob(".LATEST*.tmp"))
 
 
 def test_replay_is_idempotent_and_quarantine_is_stable(tmp_path):
@@ -156,6 +198,42 @@ def test_failed_snapshot_write_cleans_staging_and_preserves_latest(tmp_path, mon
     retried = export_snapshot(pipeline, snapshots, with_predictions=False)
     assert retried != first
     assert pointer.read_text().strip() == retried.name
+
+
+def test_failed_pointer_replace_preserves_selection_and_cleans_its_staging_file(tmp_path, monkeypatch):
+    pipeline = Pipeline(tmp_path / "lake")
+    pipeline.ingest(generate(30, faults=False))
+    output = tmp_path / "snapshots"
+    first = export_snapshot(pipeline, output, with_predictions=False)
+    pointer = output / "LATEST"
+    original_selection = pointer.read_bytes()
+    original_manifest = (first / "manifest.json").read_bytes()
+    replace = Path.replace
+    unselected = None
+
+    def fail_pointer(source, target):
+        nonlocal unselected
+        if target == pointer:
+            unselected = output / source.read_text(encoding="utf-8")
+            assert (unselected / "manifest.json").is_file()
+            assert (unselected / "gold/matches.parquet").is_file()
+            raise OSError("injected pointer replacement failure")
+        return replace(source, target)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "replace", fail_pointer)
+        with pytest.raises(OSError, match="injected pointer replacement failure"):
+            export_snapshot(pipeline, output, with_predictions=False)
+
+    assert unselected is not None and unselected != first
+    assert (unselected / "manifest.json").is_file()
+    assert pointer.read_bytes() == original_selection
+    assert (first / "manifest.json").read_bytes() == original_manifest
+    assert not list(output.glob(".staging-*"))
+    assert not list(output.glob(".LATEST*.tmp"))
+    retried = export_snapshot(pipeline, output, with_predictions=False)
+    assert retried not in (first, unselected)
+    assert pointer.read_text(encoding="utf-8") == retried.name
 
 
 def test_only_upcoming_matches_keep_empty_gold_schema(tmp_path):
