@@ -9,6 +9,7 @@ import sqlite3
 import time
 import uuid
 from collections import defaultdict
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -203,13 +204,28 @@ class Pipeline:
 
     def events(self):
         with self.connect() as db:
-            return [json.loads(x[0]) for x in db.execute("SELECT payload FROM events ORDER BY match_id,revision")]
+            return self._events(db)
+
+    @staticmethod
+    def _events(db):
+        return [json.loads(x[0]) for x in db.execute("SELECT payload FROM events ORDER BY match_id,revision")]
 
     def quality(self):
-        with self.connect() as db:
-            counts = dict(db.execute("SELECT reason,COUNT(*) FROM quarantine GROUP BY reason"))
-            total = db.execute("SELECT COUNT(*) FROM events").fetchone()[0]
-            last_run = db.execute("SELECT run_id,status FROM runs ORDER BY rowid DESC LIMIT 1").fetchone()
+        with closing(self.connect()) as db, db:
+            db.execute("BEGIN")
+            return self._quality(db)
+
+    def snapshot_inputs(self):
+        """Materialize quality and events from one SQLite read transaction."""
+        with closing(self.connect()) as db, db:
+            db.execute("BEGIN")
+            return self._quality(db), self._events(db)
+
+    @staticmethod
+    def _quality(db):
+        counts = dict(db.execute("SELECT reason,COUNT(*) FROM quarantine GROUP BY reason"))
+        total = db.execute("SELECT COUNT(*) FROM events").fetchone()[0]
+        last_run = db.execute("SELECT run_id,status FROM runs ORDER BY rowid DESC LIMIT 1").fetchone()
         checks = [dict(rule=k, table="bronze_events", passed=total, failed=v, severity="warning")
                   for k, v in counts.items()]
         return dict(run_id=last_run[0] if last_run else "empty", checks=checks,

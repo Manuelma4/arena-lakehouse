@@ -43,6 +43,12 @@ own selector file before replacing `LATEST`. If the replacement fails, the
 exporter removes its selector file. The old selection and the new, complete but
 unselected snapshot remain. See [CONTRACT.md](../CONTRACT.md) for the interface.
 
+The reference exporter reads quality metadata and accepted observations in one
+SQLite read transaction. An ingest committed after the first read belongs to
+the next export; it cannot add rows to a package with an earlier quality report.
+The transaction ends after the inputs have been materialized, before model
+training or file serialization. This consistency check does not run Spark.
+
 ## Spark container
 
 Docker Desktop must use Linux containers. From PowerShell:

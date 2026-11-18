@@ -1,3 +1,4 @@
+import json
 import random
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -9,6 +10,44 @@ from arena_lakehouse.prediction import features, train_and_predict
 from arena_lakehouse.schema import MatchEvent
 from arena_lakehouse.snapshot import export_snapshot
 from arena_lakehouse.synthetic import generate
+
+
+def test_export_reads_quality_and_events_from_one_database_snapshot(tmp_path, monkeypatch):
+    pipeline = Pipeline(tmp_path / "lake")
+    initial = pipeline.ingest(generate(20, faults=False))
+    original_events = pipeline.events()
+    extra = dict(original_events[0], event_id="concurrent-event", match_id="concurrent-match")
+    connect = pipeline.connect
+    with connect() as db:
+        db.execute("PRAGMA journal_mode=WAL")
+    concurrent_run = None
+
+    def interleave(statement):
+        nonlocal concurrent_run
+        if statement.startswith("SELECT payload FROM events") and concurrent_run is None:
+            concurrent_run = "in-progress"
+            concurrent_run = pipeline.ingest([extra])["run_id"]
+
+    def traced_connection():
+        db = connect()
+        db.set_trace_callback(interleave)
+        return db
+
+    monkeypatch.setattr(pipeline, "connect", traced_connection)
+    first = export_snapshot(pipeline, tmp_path / "snapshots", with_predictions=False)
+    quality = json.loads((first / "quality.json").read_text())
+    events = [json.loads(line) for line in (first / "bronze/events.jsonl").read_text().splitlines()]
+    assert concurrent_run not in (None, "in-progress")
+    assert quality["run_id"] == initial["run_id"]
+    assert quality["summary"]["valid_events"] == len(events) == len(original_events)
+    assert events == original_events
+
+    second = export_snapshot(pipeline, tmp_path / "snapshots", with_predictions=False)
+    quality = json.loads((second / "quality.json").read_text())
+    events = [json.loads(line) for line in (second / "bronze/events.jsonl").read_text().splitlines()]
+    assert quality["run_id"] == concurrent_run
+    assert quality["summary"]["valid_events"] == len(events) == len(original_events) + 1
+    assert extra in events
 
 
 def test_export_does_not_follow_a_stale_pointer_symlink(tmp_path):

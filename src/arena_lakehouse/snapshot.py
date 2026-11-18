@@ -80,10 +80,14 @@ def export_snapshot(pipeline, output: Path, with_predictions=True, *, select_lat
     if (not isinstance(generated_at, datetime) or generated_at.tzinfo is None
             or generated_at.utcoffset() is None):
         raise ValueError("Snapshot publication requires an aware clock")
-    quality = pipeline.quality()
+    read_inputs = getattr(pipeline, "snapshot_inputs", None)
+    if read_inputs is not None:
+        quality, events = read_inputs()
+    else:
+        # Other adapters own their export consistency, such as the locked Spark export.
+        quality, events = pipeline.quality(), pipeline.events()
     if quality["summary"]["last_run_status"] != "succeeded":
         raise ValueError("Publish only after a successful ingest")
-    events = pipeline.events()
     if not events:
         raise ValueError("Cannot export an empty dataset")
     as_of = max(event["observed_at"] for event in events)
