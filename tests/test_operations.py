@@ -80,6 +80,35 @@ def test_same_match_version_conflict_does_not_block_a_later_distinct_revision(tm
     assert [e["event_id"] for e in pipeline.events()] == ["later-revision"]
 
 
+@pytest.mark.parametrize("blocked_kind", ["match", "version"])
+def test_blocked_match_or_version_cannot_hide_an_active_event_id_collision(tmp_path, blocked_kind):
+    original = next(e for e in generate(30, faults=False) if e["sport"] == "football" and e["status"] == "finished")
+    pipeline = Pipeline(tmp_path)
+    if blocked_kind == "match":
+        conflict = dict(original, match_id="blocked-other")
+    else:
+        conflict = dict(original, event_id="conflict-version", score_a=original["score_a"] + 1)
+    pipeline.ingest([original, conflict])
+    active = dict(original, match_id="active-match", event_id="active-event")
+    sentinel = dict(original, match_id="sentinel-match", event_id="sentinel-event")
+    pipeline.ingest([active, sentinel])
+    pipeline.ingest([dict(original, event_id=active["event_id"])])
+    assert [e["match_id"] for e in pipeline.events()] == [sentinel["match_id"]]
+    restarted = Pipeline(tmp_path)
+    restarted.ingest([dict(active, event_id="retry-active")])
+    assert [e["match_id"] for e in restarted.events()] == [sentinel["match_id"]]
+
+
+def test_blocked_match_retry_with_an_unrelated_id_preserves_other_matches(tmp_path):
+    original = next(e for e in generate(30, faults=False) if e["sport"] == "football" and e["status"] == "finished")
+    pipeline = Pipeline(tmp_path)
+    pipeline.ingest([original, dict(original, match_id="blocked-other")])
+    active = dict(original, match_id="active-match", event_id="active-event")
+    pipeline.ingest([active])
+    pipeline.ingest([dict(original, event_id="unrelated-retry")])
+    assert [e["match_id"] for e in pipeline.events()] == [active["match_id"]]
+
+
 def test_spark_candidate_rejects_conflicts_before_commit_and_preserves_api_retry_time():
     rows = generate(30, faults=False)
     old = next(r for r in rows if r["status"] == "finished" and r["sport"] == "football")

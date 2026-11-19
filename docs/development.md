@@ -40,7 +40,9 @@ interface is defined in [CONTRACT.md](../CONTRACT.md).
 
 The reference ingest retains conflicting versions in quarantine. If a blocked
 event ID later identifies another match, both affected matches remain blocked
-after restart. A distinct later revision of the same match retains the existing
+after restart. Active event IDs are checked before blocked match/version guards,
+so an ignored attempt cannot hide a collision with another active match.
+A distinct later revision of the same match retains the existing
 version-conflict behavior. Reproduce the overlapping-ID and valid-revision
 controls without Spark:
 
