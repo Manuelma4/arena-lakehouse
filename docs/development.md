@@ -49,6 +49,27 @@ the next export; it cannot add rows to a package with an earlier quality report.
 The transaction ends after the inputs have been materialized, before model
 training or file serialization. This consistency check does not run Spark.
 
+The reference ingest retains conflicting versions in quarantine. If a blocked
+event ID later identifies another match, both affected matches remain blocked
+after restart. Active event IDs are checked before blocked match/version guards,
+so an ignored attempt cannot hide a collision with another active match.
+A distinct later revision of the same match retains the existing
+version-conflict behavior. Reproduce the overlapping-ID and valid-revision
+controls without Spark:
+
+```bash
+python -m pytest -q tests/test_operations.py -k 'overlapping_event_id or same_match_version_conflict'
+```
+
+The combined regression commits an identity-triggered deletion during a WAL
+export. The first package retains its previous quality report and observations;
+the next contains only the unaffected match and the new run ID. Bronze and Gold
+identities, event counts, selector and restart behavior are checked together:
+
+```bash
+python -m pytest -q tests/test_export_composition.py
+```
+
 ## Spark container
 
 Docker Desktop must use Linux containers. From PowerShell:
