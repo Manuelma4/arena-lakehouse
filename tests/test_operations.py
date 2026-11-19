@@ -54,6 +54,32 @@ def test_global_event_id_collision_blocks_both_matches_regardless_of_order(tmp_p
         assert pipeline.events() == []
 
 
+def test_overlapping_event_id_conflicts_cannot_restore_a_match_after_restart(tmp_path):
+    original = next(e for e in generate(30, faults=False) if e["sport"] == "football" and e["status"] == "finished")
+    second = dict(original, event_id="event-b", match_id="match-b")
+    bridge = dict(second, event_id=original["event_id"])
+    for index, ordering in enumerate(itertools.permutations([original, second, bridge])):
+        root = tmp_path / str(index)
+        pipeline = Pipeline(root)
+        pipeline.ingest(list(ordering))
+        assert pipeline.events() == []
+        restarted = Pipeline(root)
+        restarted.ingest([dict(original, event_id="retry-original"), dict(second, event_id="retry-second")])
+        assert restarted.events() == []
+
+
+def test_same_match_version_conflict_does_not_block_a_later_distinct_revision(tmp_path):
+    original = next(e for e in generate(30, faults=False) if e["sport"] == "football" and e["status"] == "finished")
+    pipeline = Pipeline(tmp_path)
+    pipeline.ingest([original, dict(original, score_a=original["score_a"] + 1)])
+    pipeline.ingest([original])
+    assert pipeline.events() == []
+    revised = dict(original, event_id="later-revision", revision=original["revision"] + 1,
+                   observed_at="2026-01-01T00:00:00Z")
+    pipeline.ingest([revised])
+    assert [e["event_id"] for e in pipeline.events()] == ["later-revision"]
+
+
 def test_spark_candidate_rejects_conflicts_before_commit_and_preserves_api_retry_time():
     rows = generate(30, faults=False)
     old = next(r for r in rows if r["status"] == "finished" and r["sport"] == "football")

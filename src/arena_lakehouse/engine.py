@@ -115,6 +115,15 @@ class Pipeline:
                         quarantined += 1
                         continue
                     if db.execute("SELECT 1 FROM blocked WHERE event_id=?", (event["event_id"],)).fetchone():
+                        # A version conflict keeps both canonical payloads in
+                        # quarantine. A reused blocked ID must still expose a
+                        # collision with another match after process restart.
+                        identities = {previous["match_id"] for (payload,) in db.execute(
+                            "SELECT payload FROM quarantine WHERE reason='conflicting_revision'")
+                            if (previous := json.loads(payload))["event_id"] == event["event_id"]}
+                        if identities - {event["match_id"]}:
+                            self._block_matches(db, identities | {event["match_id"]})
+                            self._quarantine(db, event, "revision_time_or_identity")
                         quarantined += 1
                         continue
                     if db.execute("SELECT 1 FROM blocked_matches WHERE match_id=?", (event["match_id"],)).fetchone():
@@ -126,9 +135,11 @@ class Pipeline:
                         self._quarantine(db, event, "conflicting_revision")
                         quarantined += 1
                         continue
-                    old = db.execute("SELECT event_id,payload_hash,payload FROM events WHERE event_id=? "
-                                     "OR (match_id=? AND revision=?)",
-                                     (event["event_id"], event["match_id"], event["revision"])).fetchone()
+                    old = db.execute("SELECT event_id,payload_hash,payload FROM events WHERE event_id=?",
+                                     (event["event_id"],)).fetchone()
+                    if old is None:
+                        old = db.execute("SELECT event_id,payload_hash,payload FROM events WHERE match_id=? AND revision=?",
+                                         (event["match_id"], event["revision"])).fetchone()
                     if old:
                         previous = json.loads(old[2])
                         if previous["match_id"] != event["match_id"]:
@@ -136,12 +147,7 @@ class Pipeline:
                             # chains. Blocking both is independent of arrival
                             # order and prevents later alternate IDs restoring
                             # a payload that was previously rejected.
-                            for ident in (previous["match_id"], event["match_id"]):
-                                known = db.execute("SELECT payload FROM events WHERE match_id=?", (ident,)).fetchall()
-                                for item in known:
-                                    self._quarantine(db, json.loads(item[0]), "revision_time_or_identity")
-                                db.execute("DELETE FROM events WHERE match_id=?", (ident,))
-                                db.execute("INSERT OR IGNORE INTO blocked_matches VALUES (?)", (ident,))
+                            self._block_matches(db, {previous["match_id"], event["match_id"]})
                             self._quarantine(db, event, "revision_time_or_identity")
                             quarantined += 1
                             continue
@@ -195,6 +201,14 @@ class Pipeline:
                            (time.perf_counter() - start, type(error).__name__, run_id))
             raise
         return dict(run_id=run_id, accepted=accepted, duplicates=duplicates, quarantined=quarantined)
+
+    def _block_matches(self, db, identities):
+        for ident in sorted(identities):
+            known = db.execute("SELECT payload FROM events WHERE match_id=?", (ident,)).fetchall()
+            for item in known:
+                self._quarantine(db, json.loads(item[0]), "revision_time_or_identity")
+            db.execute("DELETE FROM events WHERE match_id=?", (ident,))
+            db.execute("INSERT OR IGNORE INTO blocked_matches VALUES (?)", (ident,))
 
     @staticmethod
     def _quarantine(db, raw, reason):

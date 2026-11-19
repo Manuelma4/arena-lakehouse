@@ -38,6 +38,16 @@ Backfill bounds apply to observation availability time. Snapshot directories are
 immutable; `snapshots/LATEST` names the latest completed export. The complete
 interface is defined in [CONTRACT.md](../CONTRACT.md).
 
+The reference ingest retains conflicting versions in quarantine. If a blocked
+event ID later identifies another match, both affected matches remain blocked
+after restart. A distinct later revision of the same match retains the existing
+version-conflict behavior. Reproduce the overlapping-ID and valid-revision
+controls without Spark:
+
+```bash
+python -m pytest -q tests/test_operations.py -k 'overlapping_event_id or same_match_version_conflict'
+```
+
 ## Spark container
 
 Docker Desktop must use Linux containers. From PowerShell:
