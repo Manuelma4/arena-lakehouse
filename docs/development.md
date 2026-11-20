@@ -74,6 +74,30 @@ identities, event counts, selector and restart behavior are checked together:
 python -m pytest -q tests/test_export_composition.py
 ```
 
+### Reopening a reference workspace
+
+The reference CLI opens `control.db` before running `export`, `replay` or
+`backfill`. With the retired-ID reconciliation change, that open can update
+reservations and move accepted observations into quarantine. To inspect an
+older workspace with this version, stop its writers and use a private copy
+made while the workspace is idle. Keep the original workspace available for
+comparison.
+
+If the export from the copy succeeds, inspect the manifest and `quality.json`
+in the package named by `LATEST`. Check warning counts and the current match
+set. The quality `run_id` comes from the most recent ingest record, because
+opening the workspace does not record a separate ingest run. An export requires
+remaining accepted observations and a successful last ingest. If no accepted
+observations remain, export stops before changing `LATEST`. Review the selected
+package before pointing a consumer at it, since an earlier selection may
+predate the reconciliation.
+
+The [reference regression](../tests/test_export_composition.py) opens
+synthetic workspaces where a retired ID is already reserved, unreserved, or
+reused by a third match. It checks the resulting accepted events and exported
+Bronze and Gold identities. The assertions cover the SQLite reference path
+and its Parquet export.
+
 ## Spark container
 
 Docker Desktop must use Linux containers. From PowerShell:
