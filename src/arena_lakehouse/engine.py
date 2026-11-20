@@ -88,6 +88,12 @@ class Pipeline:
                 PRIMARY KEY(match_id,revision));
               CREATE TABLE IF NOT EXISTS blocked_matches(match_id TEXT PRIMARY KEY);
             """)
+            # Restore reservations written before match conflicts reserved their IDs.
+            retired = [(json.loads(payload)["event_id"],) for (payload,) in db.execute(
+                "SELECT payload FROM quarantine WHERE reason='revision_time_or_identity'")]
+            db.executemany("INSERT OR IGNORE INTO blocked VALUES (?)", retired)
+            reused = db.execute("SELECT DISTINCT match_id FROM events WHERE event_id IN (SELECT event_id FROM blocked)").fetchall()
+            self._block_matches(db, {ident for (ident,) in reused})
 
     def connect(self):
         return sqlite3.connect(self.root / "control.db", timeout=30)
@@ -126,11 +132,11 @@ class Pipeline:
                         quarantined += 1
                         continue
                     if db.execute("SELECT 1 FROM blocked WHERE event_id=?", (event["event_id"],)).fetchone():
-                        # A version conflict keeps both canonical payloads in
-                        # quarantine. A reused blocked ID must still expose a
+                        # Conflicts keep canonical identity evidence in quarantine.
+                        # A reused blocked ID must still expose a
                         # collision with another match after process restart.
                         identities = {previous["match_id"] for (payload,) in db.execute(
-                            "SELECT payload FROM quarantine WHERE reason='conflicting_revision'")
+                            "SELECT payload FROM quarantine WHERE reason IN ('conflicting_revision','revision_time_or_identity')")
                             if (previous := json.loads(payload))["event_id"] == event["event_id"]}
                         if identities - {event["match_id"]}:
                             self._block_matches(db, identities | {event["match_id"]})
@@ -212,6 +218,8 @@ class Pipeline:
 
     @staticmethod
     def _quarantine(db, raw, reason):
+        if reason == "revision_time_or_identity":
+            db.execute("INSERT OR IGNORE INTO blocked VALUES (?)", (raw["event_id"],))
         key = digest({"raw": raw, "reason": reason})
         db.execute("INSERT OR IGNORE INTO quarantine VALUES (?,?,?)", (key, reason, canonical(raw)))
 

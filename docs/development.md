@@ -50,8 +50,12 @@ The transaction ends after the inputs have been materialized, before model
 training or file serialization. This consistency check does not run Spark.
 
 The reference ingest retains conflicting versions in quarantine. If a blocked
-event ID later identifies another match, both affected matches remain blocked
-after restart. Active event IDs are checked before blocked match/version guards,
+event ID later identifies another match, all affected matches remain blocked
+after restart. IDs retired by a match-identity conflict stay reserved, including
+when a third match reuses the ID. Opening an older workspace restores these
+reservations from canonical quarantine records and removes active reuse of a
+retired ID. Previously exported immutable packages are not rewritten. Active
+event IDs are checked before blocked match/version guards,
 so an ignored attempt cannot hide a collision with another active match.
 A distinct later revision of the same match retains the existing
 version-conflict behavior. Reproduce the overlapping-ID and valid-revision
