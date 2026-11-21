@@ -2,16 +2,36 @@
 
 ## 1. Ingestion: separate observation from event time
 
-Run the offline demo. Open two revisions of the same match in
-`bronze/events.jsonl`. The scheduled kickoff is not the time the result became
-known. Find an event delivered before its older revision in the generated input.
-Explain why `revision` chooses current state while `observed_at` limits features.
+With the CLI installed in the [reference environment](development.md), start a
+fresh synthetic workspace from the repository root. Keep this shell open for
+the replay:
+
+```sh
+workspace="$(mktemp -d "${TMPDIR:-/tmp}/arena-lab-01.XXXXXX")"
+arena-lakehouse --workspace "$workspace" demo --matches 240 --seed 42
+snapshot="$workspace/snapshots/$(cat "$workspace/snapshots/LATEST")"
+grep -F 'synthetic:football:000000' "$snapshot/bronze/events.jsonl"
+```
+
+Compare `start_time`, `observed_at` and `revision` for the two revisions. Explain
+why the revision selects current state and observation time limits features.
+The [generator](../src/arena_lakehouse/synthetic.py) shuffles delivery order.
+The exported Bronze file contains accepted observations sorted by match ID and
+revision, so use it to compare revisions.
 
 ## 2. Correctness: make replay boring
 
-Run `replay` on the canonical JSONL file. Accepted observations should be zero;
-current matches and aggregates stay unchanged. Then read the quarantine summary.
-An invalid payload cannot silently count as a finished match.
+Replay the accepted observations into the same workspace:
+
+```sh
+arena-lakehouse --workspace "$workspace" replay "$snapshot/bronze/events.jsonl"
+```
+
+Expect `accepted: 0` and `quarantined: 0`, with one duplicate per input row.
+The replay records its own `run_id` and leaves the selected snapshot in place.
+Inspect `quality.json` from the original demo export to see the warnings from
+that ingest. Invalid demo records contribute to those warnings and are excluded
+from the accepted Bronze replay input.
 
 ## 3. Streaming: persistence is observable
 
