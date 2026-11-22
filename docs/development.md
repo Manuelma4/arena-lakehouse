@@ -27,16 +27,31 @@ silently acquire different payloads.
 
 ## Replay and export
 
+Use a local JSON Lines file with one match observation per nonempty line. Replay
+the whole file into one workspace, or use backfill in a separate workspace to
+inspect a slice without first ingesting observations outside the window.
+
 ```bash
-arena-lakehouse --workspace data/replay replay observations.jsonl
-arena-lakehouse --workspace data/replay backfill observations.jsonl \
-  --from 2025-01-01T00:00:00Z --to 2025-02-01T00:00:00Z
+arena-lakehouse --workspace data/replay replay data/input/observations.jsonl
 arena-lakehouse --workspace data/replay export
 ```
 
-Backfill bounds apply to observation availability time. Snapshot directories are
-immutable; `snapshots/LATEST` names the latest completed export. The complete
-interface is defined in [CONTRACT.md](../CONTRACT.md).
+```bash
+arena-lakehouse --workspace data/backfill backfill data/input/observations.jsonl \
+  --from 2025-01-01T00:00:00Z --to 2025-02-01T00:00:00Z --max-events 10000
+arena-lakehouse --workspace data/backfill export
+```
+
+Backfill selects `observed_at` in `[from, to)` using timezone-aware bounds.
+Use a positive window of up to 31 days. `--max-events` limits selected rows before
+ingestion, defaults to 100,000 and accepts values from 1 to 100,000. The reference
+CLI loads the full input and validates every row to select the window. Split
+large files as well as the time window to bound memory use. An invalid row can
+stop selection even outside the requested window.
+
+Export requires accepted observations and a successful latest ingest.
+`snapshots/LATEST` names the selected immutable snapshot. See
+[CONTRACT.md](../CONTRACT.md) for the package interface.
 
 ## Spark container
 
