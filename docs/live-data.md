@@ -82,31 +82,31 @@ uses collection as an upper bound; PandaScore uses `end_at` when present. Their
 source semantics and completion-only correction limitation remain documented in
 [provider coverage](providers.md).
 
-The sequence is collect **every selected scope**, one transactional reference
-ingest, one immutable no-model snapshot publication, per-scope atomic cursor
-commits, then successful health publication. A failure fetching a later competition
-does not ingest earlier pending changes or advance any cursor. Cursor files do not
-share a multi-file transaction: if a later commit fails, the next full cycle safely
-re-fetches the remaining scopes and deduplicates already committed observations.
-An invalid or conflicted ingest does not advance the cursor. A failed poll keeps
-the previous successful snapshot selected. Re-fetch after an interruption between
-ingest and cursor commit is idempotent; canonical state retains its first known
-availability. If committed state has not yet been published, the next successful
-poll publishes it even when the repeated ingest accepts no additional rows.
+The worker collects every selected scope, ingests canonical observations, and
+prepares and validates both packages where applicable. It records a durable
+intent, commits the scope cursors, and atomically selects the pair before updating
+health and compatibility files. A failed scope fetch stops before ingest and
+cursor commits. An ingest that reports quarantined rows stops publication.
+A pending intent is recovered with the original poll and packages before making
+another provider request. See [the publication protocol](provider-publication.md)
+for the exact order and recovery boundaries.
 
-Unchanged business content creates no source revision and no new snapshot. It
-still advances `last_success_at`, which records a successful source check.
-`last_change_at` advances only when a different canonical snapshot is selected.
-Snapshot reuse validates the inventory and every checksum. An empty successful
-response is a successful check, not proof that a competition has no matches;
-existing observations are not deleted merely because a bounded list omits them.
+The worker reuses a validated canonical package when its dataset is unchanged.
+A successful source check advances `last_success_at`. The canonical
+`last_change_at` advances when a different canonical snapshot is selected.
+An empty response does not remove previously accepted observations. PandaScore
+publishes a validated calendar descriptor even when there is no canonical
+package.
 
-## Consumer health contract
+## Consumer selection and health
 
-`BASE/PROVIDER/snapshots/LIVE_STATUS.json` is replaced atomically. Consumer reload
-must follow its `latest_snapshot`, not the staging directory or the independent
-`LATEST` pointer. The latter can already name a candidate when a subsequent cursor
-commit fails. A selected snapshot name is exactly
+New readers select the canonical snapshot and calendar from
+`BASE/PROVIDER/snapshots/CURRENT_PUBLICATION.json`. Read the pair from one selector
+and validate both descriptors before use. Null descriptors explicitly represent
+an absent package. The atomically written `LIVE_STATUS.json` reports freshness,
+poll results and quota usage. It may lag the pair selector after interruption,
+as can `LATEST` and `CALENDAR_LATEST`. Read those files as compatibility views.
+A selected snapshot name is exactly
 `snapshot-<16 hexadecimal dataset version>-<8 hexadecimal suffix>`.
 
 The required `arena-live-status-1.0` fields are:
@@ -118,7 +118,7 @@ The required `arena-live-status-1.0` fields are:
 | `status` | `awaiting_credentials`, `polling`, `ready`, `empty`, `degraded` or `quota_limited` |
 | `last_attempt_at` | Latest attempted poll's aware UTC-Z start, or null |
 | `last_success_at` | Last successful check's aware UTC-Z completion, or null |
-| `last_change_at` | Last selected snapshot change's aware UTC-Z completion, or null |
+| `last_change_at` | Completion time of the last successful poll that changed the canonical snapshot, or null |
 | `poll_interval_seconds` | Configured bounded interval |
 | `last_error_code` | Fixed redacted error code or null; never exception text |
 | `latest_snapshot` | Last successful snapshot basename or null |
@@ -134,11 +134,13 @@ pages:1}` for football and `{kind:"match_phases", competition_codes:[],
 phases:["past","upcoming","running"], pages:N}` for PandaScore. Success means
 every declared selected scope completed in that cycle. Legacy health records
 without this field must be labelled **scope unknown**, never interpreted as proof
-that every retained competition was checked. `last_change_at` is the successful
-publication-selection clock, not a provider result date.
+that every retained competition was checked. `last_change_at` comes from the
+completed poll in the ledger. For the pair's selection time, read `selected_at`
+from the authoritative selector.
 Absent credentials produce `awaiting_credentials`, zero requests and no synthetic
 substitute dataset. A successful source check without any canonical rows produces
-`empty`, a successful check clock and no snapshot.
+`empty`, a successful check clock and no canonical snapshot. The PandaScore calendar can
+still be present.
 
 Errors are limited to `awaiting_credentials`, `quota_exhausted`,
 `authentication_denied`, `provider_rate_limited`, `provider_unavailable`,
