@@ -75,12 +75,22 @@ Official references: [pipeline Python development](https://docs.databricks.com/a
 
 ## Offline configuration evidence
 
-The YAML was checked against `databricks bundle schema` emitted by official CLI
-1.19.0, without authentication. See
-[`databricks-bundle-schema.json`](evidence/databricks-bundle-schema.json).
-Reproduce this weaker shape check separately from authenticated validation:
+The saved [validation receipt](evidence/databricks-bundle-schema.json) records
+the SHA-256 of the schema emitted by Databricks CLI 1.19.0 and the YAML files
+checked. Generate the schema locally for a new comparison.
+
+From the repository root, use the project's Python environment with the
+`dev` extra installed and Databricks CLI 1.19.0 on PATH. For another CLI
+version, record that version in `--cli-version`.
 
 ```bash
-databricks bundle schema > data/bundle-schema.json
-python scripts/validate_bundle.py --schema data/bundle-schema.json --cli-version 1.19.0
+mkdir -p data/bundle-check
+databricks bundle schema > data/bundle-check/official-schema.json &&
+  python scripts/validate_bundle.py --schema data/bundle-check/official-schema.json \
+    --cli-version 1.19.0 --report data/bundle-check/validation-report.json
 ```
+
+The validator checks the merged YAML shape and refuses configured job
+schedules or triggers. Inspect the schema hash and `schema_verified_locally`
+status in the report. The shape check leaves workspace substitutions,
+permissions and managed execution pending.
