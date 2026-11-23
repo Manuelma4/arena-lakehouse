@@ -39,15 +39,22 @@ read published snapshots rather than paths behind a running stage graph.
 
 ## Run the scenario
 
-Create a reference snapshot first. The Docker image pins Python 3.11, Java 17,
-Spark 4.1.3 and the Spark-4.1 Delta Lake 4.4.0 artifact.
+From the repository root, activate the [reference Python environment](development.md)
+and generate the same 100-match synthetic input used by the Spark workflow.
+Use a dedicated reference workspace under ignored `data/`. The Linux container
+uses Python 3.11, Java 17, Spark 4.1.3 and the Spark-4.1 Delta Lake 4.4.0 artifact.
 
 ```powershell
-docker build -t arena-lakehouse:0.2.0 .
-$snapshot = Get-Content .\data\demo\snapshots\LATEST
+arena-lakehouse --workspace data/incremental-input demo --matches 100 --seed 42
+$snapshot = Get-Content .\data\incremental-input\snapshots\LATEST
 $data = (Resolve-Path .\data).Path
-docker run --rm --memory 6g --cpus 2 --mount "type=bind,source=$data,target=/data" --entrypoint arena-spark arena-lakehouse:0.2.0 --workspace /data/incremental-new scenario --snapshot "/data/demo/snapshots/$snapshot"
+docker build -t arena-lakehouse:0.2.0 .
+docker run --rm --memory 6g --cpus 2 --mount "type=bind,source=$data,target=/data" --entrypoint arena-spark arena-lakehouse:0.2.0 --workspace /data/incremental-new scenario --snapshot "/data/incremental-input/snapshots/$snapshot"
 ```
+
+`LATEST` contains the selected directory name. The bind mount makes that
+directory visible to the container, while the scenario keeps its stage ledger,
+Delta tables and reports in the separate `incremental-new` workspace.
 
 Use a fresh scenario workspace to preserve prior reports. It exercises identical
 replay, late score correction, cancellation of a team's sole completed match,
@@ -87,7 +94,7 @@ The reference CLI also implements the same bounded selection:
 ## Measured layout experiment
 
 ```powershell
-docker run --rm --memory 6g --cpus 2 --mount "type=bind,source=$data,target=/data" --entrypoint arena-spark arena-lakehouse:0.2.0 --workspace /data/benchmark-new benchmark --snapshot "/data/demo/snapshots/$snapshot"
+docker run --rm --memory 6g --cpus 2 --mount "type=bind,source=$data,target=/data" --entrypoint arena-spark arena-lakehouse:0.2.0 --workspace /data/benchmark-new benchmark --snapshot "/data/incremental-input/snapshots/$snapshot"
 ```
 
 This experiment writes the same current-match data into 16-partition and
