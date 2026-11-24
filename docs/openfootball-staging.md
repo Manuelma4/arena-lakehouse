@@ -21,7 +21,33 @@ module; the existing PandaScore free-fixtures adapter remains independent.
 
 ## Run
 
-From the repository root, with the project dependencies installed:
+From the repository root, with the project dependencies installed, start with
+an offline validation if you already have a saved OpenFootball source file.
+Use the catalogue identifier that matches those bytes. For example, place a
+saved Colombia 2025 response under the ignored `data/` directory:
+
+```bash
+(
+  set -eu
+  source_file="data/openfootball-input/colombia-primera-a-2025.json"
+  test -r "$source_file"
+  receipt_dir="$(mktemp -d data/openfootball-validation.XXXXXX)"
+  python -m arena_lakehouse.openfootball --workspace "$receipt_dir/staging" \
+    validate --source colombia-primera-a-2025 --file "$source_file" > "$receipt_dir/validation.json"
+  printf 'Offline receipt: %s\n' "$receipt_dir/validation.json"
+)
+```
+
+Check `dry_run: true`, the source ID and body checksum, and the accepted and
+quarantined counts in the receipt. A successful dry run may include quarantined
+rows. With an empty workspace, `changed` describes rows that would be written.
+There is no staging database, archive, poll or cursor written by `validate`.
+The receipt records a local check of the saved bytes.
+
+Use the network-backed commands only for a deliberate source collection. A
+`collect --dry-run` can make an HTTP request and consult existing cache state.
+It leaves the archive, revision history and cursor untouched. Choose a fresh
+output path for each immutable export.
 
 ```bash
 python -m arena_lakehouse.openfootball --workspace data/openfootball collect \
@@ -32,15 +58,9 @@ python -m arena_lakehouse.openfootball --workspace data/openfootball collect \
 
 python -m arena_lakehouse.openfootball --workspace data/openfootball export \
   --output data/openfootball-export-001
-
-python -m arena_lakehouse.openfootball validate \
-  --source colombia-primera-a-2025 --file data/saved-source.json
 ```
 
-`validate` is offline and always dry; `collect --dry-run` requests/validates a
-source but creates no archive, revision, poll or cursor. Export destinations are
-immutable: choose a new directory for each export. These are module commands;
-the existing `arena-lakehouse` CLI has not been changed.
+Use a separate v2 workspace for the [pinned World Cup source](worldcup-research.md#run-and-verify).
 
 For isolated-worktree testing on Windows without reinstalling the shared environment:
 
