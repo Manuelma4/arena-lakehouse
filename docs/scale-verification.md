@@ -40,20 +40,40 @@ must be new; existing fixtures and evidence are retained.
 
 ## Generate and validate without Spark
 
-From the producer checkout, use its `src` via `PYTHONPATH` without reinstalling
-the shared environment. These commands are procedures, not completed measurements.
+From the producer checkout, activate a dedicated Python environment that has
+this checkout installed as described in the [development guide](development.md).
+For a small preflight on macOS or Linux, generate and validate 40 observations
+before preparing the larger fixture.
 
-```powershell
-$env:PYTHONPATH = (Resolve-Path .\src).Path
-& C:\Works\.arena-venv\Scripts\python.exe -m arena_lakehouse.scale generate --observations 10000 --namespace scale-10k-001 --output data/scale-10k-workload-001
-& C:\Works\.arena-venv\Scripts\python.exe -m arena_lakehouse.scale validate --workload data/scale-10k-workload-001
-
-& C:\Works\.arena-venv\Scripts\python.exe -m arena_lakehouse.scale generate --observations 1000000 --namespace scale-1m-001 --shard-observations 100000 --output data/scale-1m-workload-001
+```bash
+(
+  set -eu
+  mkdir -p data
+  scale_out="$(mktemp -d data/scale-preflight.XXXXXX)"
+  python -m arena_lakehouse.scale generate --observations 40 --namespace scale-preflight \
+    --seed 42 --shard-observations 10 --output "$scale_out/workload" > "$scale_out/generate.json"
+  python -m arena_lakehouse.scale validate --workload "$scale_out/workload" > "$scale_out/validate.json"
+  printf 'Workload and reports: %s\n' "$scale_out"
+)
 ```
 
-Generation prints measured elapsed time, disk bytes and available process resource
-values. Capture stdout as independent generation evidence. Package checksums stay
-reproducible because those measured values are not inserted into the manifest.
+Successful validation reports 40 base observations, 20 matches and four
+10-observation shards. Its manifest must agree with the generation report.
+The two JSON files record separate elapsed times and available process
+resources. These measurements cover local generation and validation.
+
+For the Spark scenarios below, generate the larger packages from the same
+environment. The commands also work in PowerShell with the environment active.
+Use new output names for later runs.
+
+```text
+python -m arena_lakehouse.scale generate --observations 10000 --namespace scale-10k-001 --output data/scale-10k-workload-001
+python -m arena_lakehouse.scale validate --workload data/scale-10k-workload-001
+python -m arena_lakehouse.scale generate --observations 1000000 --namespace scale-1m-001 --shard-observations 100000 --output data/scale-1m-workload-001
+```
+
+Capture stdout as separate generation evidence. Package checksums stay
+reproducible because resource measurements are stored outside the manifest.
 
 ## Explicit Linux Spark scenario
 
