@@ -1,24 +1,42 @@
 # OpenFootball research publication
 
 This publisher turns a verified [precision-aware staging export](openfootball-staging.md)
-into an immutable research package. It uses the distinct contract
-`openfootball-research-1.0`, never the canonical Arena snapshot 2.0 contract.
-Rows remain open data with unresolved kickoff timezone, name-derived identities
-and prediction ineligibility. No standings, points or inferred cup winner are
-published.
+into an immutable research package. Choose the source staging contract before
+collecting or exporting. The publisher selects the research contract from that
+staging manifest.
+
+| Staging input | Research output | Scope |
+| --- | --- | --- |
+| `openfootball-staging-1.0` | `openfootball-research-1.0` | Reviewed club editions with original calendar dates and unresolved UTC kickoff. |
+| `openfootball-staging-2.0` | `openfootball-research-2.0` | Also supports the independently reviewed World Cup source and its explicit-offset clocks. See the [v2 contract](worldcup-research.md). |
+
+Both research packages are separate from the canonical Arena snapshot 2.0.
+They preserve source precision and leave all rows ineligible for forecasting.
+No standings, points or inferred cup winner are published.
 
 ## Run and module API
 
+From the producer checkout with the project environment active, set
+`staging` to an existing staging export. Put the research package and receipt
+in a fresh ignored directory.
+
 ```bash
-python -m arena_lakehouse.openfootball_research \
-  --staging data/openfootball-staging-nine-001 \
-  --output data/openfootball-research-nine-001
+(
+  set -eu
+  staging="data/openfootball-staging-nine-001"
+  test -f "$staging/manifest.json"
+  report_dir="$(mktemp -d data/openfootball-research.XXXXXX)"
+  python -m arena_lakehouse.openfootball_research \
+    --staging "$staging" --output "$report_dir/package" > "$report_dir/publication.json"
+  printf 'Package and publication receipt: %s\n' "$report_dir"
+)
 ```
 
-The source must be an existing staging export; this command makes no HTTP
-requests. The destination must be new. Validation completes before destination
-creation. Files are prepared in a temporary sibling and published by rename;
-failure removes only the temporary files created by this publisher.
+The publisher makes no HTTP requests and verifies the staging package before
+creating the destination. The package path must be new. Files are prepared in a
+temporary sibling and published by rename. A failed command can leave the
+shell's receipt empty, so check both the exit status and the manifest.
+The remaining wire details and recorded nine-source run below cover v1.
 
 ```python
 from arena_lakehouse.openfootball_research import validate_staging, publish_research
