@@ -193,9 +193,24 @@ Old successful publications are retained for recovery. A continuously running
 deployment needs a reviewed retention policy for private archives and calendar
 versions; this module does not prune evidence automatically.
 
-## Verification status
+## Offline verification
 
-The initial tests use original synthetic fixture rows only. They cover nullable
+From the repository root, use the Python environment described in the
+[development guide](development.md):
+
+```bash
+python -m pytest -q \
+  tests/test_calendar.py::test_all_three_phases_and_pages_are_required_and_empty_pages_are_valid \
+  tests/test_calendar.py::test_corrupted_package_is_never_reused_or_repointed
+```
+
+The first test accepts six empty responses across three phases and two pages, then
+rejects missing and duplicate coverage. The second corrupts a disposable calendar
+package, checks that validation and replay reject it, and compares the pointer
+bytes with the original. Both use pytest temporary directories and synthetic
+responses. They require neither provider credentials nor a stored capture.
+
+The broader calendar tests use original synthetic fixture rows only. They cover nullable
 announcements, canceled matches, unknown and unzoned dates, strict result types,
 duplicate and conflicting phase IDs, complete page coverage, malformed envelopes,
 path traversal, publication replay, failed writes, checksums, and resealed
