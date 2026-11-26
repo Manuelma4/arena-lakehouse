@@ -25,6 +25,48 @@ single-competition fixtures are preserved. Use a fresh workspace when changing
 the seed, size or showcase option; observations with the same identity must not
 silently acquire different payloads.
 
+## Check the synthetic producer in another Python environment
+
+Choose an interpreter allowed by [`pyproject.toml`](../pyproject.toml) when creating
+a separate environment. Install the project with the same development extra used
+above. Activate that environment and run the following from the repository root.
+
+```bash
+(
+  set -euo pipefail
+  mkdir -p data
+  workspace=$(mktemp -d data/export-smoke.XXXXXX)
+  python -m arena_lakehouse.cli --workspace "$workspace" demo --matches 240 --seed 42 > "$workspace/demo.json"
+  export_dir="$workspace/snapshots/$(cat "$workspace/snapshots/LATEST")"
+  python - "$export_dir" "$workspace/demo.json" <<'PYTHON'
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+import pyarrow.parquet as parquet
+
+package = Path(sys.argv[1])
+receipt = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+assert (receipt["accepted"], receipt["duplicates"], receipt["quarantined"]) == (472, 2, 2)
+manifest = json.loads((package / "manifest.json").read_text(encoding="utf-8"))
+assert manifest["data_kind"] == "synthetic"
+assert parquet.read_metadata(package / "gold/matches.parquet").num_rows == 240
+assert parquet.read_metadata(package / "gold/match_history.parquet").num_rows == 472
+for name, expected in manifest["files"].items():
+    assert hashlib.sha256((package / name).read_bytes()).hexdigest() == expected, name
+print(manifest["dataset_version"], "240 matches, 472 history rows, package checksums verified")
+PYTHON
+)
+```
+
+The demo uses fictional data and writes to an ignored workspace. This checks
+the ingest receipt, selected package, two row counts and the inventory checksums. Independent
+demo runs get separate ingestion IDs and publication times. Compare decoded
+content and dataset IDs across environments. For a strict comparison, export
+copies of one idle synthetic workspace with the same generation time and
+dependency versions. Use the consumer's validator for a full contract check.
+
 ## Replay and export
 
 ```bash
