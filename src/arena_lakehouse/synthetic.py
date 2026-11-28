@@ -18,9 +18,12 @@ SHOWCASE_COMPETITIONS = {
 }
 
 
+MIN_MATCHES, MAX_MATCHES = 20, 500_000
+
+
 def generate(matches: int = 600, seed: int = 42, faults: bool = True, showcase: bool = False) -> list[dict]:
-    if not 20 <= matches <= 500_000:
-        raise ValueError("matches must be between 20 and 500000")
+    if not MIN_MATCHES <= matches <= MAX_MATCHES:
+        raise ValueError(f"matches must be between {MIN_MATCHES} and {MAX_MATCHES}")
     rng = random.Random(seed)
     events = []
     origin = datetime(2025, 1, 1, tzinfo=timezone.utc)

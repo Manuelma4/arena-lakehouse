@@ -19,6 +19,9 @@ py -3.11 -m venv .venv
 On Linux, use `python3.11`, `.venv/bin/python` and
 `.venv/bin/arena-lakehouse`. Activate the environment before the commands below.
 
+`demo --matches` accepts 20 through 500,000. The CLI rejects an out-of-range
+count before initializing the workspace. Start with a small fixture for local checks.
+
 `--showcase` assigns the original records to three chronological competitions
 per sport. It changes competition metadata only. Without that flag, the original
 single-competition fixtures are preserved. Use a fresh workspace when changing

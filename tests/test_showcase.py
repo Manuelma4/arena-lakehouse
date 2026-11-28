@@ -44,3 +44,15 @@ def test_demo_refuses_to_mix_showcase_and_legacy_workspaces(tmp_path, monkeypatc
     with pytest.raises(SystemExit) as error:
         cli.main()
     assert error.value.code == 2 and pipeline.events() == before
+
+
+@pytest.mark.parametrize("matches", [19, 500001])
+def test_invalid_demo_size_is_rejected_before_creating_workspace(tmp_path, monkeypatch, capsys, matches):
+    workspace = tmp_path / "new-demo"
+    monkeypatch.setattr("sys.argv", ["arena-lakehouse", "--workspace", str(workspace),
+                                    "demo", "--matches", str(matches)])
+    with pytest.raises(SystemExit) as error:
+        cli.main()
+    assert error.value.code == 2
+    assert "matches must be between 20 and 500000" in capsys.readouterr().err
+    assert not workspace.exists()

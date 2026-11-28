@@ -8,7 +8,14 @@ from dotenv import load_dotenv
 from .connectors import collect, commit_state
 from .engine import Pipeline
 from .snapshot import export_snapshot
-from .synthetic import generate
+from .synthetic import MAX_MATCHES, MIN_MATCHES, generate
+
+
+def _demo_match_count(value: str) -> int:
+    count = int(value)
+    if not MIN_MATCHES <= count <= MAX_MATCHES:
+        raise argparse.ArgumentTypeError(f"matches must be between {MIN_MATCHES} and {MAX_MATCHES}")
+    return count
 
 
 def main():
@@ -17,7 +24,8 @@ def main():
     parser.add_argument("--workspace", type=Path, default=Path("data/demo"))
     sub = parser.add_subparsers(dest="command", required=True)
     demo = sub.add_parser("demo")
-    demo.add_argument("--matches", type=int, default=600)
+    demo.add_argument("--matches", type=_demo_match_count, default=600,
+                      help=f"Synthetic matches ({MIN_MATCHES:,}–{MAX_MATCHES:,})")
     demo.add_argument("--seed", type=int, default=42)
     demo.add_argument("--showcase", action="store_true", help="Three original competitions per sport")
     replay = sub.add_parser("replay")
