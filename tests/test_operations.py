@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
+from arena_lakehouse import cli
 from arena_lakehouse.engine import Pipeline, latest, team_stats
 from arena_lakehouse.operations import STAGES, StageLedger, bounded_window, validated_new_events
 from arena_lakehouse.schema import MatchEvent
@@ -147,3 +148,36 @@ def test_demo_workspace_configuration_cannot_be_mixed(tmp_path, monkeypatch, cap
         main()
     assert error.value.code == 2
     assert "another seed/match configuration" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(("command", "content", "options", "message"), [
+    ("replay", "\n{bad json}\n", [], "Invalid JSON on line 2"),
+    ("backfill", "", ["--from", "2025-01-01", "--to", "2025-01-02"], "must include a timezone"),
+    ("backfill", '{"unrecognized": "synthetic"}', ["--from", "2024-12-01T00:00Z", "--to", "2025-01-01T00:00Z"],
+     "does not match the event schema"),
+])
+def test_bad_replay_input_leaves_new_workspace_uncreated(tmp_path, monkeypatch, capsys, command, content, options, message):
+    observations = tmp_path / "observations.jsonl"
+    observations.write_text(content, encoding="utf-8")
+    workspace = tmp_path / "new-workspace"
+    args = ["arena-lakehouse", "--workspace", str(workspace), command, str(observations), *options]
+    monkeypatch.setattr("sys.argv", args)
+    with pytest.raises(SystemExit) as error:
+        cli.main()
+    assert error.value.code == 2
+    assert message in capsys.readouterr().err
+    assert not workspace.exists()
+
+
+@pytest.mark.parametrize("command", ["replay", "backfill"])
+def test_valid_replay_input_creates_a_workspace_and_accepts_event(tmp_path, monkeypatch, capsys, command):
+    source = tmp_path / "observations.jsonl"
+    source.write_text(json.dumps(generate(20, faults=False)[0]), encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    args = ["arena-lakehouse", "--workspace", str(workspace), command, str(source)]
+    if command == "backfill":
+        args += ["--from", "2024-12-01T00:00:00Z", "--to", "2025-01-01T00:00:00Z"]
+    monkeypatch.setattr("sys.argv", args)
+    cli.main()
+    assert json.loads(capsys.readouterr().out)["accepted"] == 1
+    assert len(Pipeline(workspace).events()) == 1

@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from dotenv import load_dotenv
+from pydantic import ValidationError
 
 from .connectors import collect, commit_state
 from .engine import Pipeline
@@ -43,6 +44,28 @@ def main():
         from .incremental import benchmark as run_benchmark
         run_benchmark(args.snapshot, args.workspace)
         return
+    if args.command in ("replay", "backfill"):
+        try:
+            lines = args.file.read_text(encoding="utf-8").splitlines()
+        except (OSError, UnicodeDecodeError):
+            parser.error("Cannot read the observations file as UTF-8")
+        records = []
+        for line_number, line in enumerate(lines, start=1):
+            if line.strip():
+                try:
+                    records.append(json.loads(line))
+                except json.JSONDecodeError:
+                    parser.error(f"Invalid JSON on line {line_number} of the observations file")
+        if args.command == "backfill":
+            from .operations import bounded_window
+            try:
+                records = bounded_window(records, args.begin, args.end, args.max_events)
+            except ValidationError:
+                parser.error("Backfill contains an observation that does not match the event schema")
+            except ValueError as error:
+                parser.error(str(error))
+        print(json.dumps(Pipeline(args.workspace).ingest(records), indent=2))
+        return
     pipeline = Pipeline(args.workspace)
     if args.command == "demo":
         config_path = args.workspace / "demo-config.json"
@@ -62,12 +85,6 @@ def main():
         config_path.write_text(json.dumps(config), encoding="utf-8")
         snapshot = export_snapshot(pipeline, args.workspace / "snapshots")
         print(json.dumps(dict(**result, snapshot_dir=str(snapshot.resolve())), indent=2))
-    elif args.command in ("replay", "backfill"):
-        records = [json.loads(line) for line in args.file.read_text(encoding="utf-8").splitlines() if line.strip()]
-        if args.command == "backfill":
-            from .operations import bounded_window
-            records = bounded_window(records, args.begin, args.end, args.max_events)
-        print(json.dumps(pipeline.ingest(records), indent=2))
     elif args.command == "export":
         print(export_snapshot(pipeline, args.workspace / "snapshots").resolve())
     else:

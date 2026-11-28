@@ -34,9 +34,11 @@ arena-lakehouse --workspace data/replay backfill observations.jsonl \
 arena-lakehouse --workspace data/replay export
 ```
 
-Backfill bounds apply to observation availability time. Snapshot directories are
-immutable; `snapshots/LATEST` names the latest completed export. The complete
-interface is defined in [CONTRACT.md](../CONTRACT.md).
+Replay and backfill read the input before opening the workspace. Invalid JSON
+reports its line number. Backfill also checks the event schema and window
+before opening the workspace. Backfill bounds apply to observation availability
+time. Snapshot directories are immutable. `snapshots/LATEST` names the latest
+completed export. See the [snapshot contract](../CONTRACT.md).
 
 ## Spark container
 
